@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cafe POS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* Thêm hiệu ứng cho menu đang chọn */
+        .navbar-nav .nav-link.active {
+            color: #ffc107 !important; /* Màu vàng cam */
+            font-weight: bold;
+            border-bottom: 2px solid #ffc107;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    @{
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    }
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">☕ HỆ THỐNG CAFE</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    @* 1. MENU CHUNG (Ai cũng thấy) *@
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Tổng quan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Category" ? "active" : "")" asp-controller="Category" asp-action="Index">Danh mục</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                    </li>
+                    @* 2. MENU DÀNH RIÊNG CHO NHÂN VIÊN (Dùng cho cả Role Employee và Staff nếu bạn chưa kịp đổi DB) *@
+                    @if (User.IsInRole("Employee"))
+                        {
+                       
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="Index">Quản lý Đơn hàng</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Employee" asp-action="Index">Danh sách Nhân viên</a>
+                        </li>
+                    }
+
+                    @* 3. MENU DÀNH RIÊNG CHO KHÁCH HÀNG *@
+                    @if (User.IsInRole("Staff"))
+                    {
+                        @* Nếu trong DB bạn lỡ để khách hàng là Staff thì menu đặt món nằm ở đây *@
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="Index">Đặt món ngay</a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav">
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-warning fw-bold border-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                👋 Xin chào, @fullName
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle"></i> Thông tin tài khoản</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-shield-lock"></i> Đổi mật khẩu</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout">🚪 Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link @(currentController == "Account" ? "active" : "")" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                        <li class="nav-item"><a class="btn btn-warning btn-sm mt-1 ms-2 fw-bold" asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+    @* <div class="alert alert-danger">
+        DEBUG: Quyền thực tế của bạn là: <b>@string.Join(", ", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))</b>
+    </div> *@
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted text-center py-4 mt-5 bg-white shadow-sm">
+        <div class="container">&copy; 2026 - Phần mềm quản lý Cafe POS</div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var message = '@Html.Raw(@TempData["Message"])';
+            var type = '@TempData["MessageType"]';
+
+            if (message) {
+                Swal.fire({
+                    title: 'Thông báo',
+                    text: message,
+                    icon: type,
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

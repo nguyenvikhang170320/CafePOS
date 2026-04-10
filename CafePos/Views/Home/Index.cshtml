@@ -1,0 +1,47 @@
+﻿@if (User.IsInRole("Employee"))
+{
+    @* --- GIAO DIỆN DÀNH RIÊNG CHO NHÂN VIÊN --- *@
+    <div class="text-start mt-5">
+        <h1 class="fw-bold">Xin chào, @User.Identity.Name!</h1>
+        <p class="text-muted">Chúc bạn một ca làm việc vui vẻ và năng suất.</p>
+
+        <div class="row mt-4 g-4">
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100 rounded-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-book fs-1 me-4"></i>
+                        <div>
+                            <h3 class="fw-bold mb-0">Xem Menu</h3>
+                            <a href="/Order/Index" class="text-white-50 text-decoration-none small">Tra cứu món nước</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm bg-warning text-dark p-4 h-100 rounded-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clipboard-check fs-1 me-4"></i>
+                        <div>
+                            <h3 class="fw-bold mb-0">Đơn hàng</h3>
+                            <a href="/Order/Index" class="text-dark text-decoration-none opacity-50 small">Theo dõi đơn đang pha chế</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @* --- GIAO DIỆN DÀNH RIÊNG CHO KHÁCH HÀNG (Staff) --- *@
+    <div class="text-center mt-5 py-5">
+        <h1 class="display-4 fw-bold">Chào mừng bạn đến với Cafe POS</h1>
+        <p class="lead">Thưởng thức những tách cafe thơm ngon nhất ngay hôm nay!</p>
+        <div class="mt-4">
+            <a asp-controller="Order" asp-action="Index" class="btn btn-warning btn-lg px-5 rounded-pill shadow fw-bold">
+                <i class="bi bi-cup-hot"></i> ĐẶT MÓN NGAY
+            </a>
+        </div>
+        @* Khang có thể thêm hình ảnh quảng cáo hoặc danh sách món hot ở đây *@
+    </div>
+}

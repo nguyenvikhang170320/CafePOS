@@ -1,0 +1,154 @@
+﻿@model IEnumerable<CafePos.Models.Product>
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<style>
+    .custom-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 193, 7, 0.05);
+        transition: 0.3s;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        margin-left: 4px;
+    }
+
+    /* Style cho ảnh sản phẩm nhỏ */
+    .product-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #eee;
+    }
+
+    /* Huy hiệu danh mục */
+    .badge-category {
+        background: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        padding: 0.4em 0.8em;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-dark fw-bold mb-0">
+                <i class="bi bi-cup-straw text-warning me-2"></i>Quản lý thực đơn
+            </h3>
+            <p class="text-muted small mb-0">Danh sách tất cả món ăn và đồ uống</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            @if (isAdmin)
+            {
+                <a asp-action="Trash" class="btn btn-outline-secondary px-3 shadow-sm border-0 bg-white">
+                    <i class="bi bi-trash3 me-1"></i> Thùng rác
+                </a>
+                <a asp-action="Create" class="btn btn-primary px-3 shadow-sm fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm món mới
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="card custom-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 60px;">STT</th>
+                            <th style="width: 80px;">Ảnh</th>
+                            <th>Tên món</th>
+                            <th>Danh mục</th>
+                            <th class="text-center">Giá bán</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 text-muted">@i.ToString("D2")</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" class="product-img shadow-sm" alt="@item.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="product-img bg-light d-flex align-items-center justify-content-center text-muted">
+                                            <i class="bi bi-image small"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.Name</div>
+                                    @if (item.IsActive == false)
+                                    {
+                                        <span class="badge bg-secondary" style="font-size: 0.6rem;">Đã ẩn</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge-category">
+                                        <i class="bi bi-tag-fill me-1 small"></i> @(item.Category?.Name ?? "N/A")
+                                    </span>
+                                </td>
+                                <td class="text-center fw-bold text-primary">
+                                    @item.BasePrice.ToString("N0")<span class="small ps-1">đ</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end">
+                                        <a asp-action="Detail" asp-route-id="@item.ProductId"
+                                           class="btn btn-action btn-outline-info" title="Chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        @if (isAdmin)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.ProductId"
+                                               class="btn btn-action btn-outline-warning" title="Sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+
+                                            <form asp-action="Delete" asp-route-id="@item.ProductId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Ẩn món này khỏi thực đơn?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-action btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

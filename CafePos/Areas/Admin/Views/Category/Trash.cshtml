@@ -1,0 +1,30 @@
+﻿@model IEnumerable<CafePos.Models.Category>
+
+<h2>Thùng rác danh mục</h2>
+<a asp-action="Index" class="btn btn-secondary mb-3">Quay lại danh sách</a>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Tên danh mục</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <form asp-action="Restore" asp-route-id="@item.CategoryId" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-arrow-counterclockwise"></i> Khôi phục
+                        </button>
+                    </form>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

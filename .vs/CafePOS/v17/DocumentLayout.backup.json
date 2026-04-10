@@ -1,0 +1,119 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\controllers\\employeecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\controllers\\employeecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|c:\\users\\tuankenofficial2025\\source\\repos\\cafepos\\cafepos\\data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CDD3B30-9702-AF23-D499-E69C5300D96F}|CafePos\\CafePos.csproj|solutionrelative:cafepos\\data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EmployeeController.cs",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Controllers\\EmployeeController.cs",
+              "RelativeDocumentMoniker": "CafePos\\Controllers\\EmployeeController.cs",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Controllers\\EmployeeController.cs",
+              "RelativeToolTip": "CafePos\\Controllers\\EmployeeController.cs",
+              "ViewState": "AgIAACcAAAAAAAAAAAAwwDQAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T14:22:11.969Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "CafePos\\Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "CafePos\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-05T14:35:20.597Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DbInitializer.cs",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Data\\DbInitializer.cs",
+              "RelativeDocumentMoniker": "CafePos\\Data\\DbInitializer.cs",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Data\\DbInitializer.cs",
+              "RelativeToolTip": "CafePos\\Data\\DbInitializer.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAAAAABoAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T14:29:34.212Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "CafePos\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Services\\AuthService.cs",
+              "RelativeToolTip": "CafePos\\Services\\AuthService.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwB4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T14:24:56.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "CafePos\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "CafePos\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAGUAAAAAAAAAAAAcwGsAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-05T14:22:11.99Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "CafePos\\Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\tuankenofficial2025\\source\\repos\\CafePOS\\CafePos\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "CafePos\\Controllers\\AccountController.cs",
+              "ViewState": "AgIAACMAAAAAAAAAAIAxwDEAAABQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T12:55:22.666Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

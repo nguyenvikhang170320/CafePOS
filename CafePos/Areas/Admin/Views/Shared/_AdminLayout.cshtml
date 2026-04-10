@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Cafe</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+        /* Sidebar */
+        #sidebar {
+            width: 250px;
+            background: #212529;
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            height: 100%;
+        }
+
+            #sidebar .sidebar-header {
+                padding: 20px;
+                background: #1a1d20;
+                text-align: center;
+            }
+
+            #sidebar ul.components {
+                padding: 20px 0;
+            }
+
+            #sidebar ul li a {
+                padding: 12px 20px;
+                display: block;
+                color: #adb5bd;
+                text-decoration: none;
+            }
+
+                #sidebar ul li a:hover {
+                    color: white;
+                    background: #343a40;
+                    border-left: 4px solid #ffc107;
+                }
+
+            #sidebar ul li.active > a {
+                color: white;
+                background: #343a40;
+                border-left: 4px solid #ffc107;
+            }
+        /* Nội dung chính */
+        #content {
+            /* Xóa cái width: 100% cũ đi */
+            flex: 1;
+            margin-left: 250px;
+            transition: all 0.3s;
+            padding: 20px;
+            min-width: 0; /* Giúp nội dung không bị tràn */
+        }
+
+        .top-navbar {
+            background: white;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h5 class="mb-0 fw-bold">CAFE ADMIN</h5>
+        </div>
+        <ul class="list-unstyled components">
+            @{
+                // Lấy tên Controller hiện tại từ RouteData
+                var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+            }
+
+            <li class="@(currentController == "Home" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+
+            <li class="@(currentController == "Category" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index">
+                    <i class="bi bi-tag"></i> Quản lý Danh mục
+                </a>
+            </li>
+
+            <li class="@(currentController == "Product" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index">
+                    <i class="bi bi-cup-hot"></i> Quản lý Sản phẩm
+                </a>
+            </li>
+
+            <li class="@(currentController == "Employee" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Employee" asp-action="Index">
+                    <i class="bi bi-people"></i> Quản lý Nhân viên
+                </a>
+            </li>
+
+            <li class="@(currentController == "Order" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index">
+                    <i class="bi bi-cart"></i> Đơn hàng
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <div class="top-navbar">
+            <span class="fw-bold text-uppercase">@ViewData["Title"]</span>
+            <div>
+                <span class="me-3">Chào, @User.Identity.Name</span>
+                <a asp-area="" asp-controller="Account" asp-action="Logout" class="btn btn-sm btn-danger">Đăng xuất</a>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

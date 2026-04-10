@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập Hệ thống Cafe";
+    Layout = null; /* Chặn không cho Load file _Layout */
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: #f2f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            width: 380px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(90deg, #007bff, #6f42c1);
+            color: white;
+            border: none;
+        }
+
+            .btn-gradient:hover {
+                opacity: 0.9;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h4 class="text-center mb-4">☕ Hệ thống Cafe POS</h4>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger text-center shadow-sm">@ViewBag.ErrorMessage</div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center shadow-sm">@TempData["SuccessMessage"]</div>
+        }
+
+        <form asp-action="Login" asp-controller="Account" method="post">
+            <div class="mb-3">
+                <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
+                <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required />
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label fw-bold">Mật khẩu</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required />
+            </div>
+            <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">Đăng nhập</button>
+            <div class="text-center">
+                <a asp-controller="Account" asp-action="Register" class="small text-success">Đăng ký mới</a>
+            </div>
+        </form>
+
+        <hr class="mt-4 mb-3" />
+        <div class="text-center">
+            <p class="mb-2 text-muted small">Đăng nhập nhanh với vai trò:</p>
+            <button type="button" class="btn btn-danger btn-sm" onclick="fillLogin('admin', 'admin@123')">Admin</button>
+        </div>
+    </div>
+
+    <script>
+        function fillLogin(username, password) {
+            document.querySelector('input[name="username"]').value = username;
+            document.querySelector('input[name="password"]').value = password;
+        }
+    </script>
+</body>
+</html>

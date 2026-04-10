@@ -1,0 +1,128 @@
+﻿@{
+    ViewData["Title"] = "Đăng ký Hệ thống Cafe";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: #f2f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(90deg, #28a745, #20c997);
+            color: white;
+            border: none;
+        }
+
+            .btn-gradient:hover {
+                opacity: 0.9;
+                color: white;
+            }
+
+        /* Chỉnh lại nút mắt cho đẹp, không bị viền xanh khi bấm */
+        .btn-outline-secondary:focus {
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-box">
+        <h4 class="text-center mb-4">📝 Khởi tạo Tài khoản</h4>
+
+        <form id="registerForm" asp-action="Register" asp-controller="Account" method="post">
+            <div class="mb-3">
+                <label for="fullName" class="form-label fw-bold">Họ và tên</label>
+                <input type="text" name="fullName" class="form-control" placeholder="Nhập tên hiển thị của bạn" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
+                <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label fw-bold">Mật khẩu</label>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu bảo mật" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password" title="Hiện mật khẩu">👁️</button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="confirmPassword" class="form-label fw-bold">Xác nhận mật khẩu</label>
+                <div class="input-group">
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu lần nữa" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirmPassword" title="Hiện mật khẩu">👁️</button>
+                </div>
+                <div id="passwordError" class="text-danger mt-1 small" style="display: none;">
+                    Mật khẩu xác nhận không khớp!
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">Xác nhận Đăng ký</button>
+
+            <div class="text-center mt-3">
+                <span class="text-muted small">Đã có tài khoản?</span>
+                <a asp-controller="Account" asp-action="Login" class="small text-decoration-none fw-bold">Quay lại Đăng nhập</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 1. Logic kiểm tra mật khẩu khớp nhau
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                document.getElementById('passwordError').style.display = 'block';
+            } else {
+                document.getElementById('passwordError').style.display = 'none';
+            }
+        });
+
+        // 2. Logic ẩn/hiện mật khẩu
+        document.querySelectorAll('.toggle-password').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Lấy id của ô input cần đổi (password hoặc confirmPassword)
+                var targetId = this.getAttribute('data-target');
+                var input = document.getElementById(targetId);
+
+                // Chuyển đổi trạng thái
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.textContent = '🙈'; // Đổi icon thành nhắm mắt
+                    this.title = 'Ẩn mật khẩu';
+                } else {
+                    input.type = 'password';
+                    this.textContent = '👁️'; // Đổi icon thành mở mắt
+                    this.title = 'Hiện mật khẩu';
+                }
+            });
+        });
+    </script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

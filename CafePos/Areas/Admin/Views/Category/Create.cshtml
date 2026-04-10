@@ -1,0 +1,50 @@
+﻿@model CafePos.Models.Category
+@{
+    ViewData["Title"] = "Thêm mới danh mục";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-3 mt-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-plus-circle-fill me-2"></i>Thêm Danh Mục Mới
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    @* Khang thêm dòng này để luôn kích hoạt danh mục mới *@
+                    <input type="hidden" name="IsActive" value="true" />
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Name" class="form-label fw-bold text-secondary">Tên danh mục</label>
+                        <input asp-for="Name" class="form-control form-control-lg border-2"
+                               placeholder="VD: Cà phê, Trà sữa..." autofocus />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-5 shadow">Lưu danh mục</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4 border-0 shadow-sm">
+            <small>
+                <i class="bi bi-info-circle-fill me-1"></i>
+                Mẹo: Tên danh mục nên ngắn gọn (dưới 50 ký tự) để hiển thị đẹp trên menu bán hàng.
+            </small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Script giúp kiểm tra lỗi ngay tại trình duyệt mà không cần load lại trang *@
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
