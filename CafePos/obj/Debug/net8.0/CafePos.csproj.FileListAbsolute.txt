@@ -277,6 +277,7 @@ C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafeP
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.RazorAssemblyInfo.cache
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.RazorAssemblyInfo.cs
+C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.sourcelink.json
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -294,3 +295,6 @@ C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\refin
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.pdb
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.genruntimeconfig.cache
 C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\ref\CafePos.dll
+C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\obj\Debug\net8.0\CafePos.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\bin\Debug\net8.0\X.PagedList.dll
+C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\bin\Debug\net8.0\X.PagedList.Mvc.Core.dll

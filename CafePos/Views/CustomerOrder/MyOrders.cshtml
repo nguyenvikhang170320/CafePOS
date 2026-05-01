@@ -1,0 +1,57 @@
+﻿@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "Đơn của tôi";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Đơn của tôi</h3>
+            <p class="text-muted mb-0">SĐT: @ViewBag.Phone</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4">Đặt món mới</a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Ngày tạo</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái đơn</th>
+                        <th>Thanh toán</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.OrderCode</td>
+                                <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
+                                <td>@item.OrderStatus</td>
+                                <td>@item.PaymentStatus</td>
+                                <td>
+                                    <a asp-action="Detail" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                    <a asp-action="Invoice" asp-route-phone="@item.CustomerPhone" class="btn btn-sm btn-outline-dark">Hóa đơn</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Bạn chưa có đơn nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -46,7 +46,7 @@ namespace CafePos.Services
             var order = await _context.Orders.FindAsync(orderId);
             if (order != null)
             {
-                order.Status = status;
+                order.OrderStatus = status;
                 _context.Orders.Update(order);
                 await _context.SaveChangesAsync();
             }

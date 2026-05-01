@@ -1,0 +1,77 @@
+﻿@model CafePos.Models.Topping
+@{
+    ViewData["Title"] = "Chi tiết topping";
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<div class="container-fluid py-4">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-info text-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>Thông tin topping: @Model.Name
+            </h5>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="border rounded-4 p-3 bg-light h-100">
+                        <h6 class="text-muted mb-3">Thông tin cơ bản</h6>
+
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Mã topping:</dt>
+                            <dd class="col-sm-8 fw-semibold text-dark">@Model.ToppingId</dd>
+
+                            <dt class="col-sm-4">Tên topping:</dt>
+                            <dd class="col-sm-8 fw-bold text-primary">@Model.Name</dd>
+
+                            <dt class="col-sm-4">Giá thêm:</dt>
+                            <dd class="col-sm-8 text-success fw-bold">
+                                @Model.Price.ToString("N0") VNĐ
+                            </dd>
+
+                            <dt class="col-sm-4">Trạng thái:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                        <i class="bi bi-check-circle me-1"></i>Đang áp dụng
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill">
+                                        <i class="bi bi-pause-circle me-1"></i>Đã ẩn / trong thùng rác
+                                    </span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded-4 p-3 h-100 bg-white">
+                        <h6 class="text-muted mb-3">Ghi chú</h6>
+                        <div class="text-muted">
+                            Đây là thông tin chi tiết của topping trong hệ thống CafePOS.
+                            Bạn có thể dùng topping này khi tạo món hoặc cấu hình bán hàng.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                @if (isAdmin)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.ToppingId" class="btn btn-warning">
+                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                    </a>
+                }
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

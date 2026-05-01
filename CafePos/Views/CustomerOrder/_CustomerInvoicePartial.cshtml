@@ -1,0 +1,66 @@
+﻿@model Order
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0">Hóa đơn: @Model.OrderCode</h5>
+            <small>Ngày tạo: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="mb-3">
+            <p class="mb-1"><strong>Khách hàng:</strong> @Model.CustomerName</p>
+            <p class="mb-1"><strong>SĐT:</strong> @Model.CustomerPhone</p>
+            <p class="mb-1"><strong>Trạng thái đơn:</strong> @Model.OrderStatus</p>
+            <p class="mb-1"><strong>Thanh toán:</strong> @Model.PaymentStatus</p>
+            <p class="mb-1"><strong>Ghi chú:</strong> @Model.Note</p>
+        </div>
+
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Món</th>
+                    <th>SL</th>
+                    <th>Đơn giá</th>
+                    <th>Size</th>
+                    <th>Topping</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>@item.ProductNameSnapshot</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitPrice.ToString("N0") đ</td>
+                        <td>@item.SizeNameSnapshot</td>
+                        <td>
+                            @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
+                            {
+                                <ul class="mb-0 ps-3">
+                                    @foreach (var top in item.OrderItemToppings)
+                                    {
+                                        <li>@top.ToppingNameSnapshot x @top.Quantity (@top.TotalPrice.ToString("N0") đ)</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span>Không có</span>
+                            }
+                        </td>
+                        <td>@item.LineTotal.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-end">
+            <p class="mb-1"><strong>Tạm tính:</strong> @Model.SubTotal.ToString("N0") đ</p>
+            <p class="mb-1"><strong>Giảm giá:</strong> @Model.DiscountAmount.ToString("N0") đ</p>
+            <p class="mb-1 fs-5 text-danger"><strong>Tổng tiền:</strong> @Model.TotalAmount.ToString("N0") đ</p>
+        </div>
+    </div>
+</div>

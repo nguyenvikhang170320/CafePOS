@@ -1,0 +1,154 @@
+﻿@model IEnumerable<CafePos.Models.ProductSize>
+@{
+    ViewData["Title"] = "Danh sách size sản phẩm";
+    bool isAdmin = User.IsInRole("Admin");
+    int i = 1;
+}
+
+<style>
+    .custom-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 193, 7, 0.05);
+        transition: 0.3s;
+    }
+
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin-left: 5px;
+    }
+
+    .badge-count {
+        background: #e3f2fd;
+        color: #0d6efd;
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 8px;
+    }
+
+    .badge-size {
+        background: #f3e8ff;
+        color: #7c3aed;
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-dark fw-bold mb-0">
+                <i class="bi bi-rulers text-warning me-2"></i>Danh sách size sản phẩm
+            </h3>
+            <p class="text-muted small mb-0">Quản lý size và giá cộng thêm của từng sản phẩm trong CafePOS</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            @if (isAdmin)
+            {
+                <a asp-action="Create" class="btn btn-primary px-3 shadow-sm fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm mới
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card custom-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 text-secondary py-3" style="width: 80px;">STT</th>
+                            <th class="text-secondary py-3">Tên sản phẩm</th>
+                            <th class="text-center text-secondary py-3">Size</th>
+                            <th class="text-center text-secondary py-3">Giá cộng thêm</th>
+                            <th class="text-end pe-4 text-secondary py-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 text-muted">@i.ToString("D2")</td>
+
+                                    <td>
+                                        <span class="fw-bold text-dark fs-6">@item.Product?.Name</span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge-size">
+                                            <i class="bi bi-tag me-1"></i>
+                                            @item.SizeName
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge-count">
+                                            <i class="bi bi-cash-coin me-1"></i>
+                                            @item.ExtraPrice.ToString("N0") đ
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end">
+                                            <a asp-action="Detail" asp-route-id="@item.ProductSizeId"
+                                               class="btn btn-action btn-outline-info" title="Xem chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if (isAdmin)
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.ProductSizeId"
+                                                   class="btn btn-action btn-outline-warning" title="Chỉnh sửa">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+
+                                                <a asp-action="Delete" asp-route-id="@item.ProductSizeId"
+                                                   class="btn btn-action btn-outline-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inboxes fs-4 d-block mb-2"></i>
+                                    Chưa có size sản phẩm nào trong danh sách.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

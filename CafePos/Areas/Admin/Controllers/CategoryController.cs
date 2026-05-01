@@ -20,7 +20,7 @@ namespace CafePos.Areas.Admin.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories.Include(c => c.Products).Where(c => c.IsActive == true).ToListAsync();
+            var categories = await _context.Categories.Include(c => c.Products).Where(c => c.IsActive == true).OrderBy(c => c.CategoryId).ToListAsync();
             return View(categories);
         }
 

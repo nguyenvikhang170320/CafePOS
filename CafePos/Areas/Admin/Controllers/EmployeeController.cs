@@ -1,65 +1,103 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using CafePos.Data; // Thay bằng namespace DbContext của bạn
+﻿using CafePos.Data;
 using CafePos.Models;
 using CafePos.Models.ViewModels;
-using BCrypt.Net;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class EmployeeController : Controller
     {
         private readonly CafePosDbContext _db;
         private readonly PhotoService _employeeService;
-        public EmployeeController(CafePosDbContext db, PhotoService employeeService) { _db = db; _employeeService = employeeService; }
 
-        // 1. Danh sách nhân viên đang làm việc (IsActive = true)
+        public EmployeeController(CafePosDbContext db, PhotoService employeeService)
+        {
+            _db = db;
+            _employeeService = employeeService;
+        }
+
+        // 1. Danh sách nhân viên đang làm việc
         public async Task<IActionResult> Index()
         {
             var employees = await _db.Employees
                 .Include(e => e.User)
-                .Where(e => e.User.IsActive == true)
+                .Where(e => e.User != null && e.User.IsActive)
+                .OrderBy(e => e.EmployeeId)
                 .ToListAsync();
+
             return View(employees);
         }
 
-        public IActionResult Create() => View();
-
-        [HttpPost]
-        public async Task<IActionResult> CreateAsync(EmployeeVM obj, IFormFile? file)
+        // 2. Thêm nhân viên - GET
+        [HttpGet]
+        public IActionResult Create()
         {
+            LoadAvailableUsers();
+            return View(new EmployeeVM());
+        }
+
+        // 3. Thêm nhân viên - POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(EmployeeVM obj, IFormFile? file)
+        {
+            if (!obj.UserId.HasValue)
+            {
+                ModelState.AddModelError("UserId", "Vui lòng chọn tài khoản nhân viên.");
+            }
+
+            User? user = null;
+
+            if (obj.UserId.HasValue)
+            {
+                user = await _db.Users
+                    .FirstOrDefaultAsync(u => u.UserId == obj.UserId.Value && u.IsActive && u.RoleId == 3);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError("UserId", "Tài khoản nhân viên không hợp lệ.");
+                }
+                else
+                {
+                    bool existedEmployee = await _db.Employees
+                        .AnyAsync(e => e.UserId == obj.UserId.Value);
+
+                    if (existedEmployee)
+                    {
+                        ModelState.AddModelError("UserId", "Tài khoản này đã có hồ sơ nhân viên rồi.");
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                // 1. Xử lý ảnh (Giả sử bạn đã có logic Upload Cloudinary)
-                if (file != null)
-                {
-                    var result = await _employeeService.AddPhotoAsync(file, "CafePos/Employee");
-                    obj.ImageUrl = result.SecureUrl.ToString();
-                }
-
-                // 2. Tạo User trước
-                User newUser = new User
-                {
-                    Username = obj.Username,
-                    FullName = obj.FullName,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(obj.Password),
-                    RoleId = 3, // Role nhân viên như bạn muốn
-                    IsActive = true
-                };
-
-                using var transaction = _db.Database.BeginTransaction();
                 try
                 {
-                    _db.Users.Add(newUser);
-                    _db.SaveChanges(); // Lưu để lấy UserId tự tăng
-
-                    // 3. Tạo Employee nối với UserId vừa tạo
-                    Employee newEmp = new Employee
+                    if (file != null && file.Length > 0)
                     {
-                        UserId = newUser.UserId,
-                        EmployeeCode = obj.EmployeeCode ?? "NV" + newUser.UserId,
+                        var result = await _employeeService.AddPhotoAsync(file, "CafePos/Employee");
+                        obj.ImageUrl = result.SecureUrl.ToString();
+                    }
+                    else if (!string.IsNullOrWhiteSpace(obj.ImageUrl))
+                    {
+                        obj.ImageUrl = obj.ImageUrl.Trim();
+                    }
+                    else
+                    {
+                        obj.ImageUrl = null;
+                    }
+
+                    var newEmp = new Employee
+                    {
+                        UserId = obj.UserId!.Value,
+                        EmployeeCode = string.IsNullOrWhiteSpace(obj.EmployeeCode)
+                            ? "NV" + obj.UserId.Value
+                            : obj.EmployeeCode,
                         PhoneNumber = obj.PhoneNumber,
                         Address = obj.Address,
                         ImageUrl = obj.ImageUrl,
@@ -67,111 +105,179 @@ namespace CafePos.Areas.Admin.Controllers
                     };
 
                     _db.Employees.Add(newEmp);
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
 
-                    transaction.Commit();
-                    return RedirectToAction("Index");
+                    TempData["SuccessMessage"] = "Thêm nhân viên thành công!";
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    transaction.Rollback();
+                    ModelState.AddModelError("", "Có lỗi khi lưu nhân viên: " + ex.Message);
                 }
             }
+
+            LoadAvailableUsers(obj.UserId);
             return View(obj);
         }
 
-        // 2. Thùng rác (IsActive = false)
+        // 4. Thùng rác
         public async Task<IActionResult> Trash()
         {
             var trashList = await _db.Employees
                 .Include(e => e.User)
-                .Where(e => e.User.IsActive == false)
+                .Where(e => e.User != null && !e.User.IsActive)
+                .OrderBy(e => e.EmployeeId)
                 .ToListAsync();
+
             return View(trashList);
         }
 
-        // 3. Chi tiết nhân viên
+        // 5. Chi tiết nhân viên
         public async Task<IActionResult> Detail(int? id)
         {
             if (id == null) return NotFound();
+
             var employee = await _db.Employees
                 .Include(e => e.User)
-                .FirstOrDefaultAsync(m => m.EmployeeId == id);
+                .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
             if (employee == null) return NotFound();
+
             return View(employee);
         }
 
-        // 4. Chỉnh sửa (GET)
+        // 6. Chỉnh sửa - GET
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-            var emp = await _db.Employees.Include(e => e.User).FirstOrDefaultAsync(x => x.EmployeeId == id);
+
+            var emp = await _db.Employees
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(x => x.EmployeeId == id);
+
             if (emp == null) return NotFound();
 
             var vm = new EmployeeVM
             {
-                FullName = emp.User.FullName,
-                Username = emp.User.Username,
+                UserId = emp.UserId,
+                FullName = emp.User?.FullName,
+                Username = emp.User?.Username,
                 EmployeeCode = emp.EmployeeCode,
                 PhoneNumber = emp.PhoneNumber,
                 Address = emp.Address,
                 ImageUrl = emp.ImageUrl
             };
+
             return View(vm);
         }
 
-        // 5. Chỉnh sửa (POST)
+        // 7. Chỉnh sửa - POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EmployeeVM obj, IFormFile? file)
         {
-            var empDb = await _db.Employees.Include(e => e.User).FirstOrDefaultAsync(x => x.EmployeeId == id);
+            var empDb = await _db.Employees
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(x => x.EmployeeId == id);
+
             if (empDb == null) return NotFound();
+
+            ModelState.Remove("UserId");
+            ModelState.Remove("Username");
+            ModelState.Remove("Password");
 
             if (ModelState.IsValid)
             {
-                // Update User info
-                empDb.User.FullName = obj.FullName;
-                // Update Employee info
-                empDb.PhoneNumber = obj.PhoneNumber;
-                empDb.Address = obj.Address;
-                empDb.EmployeeCode = obj.EmployeeCode;
-
-                if (file != null)
+                try
                 {
-                    // Logic upload Cloudinary ở đây giống Product
-                    var result = await _employeeService.AddPhotoAsync(file, "CafePos/Employee");
-                    obj.ImageUrl = result.SecureUrl.ToString();
-                }
+                    if (empDb.User != null)
+                    {
+                        empDb.User.FullName = obj.FullName;
+                    }
 
-                _db.Update(empDb);
-                await _db.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    empDb.EmployeeCode = obj.EmployeeCode;
+                    empDb.PhoneNumber = obj.PhoneNumber;
+                    empDb.Address = obj.Address;
+
+                    if (file != null)
+                    {
+                        var result = await _employeeService.AddPhotoAsync(file, "CafePos/Employee");
+                        empDb.ImageUrl = result.SecureUrl.ToString();
+                    }
+
+                    await _db.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Cập nhật nhân viên thành công!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Có lỗi khi cập nhật nhân viên: " + ex.Message);
+                }
             }
+
+            obj.Username = empDb.User?.Username;
             return View(obj);
         }
 
-        // 6. Xóa tạm thời (Đưa vào thùng rác)
+        // 8. Xóa tạm thời
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _db.Users.FindAsync(id); // id này là UserId
-            if (user != null)
+            var emp = await _db.Employees
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
+            if (emp == null) return NotFound();
+
+            if (emp.User != null)
             {
-                user.IsActive = false;
+                emp.User.IsActive = false;
                 await _db.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã chuyển nhân viên vào thùng rác!";
             }
+
             return RedirectToAction(nameof(Index));
         }
 
-        // 7. Khôi phục từ thùng rác
+        // 9. Khôi phục
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Restore(int id)
         {
-            var user = await _db.Users.FindAsync(id);
-            if (user != null)
+            var emp = await _db.Employees
+                .Include(e => e.User)
+                .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
+            if (emp == null) return NotFound();
+
+            if (emp.User != null)
             {
-                user.IsActive = true;
+                emp.User.IsActive = true;
                 await _db.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Khôi phục nhân viên thành công!";
             }
+
             return RedirectToAction(nameof(Trash));
+        }
+
+        private void LoadAvailableUsers(int? selectedUserId = null)
+        {
+            var availableUsers = _db.Users
+                .Where(u => u.IsActive
+                            && u.RoleId == 3
+                            && !_db.Employees.Any(e => e.UserId == u.UserId))
+                .OrderBy(u => u.Username)
+                .Select(u => new
+                {
+                    u.UserId,
+                    DisplayText = u.Username + " - " + u.FullName
+                })
+                .ToList();
+
+            ViewBag.UserId = new SelectList(availableUsers, "UserId", "DisplayText", selectedUserId);
         }
     }
 }

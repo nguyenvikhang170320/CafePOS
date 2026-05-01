@@ -76,6 +76,7 @@ wwwroot\lib\jquery\dist\jquery.js
 wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
+wwwroot\lib\sweetalert2\sweetalert2.all.min.js
 wwwroot\scss\navs\_global.scss
 wwwroot\scss\navs\_sidebar.scss
 wwwroot\scss\navs\_topbar.scss
@@ -1917,4 +1918,3 @@ wwwroot\vendor\jquery\jquery.min.map
 wwwroot\vendor\jquery\jquery.slim.js
 wwwroot\vendor\jquery\jquery.slim.min.js
 wwwroot\vendor\jquery\jquery.slim.min.map
-wwwroot\lib\sweetalert2\sweetalert2.all.min.js

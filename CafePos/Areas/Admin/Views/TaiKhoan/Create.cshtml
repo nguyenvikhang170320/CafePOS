@@ -1,0 +1,75 @@
+﻿@model CafePos.Models.User
+
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-primary">
+        <i class="bi bi-person-plus"></i> Thêm tài khoản mới
+    </h2>
+    <hr />
+
+    <div class="card shadow-sm p-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label">Tên tài khoản</label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">Họ và tên</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PasswordHash" class="form-label">Mật khẩu</label>
+                <input asp-for="PasswordHash" type="password" class="form-control" />
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="RoleId" class="form-label">Loại tài khoản</label>
+                <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId">
+                    <option value="">-- Chọn loại tài khoản --</option>
+                </select>
+                <span class="text-muted">Chỉ có thể tạo tài khoản quản lý hoặc nhân viên.</span>
+                <span asp-validation-for="RoleId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select" asp-items="ViewBag.TrangThais">
+                    <option value="">-- Chọn trạng thái --</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu
+                </button>
+                <a asp-action="Index" class="btn btn-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

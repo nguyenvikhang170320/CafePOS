@@ -22,11 +22,12 @@ namespace CafePos.Controllers
             var employees = await _db.Employees
                 .Include(e => e.User)
                 .Where(e => e.User.IsActive == true)
+                .OrderBy(e => e.EmployeeId)
                 .ToListAsync();
             return View(employees);
         }
 
-        public IActionResult Create() => View();
+       
 
 
         // 3. Chi tiết nhân viên                           

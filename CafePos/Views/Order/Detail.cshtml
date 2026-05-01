@@ -1,0 +1,157 @@
+﻿@model Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Chi tiết đơn hàng</h3>
+            <p class="text-muted mb-0">Xem đầy đủ món, topping và thông tin thanh toán.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a  asp-controller="Order" asp-action="Checkout" asp-route-id="@Model.OrderId" class="btn btn-success rounded-pill px-4">
+                Thanh toán
+            </a>
+            <a asp-controller="Order" asp-action="PrintInvoice" asp-route-id="@Model.OrderId" target="_blank" class="btn btn-outline-dark rounded-pill px-4">
+                In hóa đơn
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Món</th>
+                                    <th>Size</th>
+                                    <th class="text-center">SL</th>
+                                    <th class="text-end">Đơn giá</th>
+                                    <th>Topping</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.OrderItems != null && Model.OrderItems.Any())
+                                {
+                                    foreach (var item in Model.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">@item.ProductNameSnapshot</div>
+                                                @if (!string.IsNullOrEmpty(item.ItemNote))
+                                                {
+                                                    <div class="small text-muted">Ghi chú: @item.ItemNote</div>
+                                                }
+                                            </td>
+                                            <td>@item.SizeNameSnapshot</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                                            <td>
+                                                @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
+                                                {
+                                                    <div class="d-flex flex-column gap-1">
+                                                        @foreach (var top in item.OrderItemToppings)
+                                                        {
+                                                            <span class="badge bg-light text-dark border text-start">
+                                                                @top.ToppingNameSnapshot x @top.Quantity
+                                                                (+@top.TotalPrice.ToString("N0") đ)
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">Không có</span>
+                                                }
+                                            </td>
+                                            <td class="text-end fw-semibold text-danger">@item.LineTotal.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">Không có chi tiết đơn hàng.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Thông tin đơn</h5>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Mã đơn</div>
+                        <div class="fw-semibold">@Model.OrderCode</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Khách hàng</div>
+                        <div class="fw-semibold">@Model.CustomerName</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Số điện thoại</div>
+                        <div class="fw-semibold">@Model.CustomerPhone</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Ngày tạo</div>
+                        <div class="fw-semibold">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Trạng thái đơn</div>
+                        <div class="fw-semibold">@Model.OrderStatus</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Thanh toán</div>
+                        <div class="fw-semibold">@Model.PaymentStatus</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="small text-muted">Phương thức</div>
+                        <div class="fw-semibold">@Model.PaymentMethod</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="mb-3">
+                            <div class="small text-muted">Ghi chú</div>
+                            <div class="fw-semibold">@Model.Note</div>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <strong>@Model.SubTotal.ToString("N0") đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Giảm giá</span>
+                        <strong>@Model.DiscountAmount.ToString("N0") đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2 border-top">
+                        <span class="fw-bold">Tổng tiền</span>
+                        <span class="fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

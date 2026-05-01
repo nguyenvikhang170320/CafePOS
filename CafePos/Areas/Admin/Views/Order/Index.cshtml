@@ -1,0 +1,155 @@
+﻿@model IEnumerable<Order>
+
+@{
+    ViewData["Title"] = "Danh sách hóa đơn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Danh sách hóa đơn</h3>
+            <p class="text-muted mb-0">Danh sách hóa đơn mới nhất, xem nhanh bằng AJAX.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-area="Admin" asp-controller="Order" asp-action="Invoice" class="btn btn-outline-primary rounded-pill px-4">
+                Xem chi tiết hóa đơn
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>SĐT</th>
+                        <th>Ngày tạo</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái đơn</th>
+                        <th>Thanh toán</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@item.OrderCode</td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.CustomerPhone</td>
+                                <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
+                                <td>
+                                    @if (item.OrderStatus == "Completed")
+                                    {
+                                        <span class="badge bg-success">Hoàn thành</span>
+                                    }
+                                    else if (item.OrderStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@(item.OrderStatus == "Cancelled" ? "Đã hủy" : item.OrderStatus)</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.PaymentStatus == "Paid")
+                                    {
+                                        <span class="badge bg-success">Đã thành toán</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Chưa thanh toán</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-info btn-view-invoice"
+                                                data-id="@item.OrderId">
+                                            Xem nhanh
+                                        </button>
+
+                                        <a asp-area="Admin"
+                                           asp-controller="Order"
+                                           asp-action="PrintInvoice"
+                                           asp-route-id="@item.OrderId"
+                                           target="_blank"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            In
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">Chưa có hóa đơn nào.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="invoiceQuickViewModal" tabindex="-1" aria-labelledby="invoiceQuickViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="invoiceQuickViewModalLabel">Xem nhanh hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="invoiceQuickViewContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="mb-0">Đang tải hóa đơn...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".btn-view-invoice").click(function () {
+                let id = $(this).data("id");
+
+                $("#invoiceQuickViewContent").html(`
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p class="mb-0">Đang tải hóa đơn...</p>
+                    </div>
+                `);
+
+                let modal = new bootstrap.Modal(document.getElementById('invoiceQuickViewModal'));
+                modal.show();
+
+                $.ajax({
+                    url: '@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })',
+                    type: 'GET',
+                    data: { id: id },
+                    success: function (res) {
+                        $("#invoiceQuickViewContent").html(res);
+                    },
+                    error: function () {
+                        $("#invoiceQuickViewContent").html(`
+                            <div class="alert alert-danger rounded-4">
+                                Không tải được hóa đơn.
+                            </div>
+                        `);
+                    }
+                });
+            });
+        });
+    </script>
+}

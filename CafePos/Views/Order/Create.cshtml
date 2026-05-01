@@ -1,0 +1,193 @@
+﻿@model Order
+@using CafePos.Models
+
+@{
+    ViewData["Title"] = "Tạo đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var toppings = ViewBag.Toppings as List<Topping>;
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h3 class="fw-bold mb-1">Tạo đơn hàng</h3>
+        <p class="text-muted mb-0">Lấy dữ liệu đơn đã có và cho phép thêm topping nếu khách cần.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4">
+                    <h5 class="mb-0">Thông tin đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Order" asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Mã đơn</label>
+                                <input class="form-control rounded-3" value="@Model.OrderCode" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tên khách hàng</label>
+                                <input class="form-control rounded-3" value="@Model.CustomerName" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input class="form-control rounded-3" value="@Model.CustomerPhone" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tạm tính</label>
+                                <input id="subTotal" class="form-control rounded-3" value="@Model.SubTotal" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Giảm giá</label>
+                                <input name="discountAmount" id="discountAmount" type="number" step="0.01" min="0"
+                                       class="form-control rounded-3" value="@Model.DiscountAmount" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tổng tiền</label>
+                                <input id="totalAmount" class="form-control rounded-3" value="@Model.TotalAmount" readonly />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea class="form-control rounded-3" rows="4" readonly>@Model.Note</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Danh sách món</label>
+                                <div class="border rounded-3 p-3 bg-light">
+                                    @if (Model.OrderItems != null && Model.OrderItems.Any())
+                                    {
+                                        foreach (var item in Model.OrderItems)
+                                        {
+                                            <div class="mb-2">
+                                                <strong>@item.ProductNameSnapshot</strong>
+                                                - SL: @item.Quantity
+                                                - Giá: @item.UnitPrice.ToString("N0") đ
+                                            </div>
+
+                                            @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
+                                            {
+                                                <ul class="mb-2">
+                                                    @foreach (var top in item.OrderItemToppings)
+                                                    {
+                                                        <li>
+                                                            @top.ToppingNameSnapshot (+@top.Price.ToString("N0") đ)
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted">Chưa có món nào trong đơn.</div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Thêm topping nếu khách yêu cầu</label>
+                                <div class="row">
+                                    @if (toppings != null && toppings.Any())
+                                    {
+                                        foreach (var t in toppings)
+                                        {
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check border rounded-3 p-2">
+                                                    <input class="form-check-input topping-check"
+                                                           type="checkbox"
+                                                           name="selectedToppingIds"
+                                                           value="@t.ToppingId"
+                                                           data-price="@t.Price"
+                                                           id="top_@t.ToppingId" />
+                                                    <label class="form-check-label ms-2" for="top_@t.ToppingId">
+                                                        @t.Name (+@t.Price.ToString("N0") đ)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted">Hiện chưa có topping nào.</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Cập nhật đơn</button>
+                            <a asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Quay lại</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Gợi ý luồng làm việc</h5>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="p-3 bg-light rounded-4">
+                            <strong>Bước 1:</strong> Hệ thống đổ sẵn thông tin đơn
+                        </div>
+                        <div class="p-3 bg-light rounded-4">
+                            <strong>Bước 2:</strong> Nhân viên thêm topping nếu cần
+                        </div>
+                        <div class="p-3 bg-light rounded-4">
+                            <strong>Bước 3:</strong> Tính lại tiền và lưu
+                        </div>
+                    </div>
+                    <hr />
+                    <p class="text-muted mb-0">
+                        Màn này phù hợp khi khách đã đặt trước, nhân viên chỉ xử lý phần phát sinh.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function calculateTotal() {
+            let baseSubTotal = parseFloat('@Model.SubTotal'.replace(',', '.')) || 0;
+            let discount = parseFloat(document.getElementById("discountAmount").value || 0);
+
+            let toppingTotal = 0;
+            document.querySelectorAll(".topping-check:checked").forEach(function (item) {
+                toppingTotal += parseFloat(item.dataset.price || 0);
+            });
+
+            let newSubTotal = baseSubTotal + toppingTotal;
+            let newTotal = newSubTotal - discount;
+
+            if (newTotal < 0) newTotal = 0;
+
+            document.getElementById("subTotal").value = newSubTotal;
+            document.getElementById("totalAmount").value = newTotal;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("discountAmount").addEventListener("input", calculateTotal);
+
+            document.querySelectorAll(".topping-check").forEach(function (checkbox) {
+                checkbox.addEventListener("change", calculateTotal);
+            });
+
+            calculateTotal();
+        });
+    </script>
+}

@@ -16,14 +16,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        .login-box {
+        .register-box {
             background: #fff;
             border-radius: 12px;
             padding: 30px;
-            width: 400px;
+            width: 420px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
@@ -38,7 +39,6 @@
                 color: white;
             }
 
-        /* Chỉnh lại nút mắt cho đẹp, không bị viền xanh khi bấm */
         .btn-outline-secondary:focus {
             box-shadow: none;
         }
@@ -46,50 +46,78 @@
 </head>
 
 <body>
-    <div class="login-box">
+    <div class="register-box">
         <h4 class="text-center mb-4">📝 Khởi tạo Tài khoản</h4>
 
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger text-center shadow-sm">
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
         <form id="registerForm" asp-action="Register" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+
             <div class="mb-3">
                 <label for="fullName" class="form-label fw-bold">Họ và tên</label>
-                <input type="text" name="fullName" class="form-control" placeholder="Nhập tên hiển thị của bạn" required />
+                <input type="text" id="fullName" name="fullName" class="form-control"
+                       placeholder="Nhập tên hiển thị của bạn" required />
             </div>
 
             <div class="mb-3">
                 <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
-                <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required />
+                <input type="text" id="username" name="username" class="form-control"
+                       placeholder="Nhập tên đăng nhập" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label fw-bold">Email</label>
+                <input type="email" id="email" name="email" class="form-control"
+                       placeholder="Nhập địa chỉ email" required />
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label fw-bold">Mật khẩu</label>
                 <div class="input-group">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu bảo mật" required />
-                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password" title="Hiện mật khẩu">👁️</button>
+                    <input type="password" id="password" name="password" class="form-control"
+                           placeholder="Nhập mật khẩu bảo mật" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button"
+                            data-target="password" title="Hiện mật khẩu">
+                        👁️
+                    </button>
                 </div>
             </div>
 
             <div class="mb-4">
                 <label for="confirmPassword" class="form-label fw-bold">Xác nhận mật khẩu</label>
                 <div class="input-group">
-                    <input type="password" id="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu lần nữa" required />
-                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirmPassword" title="Hiện mật khẩu">👁️</button>
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+                           placeholder="Nhập lại mật khẩu lần nữa" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button"
+                            data-target="confirmPassword" title="Hiện mật khẩu">
+                        👁️
+                    </button>
                 </div>
                 <div id="passwordError" class="text-danger mt-1 small" style="display: none;">
                     Mật khẩu xác nhận không khớp!
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">Xác nhận Đăng ký</button>
+            <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">
+                Xác nhận Đăng ký
+            </button>
 
             <div class="text-center mt-3">
                 <span class="text-muted small">Đã có tài khoản?</span>
-                <a asp-controller="Account" asp-action="Login" class="small text-decoration-none fw-bold">Quay lại Đăng nhập</a>
+                <a asp-controller="Account" asp-action="Login" class="small text-decoration-none fw-bold">
+                    Quay lại Đăng nhập
+                </a>
             </div>
         </form>
     </div>
 
     <script>
-        // 1. Logic kiểm tra mật khẩu khớp nhau
         document.getElementById('registerForm').addEventListener('submit', function (e) {
             var password = document.getElementById('password').value;
             var confirmPassword = document.getElementById('confirmPassword').value;
@@ -102,21 +130,18 @@
             }
         });
 
-        // 2. Logic ẩn/hiện mật khẩu
-        document.querySelectorAll('.toggle-password').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                // Lấy id của ô input cần đổi (password hoặc confirmPassword)
+        document.querySelectorAll('.toggle-password').forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 var targetId = this.getAttribute('data-target');
                 var input = document.getElementById(targetId);
 
-                // Chuyển đổi trạng thái
                 if (input.type === 'password') {
                     input.type = 'text';
-                    this.textContent = '🙈'; // Đổi icon thành nhắm mắt
+                    this.textContent = '🙈';
                     this.title = 'Ẩn mật khẩu';
                 } else {
                     input.type = 'password';
-                    this.textContent = '👁️'; // Đổi icon thành mở mắt
+                    this.textContent = '👁️';
                     this.title = 'Hiện mật khẩu';
                 }
             });

@@ -26,6 +26,7 @@ namespace CafePos.Controllers
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Where(p => p.IsActive == true)
+                .OrderBy(p => p.ProductId)
                 .ToListAsync();
             return View(products);
         }

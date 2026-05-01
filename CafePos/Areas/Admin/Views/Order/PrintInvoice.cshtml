@@ -1,0 +1,118 @@
+﻿@model Order
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>In hóa đơn - @Model.OrderCode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 24px;
+            color: #000;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .mb-1 {
+            margin-bottom: 6px;
+        }
+
+        .mb-2 {
+            margin-bottom: 12px;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+
+        table, th, td {
+            border: 1px solid #000;
+        }
+
+        th, td {
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        hr {
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="text-center mb-2">
+        <h2>CAFE POS</h2>
+        <div>HÓA ĐƠN BÁN HÀNG</div>
+    </div>
+
+    <p class="mb-1"><span class="fw-bold">Mã đơn:</span> @Model.OrderCode</p>
+    <p class="mb-1"><span class="fw-bold">Khách hàng:</span> @Model.CustomerName</p>
+    <p class="mb-1"><span class="fw-bold">SĐT:</span> @Model.CustomerPhone</p>
+    <p class="mb-1"><span class="fw-bold">Ngày tạo:</span> @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Món</th>
+                <th>SL</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.OrderItems != null && Model.OrderItems.Any())
+            {
+                foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td>
+                            <div>@item.ProductNameSnapshot</div>
+
+                            @if (!string.IsNullOrEmpty(item.SizeNameSnapshot))
+                            {
+                                <div>Size: @item.SizeNameSnapshot</div>
+                            }
+
+                            @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
+                            {
+                                foreach (var top in item.OrderItemToppings)
+                                {
+                                    <div>+ @top.ToppingNameSnapshot x @top.Quantity</div>
+                                }
+                            }
+                        </td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitPrice.ToString("N0") đ</td>
+                        <td>@item.LineTotal.ToString("N0") đ</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    <div class="text-end">
+        <p class="mb-1"><span class="fw-bold">Tạm tính:</span> @Model.SubTotal.ToString("N0") đ</p>
+        <p class="mb-1"><span class="fw-bold">Giảm giá:</span> @Model.DiscountAmount.ToString("N0") đ</p>
+        <p class="mb-1"><span class="fw-bold">Tổng tiền:</span> @Model.TotalAmount.ToString("N0") đ</p>
+    </div>
+</body>
+</html>

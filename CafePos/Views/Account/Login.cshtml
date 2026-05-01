@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Đăng nhập Hệ thống Cafe";
-    Layout = null; /* Chặn không cho Load file _Layout */
+    Layout = null;
 }
 
 <!DOCTYPE html>
@@ -37,6 +37,14 @@
                 opacity: 0.9;
                 color: white;
             }
+
+        .auth-links a {
+            text-decoration: none;
+        }
+
+            .auth-links a:hover {
+                text-decoration: underline;
+            }
     </style>
 </head>
 <body>
@@ -47,27 +55,35 @@
         {
             <div class="alert alert-danger text-center shadow-sm">@ViewBag.ErrorMessage</div>
         }
+
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success text-center shadow-sm">@TempData["SuccessMessage"]</div>
         }
 
         <form asp-action="Login" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+
             <div class="mb-3">
                 <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
                 <input type="text" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required />
             </div>
+
             <div class="mb-3">
                 <label for="password" class="form-label fw-bold">Mật khẩu</label>
                 <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required />
             </div>
+
             <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">Đăng nhập</button>
-            <div class="text-center">
-                <a asp-controller="Account" asp-action="Register" class="small text-success">Đăng ký mới</a>
+
+            <div class="text-center auth-links">
+                <a asp-controller="Account" asp-action="Register" class="small text-success d-block mb-2">Đăng ký mới</a>
+                <a asp-controller="Account" asp-action="ForgotPassword" class="small text-primary">Quên mật khẩu?</a>
             </div>
         </form>
 
         <hr class="mt-4 mb-3" />
+
         <div class="text-center">
             <p class="mb-2 text-muted small">Đăng nhập nhanh với vai trò:</p>
             <button type="button" class="btn btn-danger btn-sm" onclick="fillLogin('admin', 'admin@123')">Admin</button>

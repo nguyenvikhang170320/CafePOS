@@ -1,5 +1,129 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CafePos.Models.ViewModels.EmployeeVM
 @{
+    ViewData["Title"] = "Chỉnh sửa nhân viên";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-warning text-dark py-3 text-center">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Nhân Viên
+                </h4>
+            </div>
+
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Thông tin tài khoản</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-bold">Tên đăng nhập</label>
+                                <input value="@Model.Username" class="form-control border-2" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="FullName" class="form-label fw-bold">Họ và tên</label>
+                                <input asp-for="FullName" class="form-control border-2" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Thông tin nhân viên</h5>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="EmployeeCode" class="form-label fw-bold">Mã nhân viên</label>
+                                <input asp-for="EmployeeCode" class="form-control border-2" />
+                                <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control border-2" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Address" class="form-label fw-bold">Địa chỉ</label>
+                        <input asp-for="Address" class="form-control border-2" />
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Ảnh hồ sơ</h5>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold">Cách 1: Chọn ảnh mới từ máy</label>
+                        <input type="file" name="file" class="form-control border-2" id="fileInput" accept="image/*" />
+                    </div>
+
+                    <div class="text-center text-muted small mb-2">Hoặc</div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="ImageUrl" class="form-label fw-bold">Cách 2: Dán URL ảnh</label>
+                        <input asp-for="ImageUrl" class="form-control border-2" id="urlInput"
+                               placeholder="https://example.com/avatar.jpg" />
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <img id="imgPreview"
+                             src="@(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "#" : Model.ImageUrl)"
+                             alt="Ảnh hồ sơ"
+                             class="rounded-circle shadow-sm @(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "d-none" : "")"
+                             style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #eee;" />
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-warning px-5 shadow fw-bold">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const imgPreview = document.getElementById('imgPreview');
+
+        fileInput.addEventListener('change', function () {
+            const [file] = this.files;
+            if (file) {
+                imgPreview.src = URL.createObjectURL(file);
+                imgPreview.classList.remove('d-none');
+                urlInput.value = "";
+            }
+        });
+
+        urlInput.addEventListener('input', function () {
+            const url = this.value.trim();
+            if (url) {
+                imgPreview.src = url;
+                imgPreview.classList.remove('d-none');
+                fileInput.value = "";
+            } else if (!fileInput.files.length) {
+                imgPreview.src = "#";
+                imgPreview.classList.add('d-none');
+            }
+        });
+    </script>
 }

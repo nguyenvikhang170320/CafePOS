@@ -1,0 +1,132 @@
+﻿@model IEnumerable<CafePos.Models.Topping>
+@{
+    ViewData["Title"] = "Thùng rác topping";
+    int stt = 1;
+}
+
+<style>
+    .custom-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.04);
+        transition: 0.3s;
+    }
+
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        margin-left: 5px;
+    }
+
+    .badge-price {
+        background: #e8f5e9;
+        color: #198754;
+        font-weight: 600;
+        padding: 0.5em 1em;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-dark fw-bold mb-0">
+                <i class="bi bi-trash3-fill text-secondary me-2"></i>Thùng rác topping
+            </h3>
+            <p class="text-muted small mb-0">Danh sách topping đã được ẩn khỏi hệ thống bán hàng</p>
+        </div>
+
+        <div>
+            <a asp-action="Index" class="btn btn-secondary shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card custom-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 text-secondary py-3" style="width: 80px;">STT</th>
+                            <th class="text-secondary py-3">Tên topping</th>
+                            <th class="text-center text-secondary py-3">Giá thêm</th>
+                            <th class="text-end pe-4 text-secondary py-3">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 text-muted">@stt.ToString("D2")</td>
+
+                                    <td>
+                                        <span class="fw-bold text-dark fs-6">@item.Name</span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge-price">
+                                            <i class="bi bi-cash-coin me-1"></i>
+                                            @item.Price.ToString("N0") VNĐ
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end">
+                                            <form asp-action="Restore" asp-route-id="@item.ToppingId" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-action btn-outline-success" title="Khôi phục">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </button>
+                                            </form>
+
+                                            <form asp-action="DeletePermanent" asp-route-id="@item.ToppingId" method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn topping này?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-action btn-outline-danger" title="Xóa vĩnh viễn">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inboxes fs-4 d-block mb-2"></i>
+                                    Thùng rác hiện đang trống.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+﻿@model CafePos.Models.ProductSize
+@{
+    ViewData["Title"] = "Chỉnh sửa size sản phẩm";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-3 mt-4">
+            <div class="card-header bg-warning text-dark py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Size Sản Phẩm
+                </h5>
+            </div>
+
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <input type="hidden" asp-for="ProductSizeId" />
+
+                    <div class="form-group mb-4">
+                        <label asp-for="ProductId" class="form-label fw-bold text-secondary">Sản phẩm</label>
+                        <select asp-for="ProductId" asp-items="ViewBag.ProductId" class="form-select form-select-lg border-2">
+                            <option value="">-- Chọn sản phẩm --</option>
+                        </select>
+                        <span asp-validation-for="ProductId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="SizeName" class="form-label fw-bold text-secondary">Tên size</label>
+                        <input asp-for="SizeName" class="form-control form-control-lg border-2"
+                               placeholder="VD: S, M, L..." />
+                        <span asp-validation-for="SizeName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="ExtraPrice" class="form-label fw-bold text-secondary">Giá cộng thêm</label>
+                        <input asp-for="ExtraPrice" type="number"
+                               class="form-control form-control-lg border-2"
+                               placeholder="VD: 5000"
+                               min="0" step="1000" value="0" />
+                        <span asp-validation-for="ExtraPrice" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Quay lại</a>
+                        <button type="submit" class="btn btn-warning px-5 shadow fw-bold">Cập nhật size</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4 border-0 shadow-sm">
+            <small>
+                <i class="bi bi-info-circle-fill me-1"></i>
+                Mẹo: Khi chỉnh sửa giá cộng thêm, hãy kiểm tra lại giá bán cuối cùng của món để tránh sai lệch khi order.
+            </small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

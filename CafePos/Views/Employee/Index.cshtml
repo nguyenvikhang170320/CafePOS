@@ -51,7 +51,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="text-dark fw-bold mb-0">
-                <i class="bi bi-people-fill text-primary me-2"></i>Danh sách
+                <i class="bi bi-people-fill text-primary me-2"></i>Quản lý nhân sự
             </h3>
             <p class="text-muted small mb-0">Điều hành danh sách và quyền hạn nhân viên</p>
         </div>
@@ -85,13 +85,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{
-                            int i = 1;
-                        }
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 text-muted">@i.ToString("D2")</td>
+                                <td class="ps-4 text-muted">@item.EmployeeId</td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(item.ImageUrl))
                                     {
@@ -125,10 +122,25 @@
                                            class="btn btn-action btn-outline-info" title="Xem hồ sơ">
                                             <i class="bi bi-file-earmark-person"></i>
                                         </a>
+
+                                        @if (isAdmin)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.EmployeeId"
+                                               class="btn btn-action btn-outline-warning" title="Sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+
+                                            <form asp-action="Delete" asp-route-id="@item.UserId" method="post"
+                                                  class="d-inline" onsubmit="return confirm('Bạn có chắc muốn cho nhân viên này nghỉ việc?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-action btn-outline-danger" title="Cho nghỉ việc">
+                                                    <i class="bi bi-person-dash"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </td>
                             </tr>
-                            i++;
                         }
                     </tbody>
                 </table>

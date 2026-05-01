@@ -1,0 +1,73 @@
+﻿@model CafePos.Models.User
+
+@{
+    ViewData["Title"] = "Cập nhật tài khoản";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">Sửa tài khoản</h3>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserId" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label">Tên tài khoản</label>
+                    <input asp-for="Username" class="form-control" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label">Họ và tên</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Loại tài khoản</label>
+                    <input class="form-control" value="@Model.Role?.Name" readonly />
+                    <small class="text-muted">Loại tài khoản không được phép chỉnh sửa.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" value="******" readonly />
+                    <small class="text-muted">Mật khẩu không được phép chỉnh sửa tại đây.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                    <select asp-for="TrangThai" class="form-select" asp-items="ViewBag.TrangThais">
+                        <option value="">-- Chọn trạng thái --</option>
+                    </select>
+                    <span asp-validation-for="TrangThai" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Lưu
+                </button>
+                <a asp-action="Index" class="btn btn-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -85,13 +85,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{
-                            int i = 1;
-                        }
+                       
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 text-muted">@i.ToString("D2")</td>
+                                <td class="ps-4 text-muted">@item.ProductId</td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(item.ImageUrl))
                                     {
@@ -144,7 +142,7 @@
                                     </div>
                                 </td>
                             </tr>
-                            i++;
+                            
                         }
                     </tbody>
                 </table>
