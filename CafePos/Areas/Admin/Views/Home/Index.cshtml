@@ -2,19 +2,94 @@
     ViewData["Title"] = "Bảng điều khiển";
 }
 
-<div class="text-center mb-5 mt-4">
-    <h1 class="display-5 fw-bold text-dark">Chào mừng đến với Bảng Điều Khiển</h1>
-    <p class="text-muted fs-5">Quản lý tổng quan hoạt động kinh doanh quán cafe của bạn.</p>
+<div class="mb-4 mt-2">
+    <h3 class="fw-bold text-dark">Bảng Điều Khiển</h3>
+    <p class="text-muted mb-0">Tổng quan tình hình kinh doanh quán Cafe hôm nay.</p>
 </div>
 
+<!-- 📊 HÀNG THỐNG KÊ (STAT CARDS) -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Doanh thu hôm nay -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm rounded-3 bg-primary text-white h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 text-white-50 fw-semibold text-uppercase fs-7">Doanh thu hôm nay</p>
+                        <h3 class="fw-bold mb-0">@string.Format("{0:N0} đ", ViewBag.TodayRevenue ?? 0)</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-currency-dollar fs-3 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Đơn hàng hôm nay -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm rounded-3 bg-success text-white h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 text-white-50 fw-semibold text-uppercase fs-7">Đơn hàng hôm nay</p>
+                        <h3 class="fw-bold mb-0">@ViewBag.TodayOrderCount</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-cart-check fs-3 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Sản phẩm -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm rounded-3 bg-warning text-dark h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 text-black-50 fw-semibold text-uppercase fs-7">Sản phẩm đang bán</p>
+                        <h3 class="fw-bold mb-0">@ViewBag.ProductCount</h3>
+                    </div>
+                    <div class="bg-dark bg-opacity-10 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-cup-hot fs-3 text-dark"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Nhân viên -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm rounded-3 bg-info text-white h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 text-white-50 fw-semibold text-uppercase fs-7">Tổng nhân viên</p>
+                        <h3 class="fw-bold mb-0">@ViewBag.EmployeeCount</h3>
+                    </div>
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-people fs-3 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4 text-muted" />
+
+<!-- 🚀 HÀNG LỐI TẮT QUẢN LÝ (QUICK ACTIONS) -->
+<h5 class="fw-bold text-secondary mb-3"><i class="bi bi-lightning-charge"></i> Phím tắt quản lý</h5>
 <div class="row g-4">
     <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0 rounded-3">
             <div class="card-body text-center p-4">
-                <div class="display-4 text-primary mb-3">🍔</div>
-                <h4 class="card-title fw-bold">Quản lý Thực Đơn 111</h4>
-                <p class="card-text text-muted">Thêm, sửa, xóa các loại nước uống, thức ăn, topping và thiết lập giá bán.</p>
-                <a href="#" class="btn btn-outline-primary px-4 rounded-pill">Truy cập Menu</a>
+                <div class="display-4 text-primary mb-3"><i class="bi bi-cup-straw"></i></div>
+                <h4 class="card-title fw-bold">Quản lý Thực Đơn</h4>
+                <p class="card-text text-muted">Thêm, sửa, xóa các loại nước uống, thức ăn, topping và giá bán.</p>
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index" class="btn btn-outline-primary px-4 rounded-pill">Truy cập Menu</a>
             </div>
         </div>
     </div>
@@ -22,10 +97,10 @@
     <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0 rounded-3">
             <div class="card-body text-center p-4">
-                <div class="display-4 text-success mb-3">🛒</div>
-                <h4 class="card-title fw-bold">Đơn Hàng Hôm Nay</h4>
-                <p class="card-text text-muted">Theo dõi và cập nhật trạng thái đơn hàng (Đang pha chế, Hoàn tất) từ App.</p>
-                <a href="#" class="btn btn-outline-success px-4 rounded-pill">Xem Đơn Hàng</a>
+                <div class="display-4 text-success mb-3"><i class="bi bi-receipt"></i></div>
+                <h4 class="card-title fw-bold">Quản lý Đơn Hàng</h4>
+                <p class="card-text text-muted">Theo dõi, xác nhận và cập nhật trạng thái các đơn hàng trong ngày.</p>
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-outline-success px-4 rounded-pill">Xem Đơn Hàng</a>
             </div>
         </div>
     </div>
@@ -33,10 +108,10 @@
     <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0 rounded-3">
             <div class="card-body text-center p-4">
-                <div class="display-4 text-warning mb-3">📈</div>
+                <div class="display-4 text-warning mb-3"><i class="bi bi-graph-up-arrow"></i></div>
                 <h4 class="card-title fw-bold">Báo Cáo Doanh Thu</h4>
-                <p class="card-text text-muted">Kiểm tra doanh thu trong ngày, xem danh sách các món bán chạy nhất.</p>
-                <a href="#" class="btn btn-outline-warning px-4 rounded-pill">Xem Báo Cáo</a>
+                <p class="card-text text-muted">Kiểm tra biểu đồ doanh thu, thống kê các món bán chạy nhất.</p>
+                <a asp-area="Admin" asp-controller="Revenue" asp-action="Index" class="btn btn-outline-warning px-4 rounded-pill">Xem Báo Cáo</a>
             </div>
         </div>
     </div>

@@ -5,36 +5,96 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Nhúng Bootstrap Icons nếu dự án chưa có -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    /* Styling cho thẻ & bảng */
+    .detail-card {
+        border-radius: 16px;
+    }
+
+    /* Soft Badges */
+    .badge-soft-success {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .badge-soft-warning {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+
+    .badge-soft-danger {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .badge-soft-secondary {
+        background-color: #e2e3e5;
+        color: #41464b;
+    }
+
+    .topping-chip {
+        font-size: 0.75rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 2px 8px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container-fluid py-4 px-4">
+    <!-- Header Page -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h3 class="fw-bold mb-1">Chi tiết đơn hàng</h3>
-            <p class="text-muted mb-0">Xem đầy đủ món, topping và thông tin thanh toán.</p>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h3 class="fw-bold mb-0 text-dark">Chi tiết đơn hàng #@Model.OrderCode</h3>
+                @if (Model.PaymentStatus == "Paid")
+                {
+                    <span class="badge badge-soft-success rounded-pill px-3"><i class="bi bi-check-circle-fill me-1"></i>Đã thanh toán</span>
+                }
+                else
+                {
+                    <span class="badge badge-soft-danger rounded-pill px-3"><i class="bi bi-clock-fill me-1"></i>Chưa thanh toán</span>
+                }
+            </div>
+            <p class="text-muted mb-0 small"><i class="bi bi-calendar3 me-1"></i>Khởi tạo lúc: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
         </div>
         <div class="d-flex gap-2">
-            <a  asp-controller="Order" asp-action="Checkout" asp-route-id="@Model.OrderId" class="btn btn-success rounded-pill px-4">
-                Thanh toán
+            <a  asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại
             </a>
-            <a asp-controller="Order" asp-action="PrintInvoice" asp-route-id="@Model.OrderId" target="_blank" class="btn btn-outline-dark rounded-pill px-4">
-                In hóa đơn
+            <a  asp-controller="Order" asp-action="PrintInvoice" asp-route-id="@Model.OrderId" target="_blank" class="btn btn-outline-dark rounded-pill px-3 shadow-sm">
+                <i class="bi bi-printer me-1"></i> In hóa đơn
+            </a>
+            <a  asp-controller="Order" asp-action="Checkout" asp-route-id="@Model.OrderId" class="btn btn-success rounded-pill px-4 shadow-sm">
+                <i class="bi bi-credit-card me-1"></i> Thanh toán / Sửa
             </a>
         </div>
     </div>
 
     <div class="row g-4">
+        <!-- Cột trái: Danh sách sản phẩm & món ăn -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm detail-card overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-cup-hot text-primary me-2"></i>Danh sách món (@(Model.OrderItems?.Count() ?? 0))
+                    </h6>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead class="table-light">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
                                 <tr>
-                                    <th>Món</th>
-                                    <th>Size</th>
+                                    <th class="ps-4">Tên món</th>
+                                    <th class="text-center">Size</th>
                                     <th class="text-center">SL</th>
                                     <th class="text-end">Đơn giá</th>
                                     <th>Topping</th>
-                                    <th class="text-end">Thành tiền</th>
+                                    <th class="text-end pe-4">Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -43,42 +103,56 @@
                                     foreach (var item in Model.OrderItems)
                                     {
                                         <tr>
-                                            <td>
-                                                <div class="fw-semibold">@item.ProductNameSnapshot</div>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark">@item.ProductNameSnapshot</div>
                                                 @if (!string.IsNullOrEmpty(item.ItemNote))
                                                 {
-                                                    <div class="small text-muted">Ghi chú: @item.ItemNote</div>
+                                                    <div class="small text-warning mt-1">
+                                                        <i class="bi bi-chat-left-dots me-1"></i>Ghi chú: @item.ItemNote
+                                                    </div>
                                                 }
                                             </td>
-                                            <td>@item.SizeNameSnapshot</td>
-                                            <td class="text-center">@item.Quantity</td>
-                                            <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                                            <td class="text-center">
+                                                @if (!string.IsNullOrEmpty(item.SizeNameSnapshot))
+                                                {
+                                                    <span class="badge bg-light text-dark border">@item.SizeNameSnapshot</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td class="text-center fw-bold text-dark">@item.Quantity</td>
+                                            <td class="text-end text-muted">@item.UnitPrice.ToString("N0") đ</td>
                                             <td>
                                                 @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
                                                 {
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="d-flex flex-wrap gap-1">
                                                         @foreach (var top in item.OrderItemToppings)
                                                         {
-                                                            <span class="badge bg-light text-dark border text-start">
-                                                                @top.ToppingNameSnapshot x @top.Quantity
-                                                                (+@top.TotalPrice.ToString("N0") đ)
+                                                            <span class="topping-chip text-muted">
+                                                                + @top.ToppingNameSnapshot (x@top.Quantity)
+                                                                <span class="text-primary fw-semibold">+@top.TotalPrice.ToString("N0")đ</span>
                                                             </span>
                                                         }
                                                     </div>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-muted small">Không có</span>
+                                                    <span class="text-muted small">Không</span>
                                                 }
                                             </td>
-                                            <td class="text-end fw-semibold text-danger">@item.LineTotal.ToString("N0") đ</td>
+                                            <td class="text-end pe-4 fw-bold text-dark">@item.LineTotal.ToString("N0") đ</td>
                                         </tr>
                                     }
                                 }
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">Không có chi tiết đơn hàng.</td>
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                                            Không có chi tiết đơn hàng.
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -88,67 +162,93 @@
             </div>
         </div>
 
+        <!-- Cột phải: Thông tin khách hàng, Trạng thái & Tổng tiền -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Thông tin đơn</h5>
+            <!-- Thẻ khách hàng & trạng thái -->
+            <div class="card border-0 shadow-sm detail-card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-person me-2 text-primary"></i>Thông tin đơn hàng</h6>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Mã đơn</div>
-                        <div class="fw-semibold">@Model.OrderCode</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Khách hàng</div>
-                        <div class="fw-semibold">@Model.CustomerName</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Số điện thoại</div>
-                        <div class="fw-semibold">@Model.CustomerPhone</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Ngày tạo</div>
-                        <div class="fw-semibold">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Trạng thái đơn</div>
-                        <div class="fw-semibold">@Model.OrderStatus</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Thanh toán</div>
-                        <div class="fw-semibold">@Model.PaymentStatus</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Phương thức</div>
-                        <div class="fw-semibold">@Model.PaymentMethod</div>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(Model.Note))
-                    {
-                        <div class="mb-3">
-                            <div class="small text-muted">Ghi chú</div>
-                            <div class="fw-semibold">@Model.Note</div>
+                    <!-- Khách hàng -->
+                    <div class="d-flex align-items-center mb-3 p-3 bg-light rounded-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 me-3">
+                            <i class="bi bi-person-circle fs-4"></i>
                         </div>
-                    }
+                        <div>
+                            <div class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.CustomerName) ? "Khách vãng lai" : Model.CustomerName)</div>
+                            <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@(string.IsNullOrEmpty(Model.CustomerPhone) ? "Chưa có SĐT" : Model.CustomerPhone)</div>
+                        </div>
+                    </div>
 
-                    <hr />
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Trạng thái đơn:</span>
+                            <div>
+                                @if (Model.OrderStatus == "Completed")
+                                {
+                                    <span class="badge badge-soft-success px-2 py-1 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Hoàn thành</span>
+                                }
+                                else if (Model.OrderStatus == "Pending")
+                                {
+                                    <span class="badge badge-soft-warning px-2 py-1 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Chờ xử lý</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-secondary px-2 py-1 rounded-pill">@(Model.OrderStatus == "Cancelled" ? "Đã hủy" : Model.OrderStatus)</span>
+                                }
+                            </div>
+                        </div>
 
-                    <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Trạng thái thanh toán:</span>
+                            <div>
+                                @if (Model.PaymentStatus == "Paid")
+                                {
+                                    <span class="badge badge-soft-success px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Đã thanh toán</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-soft-danger px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Chưa thanh toán</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Phương thức:</span>
+                            <span class="fw-semibold text-dark small">@(string.IsNullOrEmpty(Model.PaymentMethod) ? "Chưa xác định" : Model.PaymentMethod)</span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <div class="mt-3 p-2 bg-light rounded-3 small">
+                                <span class="text-muted d-block fw-semibold mb-1"><i class="bi bi-sticky me-1"></i>Ghi chú đơn hàng:</span>
+                                <span class="text-dark">@Model.Note</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thẻ Chi tiết thanh toán -->
+            <div class="card border-0 shadow-sm detail-card bg-light">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-receipt me-2 text-primary"></i>Chi tiết thanh toán</h6>
+
+                    <div class="d-flex justify-content-between mb-2 text-muted">
                         <span>Tạm tính</span>
-                        <strong>@Model.SubTotal.ToString("N0") đ</strong>
+                        <span class="fw-semibold text-dark">@Model.SubTotal.ToString("N0") đ</span>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
+
+                    <div class="d-flex justify-content-between mb-2 text-muted">
                         <span>Giảm giá</span>
-                        <strong>@Model.DiscountAmount.ToString("N0") đ</strong>
+                        <span class="fw-semibold text-danger">-@Model.DiscountAmount.ToString("N0") đ</span>
                     </div>
-                    <div class="d-flex justify-content-between pt-2 border-top">
-                        <span class="fw-bold">Tổng tiền</span>
-                        <span class="fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</span>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark fs-6">Tổng tiền</span>
+                        <span class="fw-bold text-primary fs-4">@Model.TotalAmount.ToString("N0") đ</span>
                     </div>
                 </div>
             </div>

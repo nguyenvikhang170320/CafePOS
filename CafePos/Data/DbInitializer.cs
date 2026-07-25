@@ -56,14 +56,17 @@ namespace CafePos.Data
 
                 context.SaveChanges();
             }
-
-            // Seed Admin User
+            // Seed Users & Employees Đồng Bộ
             if (!context.Users.Any())
             {
                 var adminRole = context.Roles.First(r => r.Name == "Admin");
-                var staffRole = context.Roles.First(r => r.Name == "Staff");
+                var staffRole = context.Roles.First(r => r.Name == "Staff"); // Hoặc KhachHang nếu bạn dùng Role này
                 var employeeRole = context.Roles.First(r => r.Name == "Employee");
 
+                var quanLy = context.Positions.First(x => x.PositionName == "Quản lý");
+                var thuNgan = context.Positions.First(x => x.PositionName == "Thu ngân");
+
+                // 1. Tạo các tài khoản User
                 var adminUser = new User
                 {
                     Username = "admin",
@@ -75,7 +78,7 @@ namespace CafePos.Data
                     NgayCapNhat = DateTime.Now
                 };
 
-                var staffUser = new User
+                var staffUser = new User // Account Khách hàng để test
                 {
                     Username = "Khang",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
@@ -100,19 +103,31 @@ namespace CafePos.Data
                 context.Users.AddRange(adminUser, staffUser, employeeUser);
                 context.SaveChanges();
 
-                var thuNgan = context.Positions.First(x => x.PositionName == "Thu ngân");
-
-                context.Employees.Add(new Employee
-                {
-                    UserId = employeeUser.UserId,
-                    FullName = "Nguyễn Ngọc Lan",
-                    EmployeeCode = "NV001",
-                    PositionId = thuNgan.PositionId,
-                    PhoneNumber = "0900000000",
-                    Address = "Đồng Tháp",
-                    HireDate = DateTime.Now,
-                    IsActive = true
-                });
+                // 2. Chỉ tạo Hồ sơ Employee cho Admin và Nhân viên (BỎ KHANG RA)
+                context.Employees.AddRange(
+                    new Employee
+                    {
+                        UserId = adminUser.UserId,
+                        FullName = "Quản Trị Viên",
+                        EmployeeCode = "NV000",
+                        PositionId = quanLy.PositionId,
+                        PhoneNumber = "0909999999",
+                        Address = "Phong Hòa, Đồng Tháp",
+                        HireDate = DateTime.Now,
+                        IsActive = true
+                    },
+                    new Employee
+                    {
+                        UserId = employeeUser.UserId,
+                        FullName = "Nguyễn Ngọc Lan",
+                        EmployeeCode = "NV001",
+                        PositionId = thuNgan.PositionId,
+                        PhoneNumber = "0900000000",
+                        Address = "Đồng Tháp",
+                        HireDate = DateTime.Now,
+                        IsActive = true
+                    }
+                );
 
                 context.SaveChanges();
             }

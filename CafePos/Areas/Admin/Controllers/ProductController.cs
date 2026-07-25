@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering; // Cần dòng này để dùng Select
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly CafePosDbContext _context;

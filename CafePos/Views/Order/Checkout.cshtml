@@ -5,19 +5,21 @@
     ViewData["Title"] = "Checkout";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var toppings = ViewBag.Toppings as List<Topping>;
+    var tablesList = ViewBag.TablesList as List<Table>;
+    var employeesList = ViewBag.EmployeesList as List<Employee>;
 }
 
 <div class="container-fluid py-4">
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Checkout đơn hàng</h3>
-        <p class="text-muted mb-0">Xác nhận thanh toán, thêm topping nếu khách yêu cầu và tính lại tổng tiền.</p>
+        <p class="text-muted mb-0">Xác nhận thanh toán, chọn nhân viên thu ngân, chọn bàn ăn và hoàn tất đơn.</p>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-success text-white rounded-top-4">
-                    <h5 class="mb-0">Chi tiết thanh toán</h5>
+                <div class="card-header bg-success text-white rounded-top-4 py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-credit-card-2-back me-2"></i>Chi tiết thanh toán</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3 mb-4">
@@ -33,193 +35,114 @@
                                 <div class="fw-semibold">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-4">
-                                <div class="small text-muted">Khách hàng</div>
-                                <div class="fw-semibold">@Model.CustomerName</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-light rounded-4">
-                                <div class="small text-muted">Số điện thoại</div>
-                                <div class="fw-semibold">@Model.CustomerPhone</div>
-                            </div>
-                        </div>
                     </div>
 
-                    <div class="table-responsive mb-4">
-                        <table class="table align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Món</th>
-                                    <th class="text-center">SL</th>
-                                    <th class="text-end">Đơn giá</th>
-                                    <th class="text-end">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.OrderItems != null && Model.OrderItems.Any())
-                                {
-                                    foreach (var item in Model.OrderItems)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <div class="fw-semibold">@item.ProductNameSnapshot</div>
-
-                                                @if (!string.IsNullOrEmpty(item.SizeNameSnapshot))
-                                                {
-                                                    <div class="small text-muted">Size: @item.SizeNameSnapshot</div>
-                                                }
-
-                                                @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
-                                                {
-                                                    <div class="small text-muted mt-1">
-                                                        Topping hiện có:
-                                                        @string.Join(", ", item.OrderItemToppings.Select(x => x.ToppingNameSnapshot))
-                                                    </div>
-                                                }
-                                            </td>
-                                            <td class="text-center">@item.Quantity</td>
-                                            <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
-                                            <td class="text-end fw-semibold text-danger">@item.LineTotal.ToString("N0") đ</td>
-                                        </tr>
-                                    }
-                                }
-                                else
-                                {
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">Chưa có món trong đơn.</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <form asp-controller="Order" asp-action="Checkout" method="post">
+                    <form id="checkoutForm" asp-controller="Order" asp-action="Checkout" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.OrderId" />
 
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Thêm topping nếu khách yêu cầu</label>
-                            <div class="row">
-                                @if (toppings != null && toppings.Any())
-                                {
-                                    foreach (var t in toppings)
-                                    {
-                                        var checkedTopping = Model.OrderItems != null
-                                        && Model.OrderItems.Any(i => i.OrderItemToppings != null
-                                        && i.OrderItemToppings.Any(top => top.ToppingId == t.ToppingId));
+                        <div class="row g-3 align-items-end mb-4">
+                            <!-- 1. CHỌN NHÂN VIÊN THU NGÂN / ADMIN TRỰC CA -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">
+                                    Nhân viên thực hiện <span class="text-danger">*</span>
+                                </label>
 
-                                        <div class="col-md-6 mb-2">
-                                            <div class="form-check border rounded-3 p-2">
-                                                <input class="form-check-input topping-check"
-                                                       type="checkbox"
-                                                       name="selectedToppingIds"
-                                                       value="@t.ToppingId"
-                                                       data-price="@t.Price"
-                                                       id="top_@t.ToppingId"
-                                                       @(checkedTopping ? "checked" : null) />
-                                                <label class="form-check-label ms-2" for="top_@t.ToppingId">
-                                                    @t.Name (+@t.Price.ToString("N0") đ)
-                                                </label>
-                                            </div>
-                                        </div>
-                                    }
+                                @if (Model.PaymentStatus == "Paid" || Model.PaymentStatus == "Đã thanh toán" || Model.OrderStatus == "Completed")
+                                {
+                                    <!-- ĐÃ THANH TOÁN: Khóa dropdown, chọn sẵn NV đã thu tiền -->
+                                    <select name="employeeId" class="form-select" disabled>
+                                        <option value="">-- Chưa ghi nhận --</option>
+                                        @if (ViewBag.EmployeesList != null)
+                                        {
+                                            foreach (var emp in (List<CafePos.Models.Employee>)ViewBag.EmployeesList)
+                                            {
+                                                <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == ViewBag.SelectedEmployeeId)">
+                                                    @emp.FullName (@emp.Position?.PositionName)
+                                                </option>
+                                            }
+                                        }
+                                    </select>
                                 }
                                 else
                                 {
-                                    <div class="text-muted">Hiện chưa có topping nào.</div>
+                                    <!-- CHƯA THANH TOÁN: Tự chọn sẵn NV đang đăng nhập -->
+                                    <select name="employeeId" class="form-select" required>
+                                        <option value="">-- Chọn nhân viên đứng ca --</option>
+                                        @if (ViewBag.EmployeesList != null)
+                                        {
+                                            foreach (var emp in (List<CafePos.Models.Employee>)ViewBag.EmployeesList)
+                                            {
+                                                <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == ViewBag.SelectedEmployeeId)">
+                                                    @emp.FullName (@emp.Position?.PositionName)
+                                                </option>
+                                            }
+                                        }
+                                    </select>
                                 }
                             </div>
-                        </div>
 
-                        <div class="row g-4 align-items-end">
+                            <!-- 2. CHỌN BÀN ÁN / KHU VỰC -->
                             <div class="col-md-6">
-                                <label class="form-label">Phương thức thanh toán</label>
-                                <select name="paymentMethod" class="form-select rounded-3" required>
-                                    <option value="">-- Chọn phương thức --</option>
-                                    <option value="Cash" selected="@(Model.PaymentMethod == "Cash")">Tiền mặt</option>
-                                    <option value="Banking" selected="@(Model.PaymentMethod == "Banking")">Chuyển khoản</option>
-                                    <option value="Card" selected="@(Model.PaymentMethod == "Card")">Thẻ</option>
+                                <label class="form-label fw-bold"><i class="bi bi-table text-primary me-1"></i>Bàn ăn / Khu vực</label>
+                                <select name="tableId" class="form-select rounded-3">
+                                    <option value="">-- Mua mang về (Không bàn) --</option>
+                                    @if (tablesList != null)
+                                    {
+                                        var groupedTables = tablesList.GroupBy(t => string.IsNullOrEmpty(t.Area) ? "Khác / Chưa phân khu" : t.Area);
+                                        foreach (var group in groupedTables)
+                                        {
+                                            <optgroup label="📍 @group.Key">
+                                                @foreach (var table in group)
+                                                {
+                                                    <option value="@table.TableId" selected="@(Model.TableId == table.TableId ? "selected" : null)">
+                                                        @table.TableName
+                                                    </option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    }
                                 </select>
                             </div>
 
+                            <!-- 3. PHƯƠNG THỨC THANH TOÁN -->
                             <div class="col-md-6">
-                                <label class="form-label">Giảm giá</label>
-                                <input type="number"
-                                       step="0.01"
-                                       min="0"
-                                       name="discountAmount"
-                                       id="discountAmount"
-                                       class="form-control rounded-3"
-                                       value="@Model.DiscountAmount" />
+                                <label class="form-label fw-bold"><i class="bi bi-wallet2 text-success me-1"></i>Phương thức thanh toán</label>
+                                <select id="paymentMethodSelect" name="paymentMethod" class="form-select" @(Model.PaymentStatus == "Paid" ? "disabled" : "")>
+                                    <option value="Cash" selected="@(Model.PaymentMethod == "Cash" || Model.PaymentMethod == "Tiền mặt")">Tiền mặt</option>
+                                    <option value="Banking" selected="@(Model.PaymentMethod == "Banking" || Model.PaymentMethod == "Chuyển khoản")">Chuyển khoản</option>
+                                    <option value="Card" selected="@(Model.PaymentMethod == "Card" || Model.PaymentMethod == "Thẻ")">Thẻ</option>
+                                    <option value="VNPAY" selected="@(Model.PaymentMethod == "VNPAY" || Model.PaymentMethod == "VNPay")">VNPAY</option>
+                                </select>
                             </div>
 
-                            <div class="col-12">
-                                <div class="p-3 border rounded-4 bg-light">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Tạm tính</span>
-                                        <strong id="showSubTotal">@Model.SubTotal.ToString("N0") đ</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Giảm giá</span>
-                                        <strong id="showDiscount">@Model.DiscountAmount.ToString("N0") đ</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between pt-2 border-top">
-                                        <span class="fw-bold">Tổng tiền</span>
-                                        <span id="showTotal" class="fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</span>
-                                    </div>
-                                </div>
+                            <!-- 4. GIẢM GIÁ -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold"><i class="bi bi-cash text-danger me-1"></i>Giảm giá (đ)</label>
+                                <input type="number" step="1000" min="0" name="discountAmount" id="discountAmount"
+                                       class="form-control rounded-3 fw-bold text-danger" value="@Model.DiscountAmount.ToString("F0")" />
                             </div>
                         </div>
 
+                        <!-- NÚT BẤM -->
                         <div class="mt-4 d-flex gap-2">
                             @if (Model.PaymentStatus == "Paid" || Model.OrderStatus == "Completed")
                             {
                                 <button type="button" class="btn btn-secondary rounded-pill px-4" disabled>
-                                    Đơn đã thanh toán
+                                    <i class="bi bi-check-all me-1"></i> Đơn đã thanh toán
                                 </button>
                             }
                             else
                             {
-                                <button type="submit" class="btn btn-success rounded-pill px-4">
-                                    Xác nhận thanh toán
+                                <button type="submit" id="btnNormalPay" class="btn btn-success rounded-pill px-4 fw-bold">
+                                    <i class="bi bi-cash-register me-1"></i> Xác nhận thanh toán
+                                </button>
+                                <button type="submit" id="btnVnPay" class="btn btn-primary rounded-pill px-4 fw-bold d-none" style="background-color: #005baa; border: none;">
+                                    <i class="bi bi-qr-code-scan me-1"></i> Thanh toán qua VNPAY
                                 </button>
                             }
-
-                            <a asp-controller="Order"
-                               asp-action="Detail"
-                               asp-route-id="@Model.OrderId"
-                               class="btn btn-outline-secondary rounded-pill px-4">
-                                Xem chi tiết
-                            </a>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Luồng xử lý</h5>
-                    <div class="d-flex flex-column gap-3">
-                        <div class="p-3 bg-light rounded-4">
-                            <strong>Bước 1:</strong> Kiểm tra lại món khách đã đặt
-                        </div>
-                        <div class="p-3 bg-light rounded-4">
-                            <strong>Bước 2:</strong> Thêm topping nếu khách yêu cầu
-                        </div>
-                        <div class="p-3 bg-light rounded-4">
-                            <strong>Bước 3:</strong> Chọn thanh toán và hoàn tất đơn
-                        </div>
-                    </div>
-
-                    <hr />
-
-                    <p class="text-muted mb-0">
-                        Nếu đơn đã thanh toán rồi thì nút thanh toán sẽ bị khóa để tránh thanh toán lặp.
-                    </p>
                 </div>
             </div>
         </div>
@@ -227,64 +150,28 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
     <script>
-        function formatMoney(value) {
-            return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
-        }
-
-        function calculateCheckoutTotal() {
-            let baseSubTotal = parseFloat('@Model.SubTotal'.replace(',', '.')) || 0;
-            let discount = parseFloat(document.getElementById('discountAmount').value || 0);
-
-            let existingToppingIds = [];
-            @if (Model.OrderItems != null)
-            {
-                    foreach (var item in Model.OrderItems)
-                    {
-                            if (item.OrderItemToppings != null)
-                            {
-                                    foreach (var top in item.OrderItemToppings)
-                                    {
-                                            @:existingToppingIds.push(@top.ToppingId);
-                                    }
-                            }
-                    }
-            }
-
-            let addedToppingTotal = 0;
-
-            document.querySelectorAll('.topping-check:checked').forEach(function (cb) {
-                let toppingId = parseInt(cb.value);
-                let price = parseFloat(cb.dataset.price || 0);
-
-                if (!existingToppingIds.includes(toppingId)) {
-                    addedToppingTotal += price;
-                }
-            });
-
-            let newSubTotal = baseSubTotal + addedToppingTotal;
-            let newTotal = newSubTotal - discount;
-
-            if (newTotal < 0) newTotal = 0;
-
-            document.getElementById('showSubTotal').innerText = formatMoney(newSubTotal);
-            document.getElementById('showDiscount').innerText = formatMoney(discount);
-            document.getElementById('showTotal').innerText = formatMoney(newTotal);
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
-            const discountInput = document.getElementById('discountAmount');
-            if (discountInput) {
-                discountInput.addEventListener('input', calculateCheckoutTotal);
+            const selectMethod = document.getElementById('paymentMethodSelect');
+            const btnNormalPay = document.getElementById('btnNormalPay');
+            const btnVnPay = document.getElementById('btnVnPay');
+
+            function togglePaymentButtons() {
+                if (selectMethod && btnNormalPay && btnVnPay) {
+                    if (selectMethod.value === 'VNPAY') {
+                        btnNormalPay.classList.add('d-none');
+                        btnVnPay.classList.remove('d-none');
+                    } else {
+                        btnNormalPay.classList.remove('d-none');
+                        btnVnPay.classList.add('d-none');
+                    }
+                }
             }
 
-            document.querySelectorAll('.topping-check').forEach(function (checkbox) {
-                checkbox.addEventListener('change', calculateCheckoutTotal);
-            });
-
-            calculateCheckoutTotal();
+            if (selectMethod) {
+                selectMethod.addEventListener('change', togglePaymentButtons);
+                togglePaymentButtons();
+            }
         });
     </script>
 }

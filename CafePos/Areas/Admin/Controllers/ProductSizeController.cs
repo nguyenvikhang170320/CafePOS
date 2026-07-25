@@ -19,15 +19,15 @@ namespace CafePos.Areas.Admin.Controllers
         }
 
         // =========================
-        // DANH SÁCH
+        // DANH SÁCH SIZE
         // =========================
         public async Task<IActionResult> Index()
         {
             var productSizes = await _context.ProductSizes
                 .Where(x => !x.IsDeleted)
                 .Include(x => x.Product)
-                .OrderBy(x => x.ProductSizeId)
-                .ThenBy(x => x.SizeName)
+                .OrderBy(x => x.Product.Name) // 🌟 Gom nhóm theo tên món trước
+                .ThenBy(x => x.ExtraPrice)     // Rồi sắp xếp theo giá phụ thu tăng dần
                 .ToListAsync();
 
             return View(productSizes);
@@ -63,20 +63,23 @@ namespace CafePos.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductSize productSize)
         {
+            // Standardize dữ liệu đầu vào
+            productSize.SizeName = productSize.SizeName?.Trim();
+
             if (!ModelState.IsValid)
             {
                 LoadProductDropDownList(productSize.ProductId);
                 return View(productSize);
             }
 
-            string sizeName = productSize.SizeName?.Trim().ToLower() ?? "";
+            string sizeNameLower = productSize.SizeName?.ToLower() ?? "";
 
             bool isDuplicate = await _context.ProductSizes
                 .IgnoreQueryFilters()
                 .AnyAsync(x =>
                     !x.IsDeleted &&
                     x.ProductId == productSize.ProductId &&
-                    x.SizeName.ToLower() == sizeName);
+                    x.SizeName.ToLower() == sizeNameLower);
 
             if (isDuplicate)
             {
@@ -85,7 +88,6 @@ namespace CafePos.Areas.Admin.Controllers
                 return View(productSize);
             }
 
-            productSize.SizeName = productSize.SizeName?.Trim();
             productSize.IsDeleted = false;
 
             _context.ProductSizes.Add(productSize);
@@ -117,6 +119,8 @@ namespace CafePos.Areas.Admin.Controllers
         {
             if (id != productSize.ProductSizeId) return NotFound();
 
+            productSize.SizeName = productSize.SizeName?.Trim();
+
             if (!ModelState.IsValid)
             {
                 LoadProductDropDownList(productSize.ProductId);
@@ -128,7 +132,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             if (existing == null) return NotFound();
 
-            string sizeName = productSize.SizeName?.Trim().ToLower() ?? "";
+            string sizeNameLower = productSize.SizeName?.ToLower() ?? "";
 
             bool isDuplicate = await _context.ProductSizes
                 .IgnoreQueryFilters()
@@ -136,7 +140,7 @@ namespace CafePos.Areas.Admin.Controllers
                     x.ProductSizeId != productSize.ProductSizeId &&
                     !x.IsDeleted &&
                     x.ProductId == productSize.ProductId &&
-                    x.SizeName.ToLower() == sizeName);
+                    x.SizeName.ToLower() == sizeNameLower);
 
             if (isDuplicate)
             {
@@ -148,7 +152,7 @@ namespace CafePos.Areas.Admin.Controllers
             try
             {
                 existing.ProductId = productSize.ProductId;
-                existing.SizeName = productSize.SizeName?.Trim();
+                existing.SizeName = productSize.SizeName;
                 existing.ExtraPrice = productSize.ExtraPrice;
 
                 await _context.SaveChangesAsync();
@@ -212,7 +216,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             if (productSize == null) return NotFound();
 
-            string sizeName = productSize.SizeName?.Trim().ToLower() ?? "";
+            string sizeNameLower = productSize.SizeName?.Trim().ToLower() ?? "";
 
             bool isDuplicate = await _context.ProductSizes
                 .IgnoreQueryFilters()
@@ -220,7 +224,7 @@ namespace CafePos.Areas.Admin.Controllers
                     x.ProductSizeId != productSize.ProductSizeId &&
                     !x.IsDeleted &&
                     x.ProductId == productSize.ProductId &&
-                    x.SizeName.ToLower() == sizeName);
+                    x.SizeName.ToLower() == sizeNameLower);
 
             if (isDuplicate)
             {
@@ -279,6 +283,7 @@ namespace CafePos.Areas.Admin.Controllers
         {
             ViewBag.ProductId = new SelectList(
                 _context.Products
+                    .Where(p => p.IsActive) // 🌟 Chỉ hiển thị sản phẩm chưa bị xóa
                     .OrderBy(p => p.Name)
                     .ToList(),
                 "ProductId",

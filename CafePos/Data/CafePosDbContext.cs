@@ -27,6 +27,9 @@ namespace CafePos.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // ==========================================
+            // 1. ĐỊNH DẠNG KIỂU TIỀN TỆ (DECIMAL 18,0)
+            // ==========================================
             modelBuilder.Entity<Order>().Property(o => o.TotalAmount).HasColumnType("decimal(18,0)");
             modelBuilder.Entity<Order>().Property(o => o.SubTotal).HasColumnType("decimal(18,0)");
             modelBuilder.Entity<Order>().Property(o => o.DiscountAmount).HasColumnType("decimal(18,0)");
@@ -38,6 +41,7 @@ namespace CafePos.Data
             modelBuilder.Entity<Product>().Property(p => p.BasePrice).HasColumnType("decimal(18,0)");
             modelBuilder.Entity<ProductSize>().Property(ps => ps.ExtraPrice).HasColumnType("decimal(18,0)");
             modelBuilder.Entity<Topping>().Property(t => t.Price).HasColumnType("decimal(18,0)");
+
         }
     }
 }

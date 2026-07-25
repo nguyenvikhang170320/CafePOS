@@ -4,6 +4,7 @@ using CafePos.Models.ViewModels;
 using CafePos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,14 +14,16 @@ using System.Threading.Tasks;
 namespace CafePos.Areas.Admin.Controllers
 {
     // 🔒 Phân quyền dành cho Nhân viên và Admin
+    [Area("Admin")]
     [Authorize(Roles = "Admin,Employee")]
     public class OrderController : Controller
     {
         private readonly CafePosDbContext _context;
-        private readonly VnPayService _vnPayService;
-        public OrderController(CafePosDbContext context)
+        private readonly IVnPayService _vnPayService;
+        public OrderController(CafePosDbContext context, IVnPayService vnPayService)
         {
             _context = context;
+            _vnPayService = vnPayService; // 3. Gán giá trị ở đây (Trước đó bạn bị thiếu dòng này nên nó bị NULL)
         }
 
         // 1. Danh sách TẤT CẢ đơn hàng (Dành cho Nhân viên quản lý / Thu ngân)
@@ -66,15 +69,39 @@ namespace CafePos.Areas.Admin.Controllers
                 .Include(x => x.Table)
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
+                .Include(x => x.Payments) // Lấy danh sách payment đã thanh toán nếu có
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
             if (order == null) return NotFound();
 
-            // Lấy danh sách nhân viên có PositionId là 1 (Quản lý) hoặc 2 (Thu ngân)
-            ViewBag.EmployeesList = await _context.Employees
+            // 1. Lấy danh sách nhân viên có PositionId là 1 (Quản lý) hoặc 2 (Thu ngân)
+            var employeesList = await _context.Employees
                 .Include(e => e.Position)
                 .Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2))
                 .ToListAsync();
+
+            ViewBag.EmployeesList = employeesList;
+
+            // 2. Lấy Username tài khoản đang đăng nhập (VD: "nhanvien" hoặc "tuanminh")
+            string currentUsername = User.Identity?.Name?.Trim() ?? "";
+
+            // 3. Tìm User tương ứng trong bảng Users để lấy UserId
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == currentUsername);
+
+            // 4. Tìm Employee tương ứng theo UserId lấy được
+            int? currentEmployeeId = null;
+            if (currentUser != null)
+            {
+                var currentEmployee = employeesList.FirstOrDefault(e => e.UserId == currentUser.UserId);
+                currentEmployeeId = currentEmployee?.EmployeeId;
+            }
+
+            // 5. Nếu đơn ĐÃ thanh toán -> lấy EmployeeId từ bảng Payments. 
+            //    Nếu CHƯA thanh toán -> tự chọn EmployeeId của nhân viên đang đăng nhập!
+            int? savedEmployeeId = order.Payments?.FirstOrDefault(p => p.IsSuccess)?.EmployeeId;
+
+            ViewBag.SelectedEmployeeId = savedEmployeeId ?? currentEmployeeId;
 
             ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
             ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
@@ -250,6 +277,7 @@ namespace CafePos.Areas.Admin.Controllers
         }
 
         // GET: Order/PaymentCallback (Nhận phản hồi từ VNPay)
+        [AllowAnonymous]
         public async Task<IActionResult> PaymentCallback()
         {
             var response = _vnPayService.PaymentExecute(Request.Query);
@@ -258,7 +286,12 @@ namespace CafePos.Areas.Admin.Controllers
             {
                 TempData["Message"] = "Không xác định được mã đơn hàng từ VNPay!";
                 TempData["MessageType"] = "error";
-                return RedirectToAction("Index");
+
+                // Nếu không lấy được orderId, điều hướng an toàn theo Role
+                if (User.IsInRole("Customer"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Order");
             }
 
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
@@ -299,6 +332,9 @@ namespace CafePos.Areas.Admin.Controllers
 
                 await _context.SaveChangesAsync();
 
+                // Xóa Session sau khi thanh toán thành công
+                HttpContext.Session.Remove("VnPay_EmployeeId");
+
                 TempData["Message"] = "Thanh toán qua VNPAY thành công!";
                 TempData["MessageType"] = "success";
             }
@@ -308,7 +344,24 @@ namespace CafePos.Areas.Admin.Controllers
                 TempData["MessageType"] = "error";
             }
 
-            return RedirectToAction("Detail", new { id = orderId });
+            // ==========================================
+            // 🔀 PHÂN LUỒNG ĐIỀU HƯỚNG THEO ROLE NGƯỜI DÙNG
+            // ==========================================
+
+            // 1. Nếu là Khách hàng -> Về trang chi tiết đơn hàng của Khách hàng
+            if (User.IsInRole("Customer"))
+            {
+                return RedirectToAction("Detail", "CustomerOrder", new { area = "", id = orderId });
+            }
+
+            // 2. Nếu là Nhân viên -> Về trang Detail ngoài Area Admin (hoặc trang Order của Nhân viên)
+            if (User.IsInRole("Employee"))
+            {
+                return RedirectToAction("Detail", "Order", new { area = "", id = orderId });
+            }
+
+            // 3. Mặc định dành cho Admin -> Về trang Detail trong Area Admin
+            return RedirectToAction("Detail", "Order", new { area = "Admin", id = orderId });
         }
 
         // 6. AJAX: Trả partial view chi tiết hóa đơn

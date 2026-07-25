@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CafePos.Controllers
 {
-    [Authorize] // 🔒 Bắt buộc đăng nhập
+    [Authorize(Roles = "Staff")] // 🔒 Bắt buộc đăng nhập
     public class CustomerOrderController : Controller
     {
         private readonly CafePosDbContext _context;
@@ -33,14 +33,13 @@ namespace CafePos.Controllers
         public async Task<IActionResult> Create(
             string? note,
             string? phone,
+            string? paymentMethod, // 🌟 Nhận phương thức thanh toán
             List<int> productIds,
             List<int> quantities,
-            List<int?>? productSizeIds,
-            List<int>? selectedToppingIds)
+            List<int?>? productSizeIds)
         {
             await LoadCreateViewData();
 
-            // Lấy Tên khách hàng: Ưu tiên FullName -> Tên tài khoản -> Khách vãng lai
             var customerName = User.FindFirst("FullName")?.Value
                                ?? User.Identity?.Name
                                ?? "Khách hàng";
@@ -61,14 +60,6 @@ namespace CafePos.Controllers
                 return View();
             }
 
-            var userExists = await _context.Users.AnyAsync(x => x.UserId == userId);
-            if (!userExists)
-            {
-                TempData["Message"] = "Tài khoản đăng nhập không tồn tại trong hệ thống";
-                TempData["MessageType"] = "error";
-                return View();
-            }
-
             if (productIds == null || quantities == null || !productIds.Any() || !quantities.Any())
             {
                 TempData["Message"] = "Dữ liệu món chọn không hợp lệ";
@@ -76,23 +67,18 @@ namespace CafePos.Controllers
                 return View();
             }
 
+            // Lấy toàn bộ Toppings trong DB để tra cứu
+            var allToppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+
             var validItems = new List<OrderItem>();
             decimal subTotal = 0;
-
-            List<Topping> selectedToppings = new();
-            if (selectedToppingIds != null && selectedToppingIds.Any())
-            {
-                selectedToppings = await _context.Toppings
-                    .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
-                    .ToListAsync();
-            }
 
             for (int i = 0; i < productIds.Count; i++)
             {
                 if (i >= quantities.Count) continue;
 
                 int quantity = quantities[i];
-                if (quantity <= 0) continue;
+                if (quantity <= 0) continue; // Chỉ xử lý món có chọn số lượng > 0
 
                 var product = await _context.Products
                     .FirstOrDefaultAsync(x => x.ProductId == productIds[i] && x.IsActive);
@@ -131,20 +117,36 @@ namespace CafePos.Controllers
                     OrderItemToppings = new List<OrderItemTopping>()
                 };
 
+                // 🌟 BẮT CHÍNH XÁC TOPPING TỪ FORM DỰA VÀO CHỈ MỤC i (Tương ứng với itemToppings_0, itemToppings_1...)
+                var toppingFormValues = Request.Form["itemToppings_" + i];
                 decimal toppingTotal = 0;
-                foreach (var top in selectedToppings)
-                {
-                    var itemTopping = new OrderItemTopping
-                    {
-                        ToppingId = top.ToppingId,
-                        ToppingNameSnapshot = top.Name,
-                        Price = top.Price,
-                        Quantity = quantity,
-                        TotalPrice = top.Price * quantity
-                    };
 
-                    orderItem.OrderItemToppings.Add(itemTopping);
-                    toppingTotal += itemTopping.TotalPrice;
+                if (!string.IsNullOrEmpty(toppingFormValues))
+                {
+                    // Lấy toàn bộ ID topping được tick của món thứ i
+                    var selectedToppingIds = toppingFormValues.ToString()
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse)
+                        .ToList();
+
+                    foreach (var topId in selectedToppingIds)
+                    {
+                        var top = allToppings.FirstOrDefault(t => t.ToppingId == topId);
+                        if (top != null)
+                        {
+                            var itemTopping = new OrderItemTopping
+                            {
+                                ToppingId = top.ToppingId,
+                                ToppingNameSnapshot = top.Name,
+                                Price = top.Price,
+                                Quantity = quantity,
+                                TotalPrice = top.Price * quantity
+                            };
+
+                            orderItem.OrderItemToppings.Add(itemTopping);
+                            toppingTotal += itemTopping.TotalPrice;
+                        }
+                    }
                 }
 
                 orderItem.LineTotal = (orderItem.UnitPrice * quantity) + toppingTotal;
@@ -170,7 +172,7 @@ namespace CafePos.Controllers
                 Note = note,
                 OrderStatus = "Pending",
                 PaymentStatus = "Unpaid",
-                PaymentMethod = null,
+                PaymentMethod = string.IsNullOrWhiteSpace(paymentMethod) ? "Cash" : paymentMethod,
                 SubTotal = subTotal,
                 DiscountAmount = 0,
                 TotalAmount = subTotal,
@@ -199,7 +201,6 @@ namespace CafePos.Controllers
                 .OrderBy(x => x.Name)
                 .ToListAsync();
 
-            // Đọc thông tin tên và số điện thoại linh hoạt
             ViewBag.CustomerName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "";
             ViewBag.CustomerPhone = User.FindFirst(ClaimTypes.MobilePhone)?.Value
                                    ?? User.FindFirst("PhoneNumber")?.Value

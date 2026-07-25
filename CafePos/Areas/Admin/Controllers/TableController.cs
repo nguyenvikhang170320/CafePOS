@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,Employee")]
+    [Authorize(Roles = "Admin")]
     public class TableController : Controller
     {
         private readonly ITableService _tableService;

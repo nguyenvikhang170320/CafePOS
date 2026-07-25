@@ -1,6 +1,7 @@
 ﻿@model CafePos.Models.ViewModels.EmployeeVM
 @{
     ViewData["Title"] = "Chỉnh sửa nhân viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="row justify-content-center py-4">
@@ -8,7 +9,7 @@
         <div class="card shadow-lg border-0 rounded-3">
             <div class="card-header bg-warning text-dark py-3 text-center">
                 <h4 class="mb-0 fw-bold">
-                    <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Nhân Viên
+                    <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Hồ Sơ Nhân Viên
                 </h4>
             </div>
 
@@ -17,58 +18,75 @@
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                    <h5 class="text-secondary border-bottom pb-2 mb-3">Thông tin tài khoản</h5>
+                    <!-- THÔNG TIN TÀI KHOẢN -->
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">
+                        <i class="bi bi-shield-lock me-1"></i> Thông tin tài khoản
+                    </h5>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label class="form-label fw-bold">Tên đăng nhập</label>
-                                <input value="@Model.Username" class="form-control border-2" readonly />
+                                <input value="@Model.Username" class="form-control border-2 bg-light" readonly />
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label asp-for="FullName" class="form-label fw-bold">Họ và tên</label>
-                                <input asp-for="FullName" class="form-control border-2" />
+                                <label asp-for="FullName" class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control border-2" placeholder="Nhập họ và tên" required />
                                 <span asp-validation-for="FullName" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
 
-                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Thông tin nhân viên</h5>
+                    <!-- THÔNG TIN CÁ NHÂN & VỊ TRÍ -->
+                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">
+                        <i class="bi bi-person-vcard me-1"></i> Thông tin công việc & Cá nhân
+                    </h5>
 
                     <div class="row">
+                        <!-- Mã Nhân Viên -->
                         <div class="col-md-6">
                             <div class="form-group mb-3">
-                                <label asp-for="EmployeeCode" class="form-label fw-bold">Mã nhân viên</label>
-                                <input asp-for="EmployeeCode" class="form-control border-2" />
+                                <label asp-for="EmployeeCode" class="form-label fw-bold">Mã nhân viên <span class="text-danger">*</span></label>
+                                <input asp-for="EmployeeCode" class="form-control border-2" required />
                                 <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label asp-for="PositionId" class="form-label fw-bold">Chức danh / Vị trí</label>
-                            <select asp-for="PositionId" asp-items="ViewBag.PositionId" class="form-select rounded-3">
-                                <option value="">-- Chọn chức danh --</option>
-                            </select>
-                            <span asp-validation-for="PositionId" class="text-danger small"></span>
-                        </div>
+
+                        <!-- Chức danh / Vị trí -->
                         <div class="col-md-6">
                             <div class="form-group mb-3">
+                                <label asp-for="PositionId" class="form-label fw-bold">Chức danh / Vị trí <span class="text-danger">*</span></label>
+                                <select asp-for="PositionId" asp-items="ViewBag.PositionId" class="form-select border-2" required>
+                                    <option value="">-- Chọn chức danh --</option>
+                                </select>
+                                <span asp-validation-for="PositionId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Số điện thoại -->
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
                                 <label asp-for="PhoneNumber" class="form-label fw-bold">Số điện thoại</label>
-                                <input asp-for="PhoneNumber" class="form-control border-2" />
+                                <input asp-for="PhoneNumber" class="form-control border-2" placeholder="VD: 090xxxxxxx" />
                                 <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Địa chỉ -->
                     <div class="form-group mb-3">
                         <label asp-for="Address" class="form-label fw-bold">Địa chỉ</label>
-                        <input asp-for="Address" class="form-control border-2" />
+                        <input asp-for="Address" class="form-control border-2" placeholder="Nhập địa chỉ tạm trú / thường trú" />
                         <span asp-validation-for="Address" class="text-danger small"></span>
                     </div>
 
-                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Ảnh hồ sơ</h5>
+                    <!-- ẢNH HỒ SƠ -->
+                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">
+                        <i class="bi bi-image me-1"></i> Ảnh hồ sơ
+                    </h5>
 
                     <div class="form-group mb-3">
                         <label class="form-label fw-bold">Cách 1: Chọn ảnh mới từ máy</label>
@@ -81,19 +99,22 @@
                         <label asp-for="ImageUrl" class="form-label fw-bold">Cách 2: Dán URL ảnh</label>
                         <input asp-for="ImageUrl" class="form-control border-2" id="urlInput"
                                placeholder="https://example.com/avatar.jpg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
                     </div>
 
+                    <!-- Previews -->
                     <div class="text-center mb-3">
                         <img id="imgPreview"
                              src="@(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "#" : Model.ImageUrl)"
                              alt="Ảnh hồ sơ"
                              class="rounded-circle shadow-sm @(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "d-none" : "")"
-                             style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #eee;" />
+                             style="width: 130px; height: 130px; object-fit: cover; border: 3px solid #eee;" />
                     </div>
 
+                    <!-- BUTTONS -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3">
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-warning px-5 shadow fw-bold">Cập nhật</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-warning px-5 shadow fw-bold rounded-pill">Cập nhật</button>
                     </div>
                 </form>
             </div>

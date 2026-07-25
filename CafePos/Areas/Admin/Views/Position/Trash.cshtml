@@ -1,0 +1,102 @@
+﻿@model IEnumerable<CafePos.Models.Position>
+
+@{
+    ViewData["Title"] = "Thùng rác chức danh";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="text-secondary fw-bold mb-0">
+                <i class="bi bi-trash3-fill me-2"></i>Thùng rác chức danh
+            </h3>
+            <p class="text-muted small mb-0">Danh sách các chức danh đã bị tạm ngừng hoạt động hoặc xóa mềm</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-primary shadow-sm bg-white rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <!-- Alert Thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 120px;">Mã Chức danh</th>
+                            <th style="width: 250px;">Tên chức danh</th>
+                            <th>Mô tả công việc</th>
+                            <th class="text-end pe-4" style="width: 200px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                                    Thùng rác chức danh đang trống.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="fw-bold text-secondary">#@item.PositionId</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-dark">@item.PositionName</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">@(string.IsNullOrEmpty(item.Description) ? "—" : item.Description)</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <!-- Nút Khôi phục -->
+                                        <form asp-action="Restore" asp-route-id="@item.PositionId" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-success px-3 shadow-sm rounded-pill">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Khôi phục
+                                            </button>
+                                        </form>
+
+                                        <!-- Nút Xóa vĩnh viễn (Nếu làm thêm hàm DeletePermanent) -->
+                                        @*
+                                        <form asp-action="DeletePermanent" asp-route-id="@item.PositionId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa VĨNH VIỄN chức danh này? Không thể khôi phục sau khi xóa!');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger ms-1 rounded-pill">
+                                                <i class="bi bi-x-circle"></i> Xóa hẳn
+                                            </button>
+                                        </form>
+                                        *@
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

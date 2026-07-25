@@ -9,6 +9,7 @@ namespace CafePos.Areas.Admin.Controllers
 {
     // 💡 LƯU Ý: Nếu Controller này nằm trong thư mục Areas/Admin, nhớ thêm [Area("Admin")] vào đây nhé!
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class RevenueController : Controller
     {
         private readonly CafePosDbContext _context;

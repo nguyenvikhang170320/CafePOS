@@ -107,10 +107,10 @@
                                 <tr>
                                     <!-- Cột 1: Mã -->
                                     <td class="text-center fw-bold text-secondary">@item.UserId</td>
-                                    
+
                                     <!-- Cột 2: Tên đăng nhập -->
                                     <td class="fw-bold text-primary">@item.Username</td>
-                                    
+
                                     <!-- Cột 3: Email -->
                                     <td>@item.Email</td>
 
@@ -255,7 +255,7 @@
 @section Scripts {
     <script>
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     </script>

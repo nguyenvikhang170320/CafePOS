@@ -32,7 +32,7 @@
         width: 45px;
         height: 45px;
         object-fit: cover;
-        border-radius: 50%; /* Nhân viên để ảnh tròn cho chuyên nghiệp */
+        border-radius: 50%; /* Ảnh tròn chuyên nghiệp */
         border: 2px solid #fff;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
@@ -45,9 +45,20 @@
         border-radius: 6px;
         font-size: 0.85rem;
     }
+
+    .badge-position {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        padding: 0.4em 0.8em;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
 </style>
 
 <div class="container-fluid py-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="text-dark fw-bold mb-0">
@@ -69,6 +80,23 @@
         </div>
     </div>
 
+    <!-- Alert Thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
     <div class="card custom-card">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -77,70 +105,98 @@
                         <tr>
                             <th class="ps-4 py-3" style="width: 60px;">STT</th>
                             <th style="width: 80px;">Ảnh</th>
-                            <th>Họ và Tên</th>
                             <th>Mã NV</th>
+                            <th>Họ và Tên</th>
+                            <th>Chức danh</th> <!-- THÊM CỘT CHỨC DANH -->
                             <th>Tài khoản</th>
                             <th>Số điện thoại</th>
                             <th class="text-end pe-4">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @if (Model == null || !Model.Any())
                         {
                             <tr>
-                                <td class="ps-4 text-muted">@item.EmployeeId</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
-                                    {
-                                        <img src="@item.ImageUrl" class="emp-img" alt="@item.FullName" />
-                                    }
-                                    else
-                                    {
-                                        <div class="emp-img bg-light d-flex align-items-center justify-content-center text-muted border">
-                                            <i class="bi bi-person small"></i>
-                                        </div>
-                                    }
-                                </td>
-                                <td>
-                                    <div class="fw-bold text-dark">@item.FullName</div>
-                                    <span class="text-muted small">Vào làm: @item.HireDate.ToString("dd/MM/yyyy")</span>
-                                </td>
-                                <td>
-                                    <span class="text-secondary font-monospace">@item.EmployeeCode</span>
-                                </td>
-                                <td>
-                                    <span class="badge-role">
-                                        <i class="bi bi-person-badge me-1 small"></i> @item.User.Username
-                                    </span>
-                                </td>
-                                <td class="text-dark">
-                                    @(item.PhoneNumber ?? "---")
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="d-flex justify-content-end">
-                                        <a asp-action="Detail" asp-route-id="@item.EmployeeId"
-                                           class="btn btn-action btn-outline-info" title="Xem hồ sơ">
-                                            <i class="bi bi-file-earmark-person"></i>
-                                        </a>
-
-                                        @if (isAdmin)
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@item.EmployeeId"
-                                               class="btn btn-action btn-outline-warning" title="Sửa">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-
-                                            <form asp-area="Admin" asp-action="Delete" asp-route-id="@item.EmployeeId" method="post"
-                                                  class="d-inline" onsubmit="return confirm('Bạn có chắc muốn cho nhân viên này nghỉ việc?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-action btn-outline-danger" title="Cho nghỉ việc">
-                                                    <i class="bi bi-person-dash"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                    </div>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people display-4 d-block mb-2"></i>
+                                    Chưa có dữ liệu nhân viên nào.
                                 </td>
                             </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 text-muted">#@item.EmployeeId</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="emp-img" alt="@item.FullName" />
+                                        }
+                                        else
+                                        {
+                                            <div class="emp-img bg-light d-flex align-items-center justify-content-center text-muted border">
+                                                <i class="bi bi-person small"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary font-monospace fw-bold">@item.EmployeeCode</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@item.FullName</div>
+                                        <span class="text-muted small">Vào làm: @item.HireDate.ToString("dd/MM/yyyy")</span>
+                                    </td>
+
+                                    <!-- HIỂN THỊ CHỨC DANH -->
+                                    <td>
+                                        @if (item.Position != null)
+                                        {
+                                            <span class="badge-position">
+                                                <i class="bi bi-person-badge-fill me-1 small"></i> @item.Position.PositionName
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">Chưa phân công</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <span class="badge-role">
+                                            <i class="bi bi-person me-1 small"></i> @(item.User?.Username ?? "N/A")
+                                        </span>
+                                    </td>
+                                    <td class="text-dark">
+                                        @(item.PhoneNumber ?? "---")
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end">
+                                            <a asp-action="Detail" asp-route-id="@item.EmployeeId"
+                                               class="btn btn-action btn-outline-info" title="Xem hồ sơ">
+                                                <i class="bi bi-file-earmark-person"></i>
+                                            </a>
+
+                                            @if (isAdmin)
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.EmployeeId"
+                                                   class="btn btn-action btn-outline-warning" title="Sửa">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+
+                                                <form asp-area="Admin" asp-action="Delete" asp-route-id="@item.EmployeeId" method="post"
+                                                      class="d-inline" onsubmit="return confirm('Bạn có chắc muốn cho nhân viên này nghỉ việc?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-action btn-outline-danger" title="Cho nghỉ việc">
+                                                        <i class="bi bi-person-dash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>

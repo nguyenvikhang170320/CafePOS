@@ -1,128 +1,82 @@
 ﻿@model CafePos.Models.ViewModels.EmployeeVM
+
 @{
-    ViewData["Title"] = "Thêm nhân viên mới";
+    ViewData["Title"] = "Thêm mới Nhân viên";
 }
 
-<div class="row justify-content-center py-4">
-    <div class="col-md-10 col-lg-8">
-        <div class="card shadow-lg border-0 rounded-3">
-            <div class="card-header bg-primary text-white py-3 text-center">
-                <h4 class="mb-0 fw-bold">
-                    <i class="bi bi-person-plus-fill me-2"></i>Thêm Nhân Viên Mới
-                </h4>
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary bg-gradient ml-0 py-3">
+        <h4 class="text-white mb-0">Thêm mới Nhân viên</h4>
+    </div>
+    <div class="card-body p-4">
+        <!-- Thêm autocomplete="off" vào form -->
+        <form asp-action="Create" method="post" enctype="multipart/form-data" autocomplete="off">
+
+            <!-- Mẹo "bẫy" Chrome Autofill: Để 2 input ẩn này lên đầu form -->
+            <input type="text" name="fake_usernameremembered" style="display:none;" />
+            <input type="password" name="fake_passwordremembered" style="display:none;" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <h5 class="text-secondary mb-3"><i class="bi bi-person-badge"></i> Thông tin Tài khoản</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label font-weight-bold">Tên đăng nhập <span class="text-danger">*</span></label>
+                    <!-- Bổ sung autocomplete="off" -->
+                    <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập" autocomplete="off" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label font-weight-bold">Mật khẩu <span class="text-danger">*</span></label>
+                    <!-- Chuyển autocomplete="new-password" để Chrome không tự điền pass cũ -->
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label font-weight-bold">Email</label>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="nhanvien@gmail.com" autocomplete="off" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
             </div>
 
-            <div class="card-body p-4">
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            <hr class="my-4" />
 
-                    <h5 class="text-secondary border-bottom pb-2 mb-3">Thông tin tài khoản</h5>
-
-                    <div class="form-group mb-3">
-                        <label asp-for="UserId" class="form-label fw-bold">Chọn tài khoản nhân viên</label>
-                        <select asp-for="UserId" class="form-select border-2" asp-items="ViewBag.UserId">
-                            <option value="">-- Chọn tài khoản chưa tạo nhân viên --</option>
-                        </select>
-                        <span asp-validation-for="UserId" class="text-danger small"></span>
-                    </div>
-
-                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Thông tin cá nhân</h5>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label asp-for="EmployeeCode" class="form-label fw-bold">Mã nhân viên (Tùy chọn)</label>
-                                <input asp-for="EmployeeCode" class="form-control border-2" placeholder="VD: NV001" />
-                                <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PositionId" class="form-label fw-bold">Chức danh / Vị trí</label>
-                            <select asp-for="PositionId" asp-items="ViewBag.PositionId" class="form-select rounded-3">
-                                <option value="">-- Chọn chức danh --</option>
-                            </select>
-                            <span asp-validation-for="PositionId" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label asp-for="PhoneNumber" class="form-label fw-bold">Số điện thoại</label>
-                                <input asp-for="PhoneNumber" class="form-control border-2" placeholder="VD: 090xxxxxxx" />
-                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label asp-for="Address" class="form-label fw-bold">Địa chỉ</label>
-                        <input asp-for="Address" class="form-control border-2" placeholder="Nhập địa chỉ tạm trú" />
-                        <span asp-validation-for="Address" class="text-danger small"></span>
-                    </div>
-
-                    <h5 class="text-secondary border-bottom pb-2 mt-3 mb-3">Ảnh hồ sơ</h5>
-
-                    <div class="form-group mb-3">
-                        <label class="form-label fw-bold">Cách 1: Chọn ảnh từ máy</label>
-                        <input type="file" name="file" class="form-control border-2" id="fileInput" accept="image/*" />
-                    </div>
-
-                    <div class="text-center text-muted small mb-2">Hoặc</div>
-
-                    <div class="form-group mb-3">
-                        <label asp-for="ImageUrl" class="form-label fw-bold">Cách 2: Dán URL ảnh</label>
-                        <input asp-for="ImageUrl" class="form-control border-2" id="urlInput"
-                               placeholder="https://example.com/avatar.jpg" />
-                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
-                    </div>
-
-                    <div class="text-center mb-3">
-                        <img id="imgPreview"
-                             src="@(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "#" : Model.ImageUrl)"
-                             alt="Xem trước ảnh"
-                             class="rounded-circle shadow-sm @(string.IsNullOrWhiteSpace(Model?.ImageUrl) ? "d-none" : "")"
-                             style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #eee;" />
-                    </div>
-
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3">
-                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-primary px-5 shadow fw-bold">Lưu nhân viên</button>
-                    </div>
-                </form>
+            <h5 class="text-secondary mb-3"><i class="bi bi-card-heading"></i> Thông tin Hồ sơ Nhân viên</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">Họ và Tên <span class="text-danger">*</span></label>
+                    <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" autocomplete="off" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label font-weight-bold">Chức danh / Vị trí <span class="text-danger">*</span></label>
+                    <select asp-for="PositionId" asp-items="ViewBag.PositionId" class="form-select">
+                        <option value="">-- Chọn Chức danh --</option>
+                    </select>
+                    <span asp-validation-for="PositionId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Mã Nhân viên (Để trống sẽ tự sinh)</label>
+                    <input asp-for="EmployeeCode" class="form-control" placeholder="VD: NV001" autocomplete="off" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="0901234567" autocomplete="off" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Ảnh đại diện</label>
+                    <input type="file" name="file" class="form-control" accept="image/*" />
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Địa chỉ</label>
+                    <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ chỗ ở" autocomplete="off" />
+                </div>
             </div>
-        </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-circle"></i> Lưu Nhân Viên</button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Quay lại</a>
+            </div>
+        </form>
     </div>
 </div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const urlInput = document.getElementById('urlInput');
-        const imgPreview = document.getElementById('imgPreview');
-
-        fileInput.addEventListener('change', function () {
-            const [file] = this.files;
-            if (file) {
-                imgPreview.src = URL.createObjectURL(file);
-                imgPreview.classList.remove('d-none');
-                urlInput.value = "";
-            }
-        });
-
-        urlInput.addEventListener('input', function () {
-            const url = this.value.trim();
-            if (url) {
-                imgPreview.src = url;
-                imgPreview.classList.remove('d-none');
-                fileInput.value = "";
-            } else {
-                imgPreview.src = "#";
-                imgPreview.classList.add('d-none');
-            }
-        });
-    </script>
-}

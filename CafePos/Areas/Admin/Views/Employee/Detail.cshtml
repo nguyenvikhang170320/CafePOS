@@ -1,13 +1,17 @@
 ﻿@model CafePos.Models.Employee
 @{
     ViewData["Title"] = "Chi tiết nhân viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container py-4">
     <div class="card shadow-lg border-0 rounded-3 overflow-hidden">
+        <!-- Header -->
         <div class="card-header bg-info text-white py-3">
             <h5 class="mb-0 fw-bold"><i class="bi bi-person-vcard-fill me-2"></i>Hồ sơ nhân viên: @Model.FullName</h5>
         </div>
+
+        <!-- Body -->
         <div class="card-body p-4">
             <div class="row align-items-center">
                 @* Cột trái: Ảnh đại diện *@
@@ -32,13 +36,13 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h2 class="text-dark fw-bold mb-1">@Model.FullName</h2>
-                                <span class="badge bg-primary bg-gradient mb-4">
-                                    <i class="bi bi-shield-lock-fill me-1"></i> Tài khoản: @Model.User.Username
+                                <span class="badge bg-primary bg-gradient mb-3 me-2">
+                                    <i class="bi bi-shield-lock-fill me-1"></i> Tài khoản: @(Model.User?.Username ?? "N/A")
                                 </span>
                             </div>
                             <div class="text-end">
                                 <label class="text-muted small d-block">Trạng thái tài khoản</label>
-                                @if (Model.User.IsActive)
+                                @if (Model.User != null && Model.User.IsActive)
                                 {
                                     <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Đang hoạt động</span>
                                 }
@@ -50,19 +54,37 @@
                         </div>
 
                         <div class="row g-4 mt-1">
+                            <!-- BỔ SUNG CHỨC DANH / VỊ TRÍ -->
+                            <div class="col-sm-6">
+                                <label class="text-muted small d-block text-uppercase fw-bold">Chức danh / Vị trí</label>
+                                @if (Model.Position != null)
+                                {
+                                    <span class="badge bg-warning text-dark border border-warning fs-6 px-3 py-2 mt-1">
+                                        <i class="bi bi-person-badge-fill me-1"></i> @Model.Position.PositionName
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted border fs-6 px-3 py-2 mt-1">Chưa phân công</span>
+                                }
+                            </div>
+
                             <div class="col-sm-6">
                                 <label class="text-muted small d-block text-uppercase fw-bold">Mã nhân viên</label>
-                                <span class="fs-5 text-dark">@Model.EmployeeCode</span>
+                                <span class="fs-5 text-dark fw-semibold">@Model.EmployeeCode</span>
                             </div>
+
                             <div class="col-sm-6">
                                 <label class="text-muted small d-block text-uppercase fw-bold">Số điện thoại</label>
                                 <span class="fs-5 text-dark">@(Model.PhoneNumber ?? "Chưa cập nhật")</span>
                             </div>
+
                             <div class="col-sm-6">
                                 <label class="text-muted small d-block text-uppercase fw-bold">Ngày vào làm</label>
                                 <span class="fs-5 text-dark">@Model.HireDate.ToString("dd/MM/yyyy")</span>
                             </div>
-                            <div class="col-sm-6">
+
+                            <div class="col-12">
                                 <label class="text-muted small d-block text-uppercase fw-bold">Địa chỉ</label>
                                 <span class="fs-5 text-dark">@(Model.Address ?? "Chưa cập nhật")</span>
                             </div>
@@ -70,12 +92,13 @@
 
                         <hr class="my-4" />
 
+                        <!-- BUTTONS -->
                         <div class="d-flex gap-2">
-                            <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm">
-                                <i class="bi bi-arrow-left"></i> Quay lại
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm rounded-pill">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
                             </a>
-                            <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-warning px-4 shadow-sm fw-bold">
-                                <i class="bi bi-pencil-square"></i> Cập nhật hồ sơ
+                            <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-warning px-4 shadow-sm fw-bold rounded-pill">
+                                <i class="bi bi-pencil-square me-1"></i> Cập nhật hồ sơ
                             </a>
                         </div>
                     </div>

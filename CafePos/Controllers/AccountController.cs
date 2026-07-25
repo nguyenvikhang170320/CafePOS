@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QLKTX.Services;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace CafePos.Controllers
     {
         private readonly IAuthService _authService;
         private readonly CafePosDbContext _context;
+
         public AccountController(IAuthService authService, CafePosDbContext context)
         {
             _authService = authService;
@@ -28,9 +30,13 @@ namespace CafePos.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            // Nếu người dùng đã đăng nhập rồi mà lỡ bấm vào trang Login thì tự đẩy về trang chủ
+            // Nếu người dùng đã đăng nhập rồi thì điều hướng về đúng trang tương ứng
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Admin" });
+                }
                 return RedirectToAction("Index", "Home");
             }
             return View();
@@ -45,15 +51,15 @@ namespace CafePos.Controllers
             if (user != null)
             {
                 var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, user.Username ?? ""),
-                        new Claim(ClaimTypes.Email, user.Email ?? ""),
-                        new Claim(ClaimTypes.Role, user.Role?.Name ?? ""),
-                        new Claim("FullName", user.Employee?.FullName ?? user.Username),
-                        new Claim("Position", user.Employee?.Position?.PositionName ?? ""),
-                        new Claim("EmployeeCode", user.Employee?.EmployeeCode ?? ""),
-                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
-                    };
+                {
+                    new Claim(ClaimTypes.Name, user.Username ?? ""),
+                    new Claim(ClaimTypes.Email, user.Email ?? ""),
+                    new Claim(ClaimTypes.Role, user.Role?.Name ?? ""),
+                    new Claim("FullName", user.Employee?.FullName ?? user.Username),
+                    new Claim("Position", user.Employee?.Position?.PositionName ?? ""),
+                    new Claim("EmployeeCode", user.Employee?.EmployeeCode ?? ""),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                };
 
                 var claimsIdentity = new ClaimsIdentity(
                     claims,
@@ -87,53 +93,62 @@ namespace CafePos.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            // Nếu đã đăng nhập thì không cho vào trang Đăng ký nữa
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Admin" });
+                }
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(string username, string password, string fullName, string email)
+        public async Task<IActionResult> Register(string username, string password, string email)
         {
+            // Kiểm tra và loại bỏ khoảng trắng
+            username = username?.Trim() ?? string.Empty;
+            password = password?.Trim() ?? string.Empty;
+            email = email?.Trim() ?? string.Empty;
+
             if (string.IsNullOrWhiteSpace(username) ||
                 string.IsNullOrWhiteSpace(password) ||
-                string.IsNullOrWhiteSpace(fullName) ||
                 string.IsNullOrWhiteSpace(email))
             {
-                ViewBag.ErrorMessage = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.ErrorMessage = "Vui lòng nhập đầy đủ Tên đăng nhập, Email và Mật khẩu.";
                 return View();
             }
 
-            username = username.Trim();
-            email = email.Trim();
-            fullName = fullName.Trim();
-
-            // Kiểm tra Username
+            // Kiểm tra trùng Username
             if (await _context.Users.AnyAsync(x => x.Username == username))
             {
                 ViewBag.ErrorMessage = "Tên đăng nhập đã tồn tại.";
                 return View();
             }
 
-            // Kiểm tra Email
+            // Kiểm tra trùng Email
             if (await _context.Users.AnyAsync(x => x.Email == email))
             {
                 ViewBag.ErrorMessage = "Email đã tồn tại.";
                 return View();
             }
 
-            // Tạo tài khoản khách hàng (Staff)
+            // Tạo tài khoản khách hàng
             var newUser = new User
             {
                 Username = username,
                 Email = email,
-                RoleId = 2, // Staff (Khách hàng)
+                RoleId = 2, // Khách hàng
                 IsActive = true,
                 TrangThai = "Hoạt động",
                 NgayCapNhat = DateTime.Now
             };
 
-            // Lưu User
-            newUser = await _authService.RegisterAsync(newUser, password);
+            // Lưu qua AuthService
+            await _authService.RegisterAsync(newUser, password);
 
             TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
             return RedirectToAction(nameof(Login));
@@ -149,7 +164,9 @@ namespace CafePos.Controllers
             return RedirectToAction("Login");
         }
 
-        // ========== QUÊN MẬT KHẨU ==========
+        // ==========================================
+        // 4. QUÊN MẬT KHẨU
+        // ==========================================
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -157,6 +174,7 @@ namespace CafePos.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -182,10 +200,10 @@ namespace CafePos.Controllers
             // Tạo link reset
             var resetLink = Url.Action("ResetPassword", "Account", new { token = token }, Request.Scheme);
 
-            // Gửi mail
-            await EmailService.SendEmailAsync(user.Email, "Khôi phục mật khẩu QLKTX",
-                $"<p>Xin chào {user.Username},</p>" +
-                $"<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấn vào liên kết bên dưới để đặt lại:</p>" +
+            // Gửi mail (Đã đổi tiêu đề thành Cafe POS)
+            await EmailService.SendEmailAsync(user.Email, "Khôi phục mật khẩu - Cafe POS",
+                $"<p>Xin chào <b>{user.Username}</b>,</p>" +
+                $"<p>Bạn đã yêu cầu đặt lại mật khẩu cho hệ thống Cafe POS. Nhấn vào liên kết bên dưới để đặt lại:</p>" +
                 $"<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>" +
                 $"<p>Liên kết có hiệu lực trong 30 phút.</p>");
 
@@ -193,7 +211,9 @@ namespace CafePos.Controllers
             return View();
         }
 
-        // ========== ĐẶT LẠI MẬT KHẨU ==========
+        // ==========================================
+        // 5. ĐẶT LẠI MẬT KHẨU
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> ResetPassword(string token)
         {
@@ -211,6 +231,7 @@ namespace CafePos.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword)
         {
             if (newPassword != confirmPassword)
@@ -236,12 +257,12 @@ namespace CafePos.Controllers
                 return View("InvalidToken");
             }
 
-            // Cập nhật mật khẩu (hash nếu có)
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword); // bạn có thể dùng BCrypt.Net nếu muốn mã hóa
+            // Cập nhật mật khẩu bằng BCrypt
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             _context.PasswordResetToken.Remove(resetToken);
             await _context.SaveChangesAsync();
 
-            ViewBag.Message = "Đặt lại mật khẩu thành công! Hãy đăng nhập lại.";
+            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.";
             return RedirectToAction("Login");
         }
     }

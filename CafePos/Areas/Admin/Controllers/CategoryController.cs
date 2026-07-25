@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
         private readonly CafePosDbContext _context;

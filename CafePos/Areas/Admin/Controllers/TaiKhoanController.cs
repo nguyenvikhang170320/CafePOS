@@ -10,6 +10,7 @@ using System.Security.Claims;
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class TaiKhoanController : Controller
     {
         private readonly CafePosDbContext _context;
@@ -98,15 +99,8 @@ namespace CafePos.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            LoadRoles();
-            LoadTrangThai("Hoạt động");
-
-            var model = new User
-            {
-                TrangThai = "Hoạt động"
-            };
-
-            return View(model);
+            // Bấm "Thêm tài khoản" từ menu Tài khoản sẽ tự nhảy sang màn hình Thêm Nhân viên (gộp chung tạo Acc)
+            return RedirectToAction("Create", "Employee");
         }
 
         [Authorize(Roles = "Admin")]
@@ -265,16 +259,23 @@ namespace CafePos.Areas.Admin.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Employee) // Nạp kèm Employee
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
             if (user != null)
             {
                 user.IsActive = false;
                 user.TrangThai = "Khóa";
                 user.NgayCapNhat = DateTime.Now;
 
-                _context.Update(user);
-                await _context.SaveChangesAsync();
+                // Khóa luôn cả hồ sơ Nhân viên đi kèm
+                if (user.Employee != null)
+                {
+                    user.Employee.IsActive = false;
+                }
 
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Đã khóa tài khoản '{user.Username}' thành công!";
             }
 
@@ -284,16 +285,23 @@ namespace CafePos.Areas.Admin.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Restore(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Employee)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
             if (user != null)
             {
                 user.IsActive = true;
                 user.TrangThai = "Hoạt động";
                 user.NgayCapNhat = DateTime.Now;
 
-                _context.Update(user);
-                await _context.SaveChangesAsync();
+                // Mở khóa lại luôn hồ sơ Nhân viên
+                if (user.Employee != null)
+                {
+                    user.Employee.IsActive = true;
+                }
 
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Khôi phục tài khoản '{user.Username}' thành công!";
             }
 

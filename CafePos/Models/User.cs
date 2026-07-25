@@ -20,7 +20,8 @@ namespace CafePos.Models
         public string? Email { get; set; }
 
         public int RoleId { get; set; }
-
+        
+        [ValidateNever]
         [ForeignKey("RoleId")]
         public virtual Role Role { get; set; }
 

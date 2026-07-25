@@ -5,53 +5,93 @@
 }
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h3 class="fw-bold mb-1">Đơn của tôi</h3>
-            <p class="text-muted mb-0">SĐT: @ViewBag.Phone</p>
+            <h3 class="fw-bold mb-1">📋 Đơn hàng của tôi</h3>
+            <p class="text-muted mb-0 small">Theo dõi trạng thái và lịch sử đặt nước của bạn.</p>
         </div>
-        <a asp-action="Create" class="btn btn-primary rounded-pill px-4">Đặt món mới</a>
+        <a asp-action="Create" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+            ☕ Đặt món mới
+        </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Mã đơn</th>
-                        <th>Ngày tạo</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái đơn</th>
-                        <th>Thanh toán</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Mã đơn</th>
+                            <th>Thời gian đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái đơn</th>
+                            <th>Thanh toán</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-primary">#@item.OrderCode</td>
+                                    <td class="small text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
+                                    <td>
+                                        @if (item.OrderStatus == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">⏳ Chờ xác nhận</span>
+                                        }
+                                        else if (item.OrderStatus == "Completed")
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill">✅ Đã hoàn thành</span>
+                                        }
+                                        else if (item.OrderStatus == "Cancelled")
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill">❌ Đã hủy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark px-3 py-2 rounded-pill">@item.OrderStatus</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.PaymentStatus == "Paid")
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Đã thanh toán</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border">Chưa thanh toán</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="btn-group">
+                                            <a asp-action="Detail" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-primary rounded-pill me-1">
+                                                🔍 Chi tiết
+                                            </a>
+                                            <a asp-action="Invoice" asp-route-phone="@item.CustomerPhone" class="btn btn-sm btn-outline-dark rounded-pill">
+                                                📄 Hóa đơn
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>@item.OrderCode</td>
-                                <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
-                                <td>@item.OrderStatus</td>
-                                <td>@item.PaymentStatus</td>
-                                <td>
-                                    <a asp-action="Detail" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-primary">Chi tiết</a>
-                                    <a asp-action="Invoice" asp-route-phone="@item.CustomerPhone" class="btn btn-sm btn-outline-dark">Hóa đơn</a>
+                                <td colspan="6" class="text-center text-muted py-5">
+                                    <div class="fs-1 mb-2">🥤</div>
+                                    <p class="mb-2">Bạn chưa có đơn hàng nào.</p>
+                                    <a asp-action="Create" class="btn btn-sm btn-primary rounded-pill px-3">Thử đặt món ngay</a>
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">Bạn chưa có đơn nào.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

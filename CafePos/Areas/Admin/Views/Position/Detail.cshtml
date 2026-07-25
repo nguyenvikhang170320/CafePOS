@@ -1,0 +1,93 @@
+﻿@model CafePos.Models.Position
+
+@{
+    ViewData["Title"] = "Chi tiết chức danh";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="card shadow-lg border-0 rounded-3 overflow-hidden">
+        <!-- Header -->
+        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-person-badge-fill me-2"></i>Thông tin chức danh: @Model.PositionName
+            </h5>
+            <div>
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success border border-light"><i class="bi bi-check-circle-fill me-1"></i> Đang hoạt động</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger border border-light"><i class="bi bi-x-circle-fill me-1"></i> Tạm ngừng / Đã xóa</span>
+                }
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                @* Cột trái: Biểu tượng minh họa *@
+                <div class="col-md-4 text-center mb-4 mb-md-0">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center border mx-auto shadow-sm"
+                         style="width: 200px; height: 200px;">
+                        <i class="bi bi-person-workspace text-primary" style="font-size: 6rem;"></i>
+                    </div>
+                </div>
+
+                @* Cột phải: Thông tin chi tiết *@
+                <div class="col-md-8">
+                    <div class="ps-md-3">
+                        <div class="mb-3">
+                            <label class="text-muted small text-uppercase fw-bold d-block">Tên chức danh</label>
+                            <h2 class="text-dark fw-bold mb-0">@Model.PositionName</h2>
+                        </div>
+
+                        <div class="row g-4 mt-1">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <label class="text-muted small d-block text-uppercase fw-bold mb-1">
+                                        <i class="bi bi-hash text-primary me-1"></i>Mã chức danh
+                                    </label>
+                                    <span class="fs-5 fw-bold text-dark">#@Model.PositionId</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <label class="text-muted small d-block text-uppercase fw-bold mb-1">
+                                        <i class="bi bi-people-fill text-primary me-1"></i>Nhân sự đảm nhiệm
+                                    </label>
+                                    <span class="fs-5 fw-bold text-dark">
+                                        @(Model.Employees?.Count ?? 0) nhân viên
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3 border">
+                                    <label class="text-muted small d-block text-uppercase fw-bold mb-1">
+                                        <i class="bi bi-card-text text-primary me-1"></i>Mô tả công việc
+                                    </label>
+                                    <p class="fs-6 text-dark mb-0 text-break">
+                                        @(string.IsNullOrWhiteSpace(Model.Description) ? "Chưa có mô tả chi tiết cho chức danh này." : Model.Description)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4 shadow-sm rounded-pill">
+                                <i class="bi bi-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@Model.PositionId" class="btn btn-warning px-4 shadow-sm fw-bold rounded-pill">
+                                <i class="bi bi-pencil-square me-1"></i> Cập nhật chức danh
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

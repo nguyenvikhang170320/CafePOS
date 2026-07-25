@@ -1,38 +1,47 @@
 ﻿@model Order
 
 @{
-    ViewData["Title"] = "Chi tiết đơn hàng";
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.OrderCode;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4">
+    <!-- Header Page -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h3 class="fw-bold mb-1">Chi tiết đơn hàng</h3>
-            <p class="text-muted mb-0">Xem đầy đủ món, topping và thông tin thanh toán.</p>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a asp-action="MyOrders" class="btn btn-sm btn-light rounded-circle shadow-sm me-1 p-2 d-inline-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                    ⬅️
+                </a>
+                <h3 class="fw-bold mb-0">Đơn hàng #@Model.OrderCode</h3>
+            </div>
+            <p class="text-muted mb-0 small ms-md-5">Đặt lúc: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
         </div>
-        <div class="d-flex gap-2">
-
-            <a asp-area="Admin" asp-controller="Order" asp-action="PrintInvoice" asp-route-id="@Model.OrderId" target="_blank" class="btn btn-outline-dark rounded-pill px-4">
-                In hóa đơn
+        <div class="d-flex gap-2 ms-md-5 ms-md-0">
+            <a asp-action="MyOrders" class="btn btn-outline-secondary rounded-pill px-4">
+                Quay lại
             </a>
         </div>
     </div>
 
     <div class="row g-4">
+        <!-- Danh sách món đặt -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="fw-bold mb-0">Danh sách món đã đặt</h5>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Món</th>
+                                    <th class="ps-4">Tên món</th>
                                     <th>Size</th>
                                     <th class="text-center">SL</th>
                                     <th class="text-end">Đơn giá</th>
                                     <th>Topping</th>
-                                    <th class="text-end">Thành tiền</th>
+                                    <th class="text-end pe-4">Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -41,42 +50,45 @@
                                     foreach (var item in Model.OrderItems)
                                     {
                                         <tr>
-                                            <td>
-                                                <div class="fw-semibold">@item.ProductNameSnapshot</div>
+                                            <td class="ps-4">
+                                                <div class="fw-bold text-dark">@item.ProductNameSnapshot</div>
                                                 @if (!string.IsNullOrEmpty(item.ItemNote))
                                                 {
-                                                    <div class="small text-muted">Ghi chú: @item.ItemNote</div>
+                                                    <small class="text-muted d-block mt-1">📝 @item.ItemNote</small>
                                                 }
                                             </td>
-                                            <td>@item.SizeNameSnapshot</td>
-                                            <td class="text-center">@item.Quantity</td>
+                                            <td>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">
+                                                    @(string.IsNullOrEmpty(item.SizeNameSnapshot) ? "Chuẩn" : item.SizeNameSnapshot)
+                                                </span>
+                                            </td>
+                                            <td class="text-center fw-bold">@item.Quantity</td>
                                             <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
                                             <td>
                                                 @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
                                                 {
-                                                    <div class="d-flex flex-column gap-1">
+                                                    <div class="d-flex flex-wrap gap-1">
                                                         @foreach (var top in item.OrderItemToppings)
                                                         {
-                                                            <span class="badge bg-light text-dark border text-start">
-                                                                @top.ToppingNameSnapshot x @top.Quantity
-                                                                (+@top.TotalPrice.ToString("N0") đ)
+                                                            <span class="badge bg-light text-dark border fw-normal">
+                                                                + @top.ToppingNameSnapshot x@(top.Quantity) (+@top.TotalPrice.ToString("N0") đ)
                                                             </span>
                                                         }
                                                     </div>
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-muted small">Không có</span>
+                                                    <span class="text-muted small">-</span>
                                                 }
                                             </td>
-                                            <td class="text-end fw-semibold text-danger">@item.LineTotal.ToString("N0") đ</td>
+                                            <td class="text-end pe-4 fw-bold text-danger">@item.LineTotal.ToString("N0") đ</td>
                                         </tr>
                                     }
                                 }
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">Không có chi tiết đơn hàng.</td>
+                                        <td colspan="6" class="text-center text-muted py-4">Không có thông tin món ăn.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -86,66 +98,103 @@
             </div>
         </div>
 
+        <!-- Cột thông tin đơn & Thanh toán -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Thông tin đơn</h5>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3 pb-2 border-bottom">Thông tin giao hàng</h5>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Mã đơn</div>
-                        <div class="fw-semibold">@Model.OrderCode</div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Khách hàng</span>
+                        <span class="fw-semibold">@Model.CustomerName</span>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Khách hàng</div>
-                        <div class="fw-semibold">@Model.CustomerName</div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Số điện thoại</span>
+                        <span class="fw-semibold">@Model.CustomerPhone</span>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Số điện thoại</div>
-                        <div class="fw-semibold">@Model.CustomerPhone</div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Trạng thái đơn</span>
+                        <span>
+                            @if (Model.OrderStatus == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                            }
+                            else if (Model.OrderStatus == "Completed")
+                            {
+                                <span class="badge bg-success">Đã hoàn thành</span>
+                            }
+                            else if (Model.OrderStatus == "Cancelled")
+                            {
+                                <span class="badge bg-danger">Đã hủy</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info text-dark">@Model.OrderStatus</span>
+                            }
+                        </span>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Ngày tạo</div>
-                        <div class="fw-semibold">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Thanh toán</span>
+                        <span>
+                            @if (Model.PaymentStatus == "Paid")
+                            {
+                                <span class="badge bg-success">Đã thanh toán</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Chưa thanh toán</span>
+                            }
+                        </span>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="small text-muted">Trạng thái đơn</div>
-                        <div class="fw-semibold">@Model.OrderStatus</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Thanh toán</div>
-                        <div class="fw-semibold">@Model.PaymentStatus</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="small text-muted">Phương thức</div>
-                        <div class="fw-semibold">@Model.PaymentMethod</div>
-                    </div>
+                    <div class="row g-4 align-items-end">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Phương thức</span>
+                            <span class="fw-semibold">
+                                @switch (Model.PaymentMethod)
+                                {
+                                    case "Cash":
+                                        <span>💵 Tiền mặt khi nhận hàng</span>
+                                        break;
+                                    case "Banking":
+                                        <span>🏦 Chuyển khoản / QR Code</span>
+                                        break;
+                                    case "Card":
+                                        <span>💳 Thẻ ngân hàng</span>
+                                        break;
+                                    case "VNPAY":
+                                        <span>💳 Thanh toán VNPAY</span>
+                                        break;
+                                    default:
+                                        <span>💵 Tiền mặt khi nhận hàng</span>
+                                        break;
+                                }
+                            </span>
+                        </div>
 
                     @if (!string.IsNullOrEmpty(Model.Note))
                     {
-                        <div class="mb-3">
-                            <div class="small text-muted">Ghi chú</div>
-                            <div class="fw-semibold">@Model.Note</div>
+                        <div class="mt-3 p-3 bg-light rounded-3">
+                            <span class="text-muted small d-block mb-1 fw-bold">Ghi chú từ khách:</span>
+                            <span class="small text-dark">@Model.Note</span>
                         </div>
                     }
 
-                    <hr />
+                    <hr class="my-3" />
 
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Tạm tính</span>
-                        <strong>@Model.SubTotal.ToString("N0") đ</strong>
+                        <span class="text-muted">Tạm tính</span>
+                        <span>@Model.SubTotal.ToString("N0") đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Giảm giá</span>
-                        <strong>@Model.DiscountAmount.ToString("N0") đ</strong>
+                        <span class="text-muted">Giảm giá</span>
+                        <span class="text-success">-@Model.DiscountAmount.ToString("N0") đ</span>
                     </div>
-                    <div class="d-flex justify-content-between pt-2 border-top">
-                        <span class="fw-bold">Tổng tiền</span>
+                    <div class="d-flex justify-content-between pt-2 border-top mt-2">
+                        <span class="fw-bold fs-6">Tổng thanh toán</span>
                         <span class="fw-bold text-danger fs-5">@Model.TotalAmount.ToString("N0") đ</span>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace CafePos.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class PaymentController : Controller
     {
         private readonly CafePosDbContext _context;

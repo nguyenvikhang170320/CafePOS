@@ -43,21 +43,43 @@
 
                         <div class="row g-3 align-items-end mb-4">
                             <!-- 1. CHỌN NHÂN VIÊN THU NGÂN / ADMIN TRỰC CA -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold"><i class="bi bi-person-badge text-primary me-1"></i>Nhân viên thực hiện <span class="text-danger">*</span></label>
-                                <select name="employeeId" class="form-select rounded-3 fw-semibold" required>
-                                    <option value="">-- Chọn nhân viên đứng ca --</option>
-                                    @if (employeesList != null)
-                                    {
-                                        foreach (var emp in employeesList)
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">
+                                    Nhân viên thực hiện <span class="text-danger">*</span>
+                                </label>
+
+                                @if (Model.PaymentStatus == "Paid" || Model.PaymentStatus == "Đã thanh toán" || Model.OrderStatus == "Completed")
+                                {
+                                    <!-- ĐÃ THANH TOÁN: Khóa dropdown, chọn sẵn NV đã thu tiền -->
+                                    <select name="employeeId" class="form-select" disabled>
+                                        <option value="">-- Chưa ghi nhận --</option>
+                                        @if (ViewBag.EmployeesList != null)
                                         {
-                                            string posName = emp.Position?.PositionName ?? "N/A";
-                                            <option value="@emp.EmployeeId">
-                                                @emp.FullName (@posName)
-                                            </option>
+                                            foreach (var emp in (List<CafePos.Models.Employee>)ViewBag.EmployeesList)
+                                            {
+                                                <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == ViewBag.SelectedEmployeeId)">
+                                                    @emp.FullName (@emp.Position?.PositionName)
+                                                </option>
+                                            }
                                         }
-                                    }
-                                </select>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <!-- CHƯA THANH TOÁN: Tự chọn sẵn NV đang đăng nhập -->
+                                    <select name="employeeId" class="form-select" required>
+                                        <option value="">-- Chọn nhân viên đứng ca --</option>
+                                        @if (ViewBag.EmployeesList != null)
+                                        {
+                                            foreach (var emp in (List<CafePos.Models.Employee>)ViewBag.EmployeesList)
+                                            {
+                                                <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == ViewBag.SelectedEmployeeId)">
+                                                    @emp.FullName (@emp.Position?.PositionName)
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                }
                             </div>
 
                             <!-- 2. CHỌN BÀN ÁN / KHU VỰC -->

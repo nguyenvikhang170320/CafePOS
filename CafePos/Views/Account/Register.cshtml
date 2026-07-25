@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Đăng ký Hệ thống Cafe";
+    ViewData["Title"] = "Đăng ký Tài khoản";
     Layout = null;
 }
 
@@ -9,9 +9,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
     <style>
             body {
                 background: #f2f5ff;
@@ -40,234 +38,104 @@
                     color: white;
                     opacity: .9;
                 }
-
-            .btn-outline-secondary:focus {
-                box-shadow: none;
-            }
     </style>
 </head>
-
 <body>
 
     <div class="register-box">
-
-        <h3 class="text-center mb-2">
-            📝 Đăng ký tài khoản
-        </h3>
-
+        <h3 class="text-center mb-2">📝 Đăng ký tài khoản</h3>
         <p class="text-center text-muted small mb-4">
-            Tài khoản đăng ký sẽ được tạo với vai trò
-            <strong>Staff (Khách hàng)</strong>.
+            Tạo tài khoản để đặt món online & nhận ưu đãi từ cửa hàng.
         </p>
 
         @if (ViewBag.ErrorMessage != null)
         {
-            <div class="alert alert-danger">
+            <div class="alert alert-danger py-2 small">
                 @ViewBag.ErrorMessage
             </div>
         }
 
-        <form id="registerForm"
-              asp-controller="Account"
-              asp-action="Register"
-              method="post">
-
+        <form id="registerForm" asp-controller="Account" asp-action="Register" method="post">
             @Html.AntiForgeryToken()
 
             <div class="mb-3">
-                <label class="form-label fw-bold">
-                    Họ và tên
-                </label>
-
-                <input type="text"
-                       class="form-control"
-                       name="fullName"
-                       placeholder="Nhập họ và tên"
-                       required />
+                <label class="form-label fw-bold">Tên đăng nhập <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="username" placeholder="Nhập tên đăng nhập" required />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold">
-                    Tên đăng nhập
-                </label>
-
-                <input type="text"
-                       class="form-control"
-                       name="username"
-                       placeholder="Nhập tên đăng nhập"
-                       required />
+                <label class="form-label fw-bold">Email chính xác <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" name="email" placeholder="example@gmail.com" required />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold">
-                    Email
-                </label>
-
-                <input type="email"
-                       class="form-control"
-                       name="email"
-                       placeholder="example@gmail.com"
-                       required />
-            </div>
-
-            <div class="mb-3">
-
-                <label class="form-label fw-bold">
-                    Mật khẩu
-                </label>
-
+                <label class="form-label fw-bold">Mật khẩu <span class="text-danger">*</span></label>
                 <div class="input-group">
-
-                    <input type="password"
-                           id="password"
-                           name="password"
-                           class="form-control"
-                           placeholder="Ít nhất 6 ký tự"
-                           required />
-
-                    <button class="btn btn-outline-secondary toggle-password"
-                            type="button"
-                            data-target="password">
-
-                        👁️
-
-                    </button>
-
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Ít nhất 6 ký tự" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">👁️</button>
                 </div>
-
             </div>
 
             <div class="mb-3">
-
-                <label class="form-label fw-bold">
-                    Xác nhận mật khẩu
-                </label>
-
+                <label class="form-label fw-bold">Xác nhận mật khẩu <span class="text-danger">*</span></label>
                 <div class="input-group">
-
-                    <input type="password"
-                           id="confirmPassword"
-                           name="confirmPassword"
-                           class="form-control"
-                           placeholder="Nhập lại mật khẩu"
-                           required />
-
-                    <button class="btn btn-outline-secondary toggle-password"
-                            type="button"
-                            data-target="confirmPassword">
-
-                        👁️
-
-                    </button>
-
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required />
+                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirmPassword">👁️</button>
                 </div>
-
-                <div id="passwordError"
-                     class="alert alert-danger mt-2 py-2"
-                     style="display:none">
-
+                <div id="passwordError" class="alert alert-danger mt-2 py-2 small" style="display:none">
                     Mật khẩu xác nhận không khớp.
-
                 </div>
-
             </div>
 
             <div class="form-check mb-3">
-
-                <input class="form-check-input"
-                       type="checkbox"
-                       id="agree"
-                       required />
-
-                <label class="form-check-label" for="agree">
-
-                    Tôi đồng ý với điều khoản sử dụng của hệ thống.
-
+                <input class="form-check-input" type="checkbox" id="agree" required />
+                <label class="form-check-label small" for="agree">
+                    Tôi đồng ý với điều khoản sử dụng.
                 </label>
-
             </div>
 
-            <button class="btn btn-gradient w-100 fw-bold mb-3"
-                    type="submit">
-
-                Đăng ký
-
-            </button>
+            <button class="btn btn-gradient w-100 fw-bold mb-3" type="submit">Đăng ký</button>
 
             <div class="text-center">
-
-                <span class="text-muted">
-                    Đã có tài khoản?
-                </span>
-
-                <a asp-controller="Account"
-                   asp-action="Login"
-                   class="text-decoration-none fw-bold">
-
-                    Đăng nhập
-
-                </a>
-
+                <span class="text-muted small">Đã có tài khoản? </span>
+                <a asp-controller="Account" asp-action="Login" class="text-decoration-none fw-bold small">Đăng nhập</a>
             </div>
-
         </form>
-
     </div>
 
     <script>
-
             document.getElementById("registerForm").addEventListener("submit", function(e) {
-
                 let password = document.getElementById("password").value;
                 let confirm = document.getElementById("confirmPassword").value;
 
                 if (password.length < 6) {
-
                     e.preventDefault();
                     alert("Mật khẩu phải có ít nhất 6 ký tự.");
-
                     return;
                 }
 
                 if (password !== confirm) {
-
                     e.preventDefault();
-
                     document.getElementById("passwordError").style.display = "block";
-
                     return;
                 }
 
                 document.getElementById("passwordError").style.display = "none";
-
             });
 
             document.querySelectorAll(".toggle-password").forEach(function(btn) {
-
                 btn.addEventListener("click", function() {
-
                     let target = document.getElementById(this.dataset.target);
-
                     if (target.type === "password") {
-
                         target.type = "text";
                         this.textContent = "🙈";
-
-                    }
-                    else {
-
+                    } else {
                         target.type = "password";
                         this.textContent = "👁️";
-
                     }
-
                 });
-
             });
-
     </script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

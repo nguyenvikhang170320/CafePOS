@@ -1,7 +1,10 @@
 ﻿using CafePos.Data;
 using CafePos.Models;
+using CafePos.Models.ViewModels;
+using CafePos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,10 +18,11 @@ namespace CafePos.Controllers
     public class OrderController : Controller
     {
         private readonly CafePosDbContext _context;
-
-        public OrderController(CafePosDbContext context)
+        private readonly IVnPayService _vnPayService;
+        public OrderController(CafePosDbContext context, IVnPayService vnPayService)
         {
             _context = context;
+            _vnPayService = vnPayService; // 3. Gán giá trị ở đây (Trước đó bạn bị thiếu dòng này nên nó bị NULL)
         }
 
         // 1. Danh sách TẤT CẢ đơn hàng (Dành cho Nhân viên quản lý / Thu ngân)
@@ -57,16 +61,46 @@ namespace CafePos.Controllers
             return View(order);
         }
 
-        // 4. GET: Checkout (Màn hình tính tiền tại quầy)
+        // GET: Order/Checkout/5
         public async Task<IActionResult> Checkout(int id)
         {
             var order = await _context.Orders
                 .Include(x => x.Table)
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
+                .Include(x => x.Payments) // Lấy danh sách payment đã thanh toán nếu có
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
             if (order == null) return NotFound();
+
+            // 1. Lấy danh sách nhân viên có PositionId là 1 (Quản lý) hoặc 2 (Thu ngân)
+            var employeesList = await _context.Employees
+                .Include(e => e.Position)
+                .Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2))
+                .ToListAsync();
+
+            ViewBag.EmployeesList = employeesList;
+
+            // 2. Lấy Username tài khoản đang đăng nhập (VD: "nhanvien" hoặc "tuanminh")
+            string currentUsername = User.Identity?.Name?.Trim() ?? "";
+
+            // 3. Tìm User tương ứng trong bảng Users để lấy UserId
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == currentUsername);
+
+            // 4. Tìm Employee tương ứng theo UserId lấy được
+            int? currentEmployeeId = null;
+            if (currentUser != null)
+            {
+                var currentEmployee = employeesList.FirstOrDefault(e => e.UserId == currentUser.UserId);
+                currentEmployeeId = currentEmployee?.EmployeeId;
+            }
+
+            // 5. Nếu đơn ĐÃ thanh toán -> lấy EmployeeId từ bảng Payments. 
+            //    Nếu CHƯA thanh toán -> tự chọn EmployeeId của nhân viên đang đăng nhập!
+            int? savedEmployeeId = order.Payments?.FirstOrDefault(p => p.IsSuccess)?.EmployeeId;
+
+            ViewBag.SelectedEmployeeId = savedEmployeeId ?? currentEmployeeId;
 
             ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
             ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
@@ -74,11 +108,19 @@ namespace CafePos.Controllers
             return View(order);
         }
 
-        // 5. POST: Checkout
+        // POST: Order/Checkout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(int id, List<int>? selectedToppingIds, decimal discountAmount, string paymentMethod, int? tableId)
+        public async Task<IActionResult> Checkout(
+            int id,
+            List<int>? selectedToppingIds,
+            decimal discountAmount,
+            string paymentMethod,
+            int? tableId,
+            int? employeeId)
         {
+            // Reload lại ViewBag nếu có lỗi validation
+            ViewBag.EmployeesList = await _context.Employees.Include(e => e.Position).Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2)).ToListAsync();
             ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
             ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
 
@@ -88,8 +130,6 @@ namespace CafePos.Controllers
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
             if (order == null) return NotFound();
-
-            string oldStatus = order.OrderStatus;
 
             if (order.PaymentStatus == "Paid" || order.OrderStatus == "Completed")
             {
@@ -98,45 +138,70 @@ namespace CafePos.Controllers
                 return RedirectToAction("Detail", new { id = order.OrderId });
             }
 
+            // Validations
             if (string.IsNullOrWhiteSpace(paymentMethod))
             {
-                TempData["Message"] = "Vui lòng chọn phương thức thanh toán";
+                TempData["Message"] = "Vui lòng chọn phương thức thanh toán!";
                 TempData["MessageType"] = "error";
                 return View(order);
             }
 
+            if (!employeeId.HasValue || employeeId == 0)
+            {
+                TempData["Message"] = "Vui lòng chọn nhân viên đứng ca thực hiện!";
+                TempData["MessageType"] = "error";
+                return View(order);
+            }
+
+            // Lấy Nhân viên kèm Chức vụ (Position)
+            var employee = await _context.Employees
+                .Include(e => e.Position)
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            if (employee == null)
+            {
+                TempData["Message"] = "Không tìm thấy thông tin nhân viên!";
+                TempData["MessageType"] = "error";
+                return View(order);
+            }
+
+            // Kiểm tra quyền: Chỉ cho phép Quản lý (1) hoặc Thu ngân (2)
+            if (employee.PositionId != 1 && employee.PositionId != 2)
+            {
+                TempData["Message"] = $"Nhân viên {employee.FullName} ({employee.Position?.PositionName}) không có quyền thực hiện thanh toán!";
+                TempData["MessageType"] = "error";
+                return View(order);
+            }
+
+            // Bổ sung Topping chọn thêm tại quầy
             var firstItem = order.OrderItems?.FirstOrDefault();
-            if (firstItem != null)
+            if (firstItem != null && selectedToppingIds != null && selectedToppingIds.Any())
             {
                 if (firstItem.OrderItemToppings == null)
                     firstItem.OrderItemToppings = new List<OrderItemTopping>();
 
-                // Thêm topping nếu nhân viên chọn thêm tại quầy
-                if (selectedToppingIds != null && selectedToppingIds.Any())
-                {
-                    var toppings = await _context.Toppings
-                        .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
-                        .ToListAsync();
+                var toppings = await _context.Toppings
+                    .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
+                    .ToListAsync();
 
-                    foreach (var topping in toppings)
+                foreach (var topping in toppings)
+                {
+                    bool existed = firstItem.OrderItemToppings.Any(x => x.ToppingId == topping.ToppingId);
+                    if (!existed)
                     {
-                        bool existed = firstItem.OrderItemToppings.Any(x => x.ToppingId == topping.ToppingId);
-                        if (!existed)
+                        firstItem.OrderItemToppings.Add(new OrderItemTopping
                         {
-                            firstItem.OrderItemToppings.Add(new OrderItemTopping
-                            {
-                                ToppingId = topping.ToppingId,
-                                ToppingNameSnapshot = topping.Name,
-                                Price = topping.Price,
-                                Quantity = 1,
-                                TotalPrice = topping.Price
-                            });
-                        }
+                            ToppingId = topping.ToppingId,
+                            ToppingNameSnapshot = topping.Name,
+                            Price = topping.Price,
+                            Quantity = 1,
+                            TotalPrice = topping.Price
+                        });
                     }
                 }
             }
 
-            // Tính toán lại tổng tiền đơn hàng
+            // Tính lại tổng tiền
             decimal subTotal = 0;
             if (order.OrderItems != null)
             {
@@ -148,6 +213,7 @@ namespace CafePos.Controllers
                 }
             }
 
+            string oldStatus = order.OrderStatus;
             order.SubTotal = subTotal;
             order.DiscountAmount = discountAmount < 0 ? 0 : discountAmount;
             order.TotalAmount = order.SubTotal - order.DiscountAmount;
@@ -155,34 +221,146 @@ namespace CafePos.Controllers
 
             order.TableId = tableId;
             order.PaymentMethod = paymentMethod;
-            order.PaymentStatus = "Paid";
-            order.OrderStatus = "Completed";
 
-            // 1. Lưu giao dịch thanh toán vào bảng Payments
-            _context.Payments.Add(new Payment
+            // PHÂN LUỒNG VNPAY HOẶC TIỀN MẶT / BANKING
+            if (paymentMethod.ToUpper() == "VNPAY")
             {
-                OrderId = order.OrderId,
-                Method = paymentMethod,
-                Amount = order.TotalAmount,
-                PaidAt = DateTime.Now
-            });
+                await _context.SaveChangesAsync();
 
-            // 2. Ghi nhật ký đổi trạng thái vào OrderStatusLogs
-            _context.OrderStatusLogs.Add(new OrderStatusLog
+                // Lưu tạm employeeId vào Session để đọc lại trong Callback
+                HttpContext.Session.SetInt32("VnPay_EmployeeId", employee.EmployeeId);
+
+                var vnPayRequest = new VnPayPaymentRequest
+                {
+                    OrderId = order.OrderId,
+                    Amount = order.TotalAmount,
+                    OrderInfo = $"Thanh toan don hàng #{order.OrderCode} tai CafePos"
+                };
+
+                string paymentUrl = _vnPayService.CreatePaymentUrl(vnPayRequest, HttpContext);
+                return Redirect(paymentUrl);
+            }
+            else
             {
-                OrderId = order.OrderId,
-                OldStatus = oldStatus,
-                NewStatus = "Completed",
-                ChangedAt = DateTime.Now,
-                ChangedBy = User.Identity?.Name ?? "Thu ngân"
-            });
+                // Thanh toán trực tiếp tại quầy
+                order.PaymentStatus = "Paid";
+                order.OrderStatus = "Completed";
 
-            await _context.SaveChangesAsync();
+                _context.Payments.Add(new Payment
+                {
+                    OrderId = order.OrderId,
+                    EmployeeId = employee.EmployeeId,
+                    Method = paymentMethod,
+                    Amount = order.TotalAmount,
+                    PaidAt = DateTime.Now,
+                    IsSuccess = true,
+                    OrderInfo = $"Thanh toán bởi: {employee.FullName} ({employee.Position?.PositionName})"
+                });
 
-            TempData["Message"] = "Checkout thành công!";
-            TempData["MessageType"] = "success";
+                _context.OrderStatusLogs.Add(new OrderStatusLog
+                {
+                    OrderId = order.OrderId,
+                    OldStatus = oldStatus,
+                    NewStatus = "Completed",
+                    ChangedAt = DateTime.Now,
+                    ChangedBy = $"{employee.FullName} ({employee.Position?.PositionName})"
+                });
 
-            return RedirectToAction("Detail", new { id = order.OrderId });
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Checkout thành công!";
+                TempData["MessageType"] = "success";
+
+                return RedirectToAction("Detail", new { id = order.OrderId });
+            }
+        }
+
+        // GET: Order/PaymentCallback (Nhận phản hồi từ VNPay)
+        [AllowAnonymous]
+        public async Task<IActionResult> PaymentCallback()
+        {
+            var response = _vnPayService.PaymentExecute(Request.Query);
+
+            if (!int.TryParse(response.OrderCode, out int orderId))
+            {
+                TempData["Message"] = "Không xác định được mã đơn hàng từ VNPay!";
+                TempData["MessageType"] = "error";
+
+                // Nếu không lấy được orderId, điều hướng an toàn theo Role
+                if (User.IsInRole("Customer"))
+                    return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Index", "Order");
+            }
+
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
+            if (order == null) return NotFound();
+
+            if (response.Success && response.ResponseCode == "00")
+            {
+                // Lấy Mã nhân viên thực hiện từ Session
+                int? employeeId = HttpContext.Session.GetInt32("VnPay_EmployeeId");
+                var employee = await _context.Employees.Include(e => e.Position).FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+                string staffInfo = employee != null ? $"{employee.FullName} ({employee.Position?.PositionName})" : "Thu ngân (VNPay)";
+
+                string oldStatus = order.OrderStatus;
+                order.PaymentStatus = "Paid";
+                order.OrderStatus = "Completed";
+
+                _context.Payments.Add(new Payment
+                {
+                    OrderId = order.OrderId,
+                    EmployeeId = employeeId,
+                    Method = "VNPAY",
+                    Amount = response.Amount,
+                    TransactionNo = response.TransactionNo,
+                    ResponseCode = response.ResponseCode,
+                    OrderInfo = response.OrderInfo,
+                    IsSuccess = true,
+                    PaidAt = DateTime.Now
+                });
+
+                _context.OrderStatusLogs.Add(new OrderStatusLog
+                {
+                    OrderId = order.OrderId,
+                    OldStatus = oldStatus,
+                    NewStatus = "Completed",
+                    ChangedAt = DateTime.Now,
+                    ChangedBy = staffInfo
+                });
+
+                await _context.SaveChangesAsync();
+
+                // Xóa Session sau khi thanh toán thành công
+                HttpContext.Session.Remove("VnPay_EmployeeId");
+
+                TempData["Message"] = "Thanh toán qua VNPAY thành công!";
+                TempData["MessageType"] = "success";
+            }
+            else
+            {
+                TempData["Message"] = $"Thanh toán VNPAY không thành công. Mã lỗi: {response.ResponseCode}";
+                TempData["MessageType"] = "error";
+            }
+
+            // ==========================================
+            // 🔀 PHÂN LUỒNG ĐIỀU HƯỚNG THEO ROLE NGƯỜI DÙNG
+            // ==========================================
+
+            // 1. Nếu là Khách hàng -> Về trang chi tiết đơn hàng của Khách hàng
+            if (User.IsInRole("Customer"))
+            {
+                return RedirectToAction("Detail", "CustomerOrder", new { area = "", id = orderId });
+            }
+
+            // 2. Nếu là Nhân viên -> Về trang Detail ngoài Area Admin (hoặc trang Order của Nhân viên)
+            if (User.IsInRole("Employee"))
+            {
+                return RedirectToAction("Detail", "Order", new { area = "", id = orderId });
+            }
+
+            // 3. Mặc định dành cho Admin -> Về trang Detail trong Area Admin
+            return RedirectToAction("Detail", "Order", new { area = "Admin", id = orderId });
         }
 
         // 6. AJAX: Trả partial view chi tiết hóa đơn
@@ -231,5 +409,65 @@ namespace CafePos.Controllers
 
             return View(order);
         }
+        // GET: Admin/Order/GetActiveCashiers
+        [HttpGet]
+        public async Task<IActionResult> GetActiveCashiers()
+        {
+            var cashiers = await _context.Employees
+                .Include(e => e.Position)
+                .Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2))
+                .Select(e => new
+                {
+                    employeeId = e.EmployeeId,
+                    fullName = e.FullName,
+                    positionName = e.Position != null ? e.Position.PositionName : "N/A"
+                })
+                .ToListAsync();
+
+            return Json(cashiers);
+        }
+
+        // POST: Admin/Order/MarkAsPaid
+        [HttpPost]
+        public async Task<IActionResult> MarkAsPaid(int id, string paymentMethod, int employeeId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
+            if (order == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng!" });
+
+            var employee = await _context.Employees.Include(e => e.Position).FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+            if (employee == null || (employee.PositionId != 1 && employee.PositionId != 2))
+            {
+                return Json(new { success = false, message = "Nhân viên không có quyền thực hiện thanh toán!" });
+            }
+
+            string oldStatus = order.OrderStatus;
+            order.PaymentStatus = "Paid";
+            order.OrderStatus = "Completed";
+            order.PaymentMethod = string.IsNullOrEmpty(paymentMethod) ? "Cash" : paymentMethod;
+
+            _context.Payments.Add(new Payment
+            {
+                OrderId = order.OrderId,
+                EmployeeId = employee.EmployeeId,
+                Method = order.PaymentMethod,
+                Amount = order.TotalAmount,
+                PaidAt = DateTime.Now,
+                IsSuccess = true,
+                OrderInfo = $"Thanh toán nhanh bởi: {employee.FullName} ({employee.Position?.PositionName})"
+            });
+
+            _context.OrderStatusLogs.Add(new OrderStatusLog
+            {
+                OrderId = order.OrderId,
+                OldStatus = oldStatus,
+                NewStatus = "Completed",
+                ChangedAt = DateTime.Now,
+                ChangedBy = $"{employee.FullName} ({employee.Position?.PositionName})"
+            });
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
     }
+
 }

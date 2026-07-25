@@ -2,147 +2,73 @@
 
 @{
     ViewData["Title"] = "Chi tiết danh sách hóa đơn";
-    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- Nhúng Bootstrap Icons nếu dự án chưa có -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-<style>
-    /* Styling riêng cho trang Master-Detail */
-    .invoice-list-container {
-        max-height: calc(100vh - 210px);
-        overflow-y: auto;
-    }
-
-    .invoice-item {
-        border: none !important;
-        border-left: 4px solid transparent !important;
-        transition: all 0.2s ease;
-        margin-bottom: 6px;
-        border-radius: 12px !important;
-    }
-
-        .invoice-item:hover {
-            background-color: #f8f9fa;
-            transform: translateX(3px);
-        }
-
-        /* Hiệu ứng khi hóa đơn được chọn */
-        .invoice-item.active {
-            background-color: #eef2ff !important;
-            border-left-color: #0d6efd !important;
-            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08);
-        }
-
-            .invoice-item.active .invoice-code {
-                color: #0d6efd !important;
-            }
-
-    /* Avatar cho danh sách bên trái */
-    .avatar-sm {
-        width: 32px;
-        height: 32px;
-        font-size: 0.85rem;
-    }
-
-    /* Soft Badges */
-    .badge-soft-success {
-        background-color: #d1e7dd;
-        color: #0f5132;
-    }
-
-    .badge-soft-danger {
-        background-color: #f8d7da;
-        color: #842029;
-    }
-</style>
-
-<div class="container-fluid py-4 px-4">
-    <!-- Header Page -->
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1 text-dark">Chi tiết danh sách hóa đơn</h3>
-            <p class="text-muted mb-0 small">Chọn hóa đơn ở danh sách bên trái để xem nhanh nội dung chi tiết bên phải</p>
+            <h3 class="fw-bold mb-1">Chi tiết danh sách hóa đơn</h3>
+            <p class="text-muted mb-0">Chọn hóa đơn bên trái để xem chi tiết bên phải bằng AJAX.</p>
         </div>
         <div>
-            <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
-                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            <a  asp-controller="Order" asp-action="Index" class="btn btn-outline-dark rounded-pill px-4">
+                Quay lại danh sách
             </a>
         </div>
     </div>
 
     <div class="row g-4">
-        <!-- Cột bên trái: Danh sách hóa đơn -->
-        <div class="col-lg-4 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                    <h6 class="fw-bold mb-0 text-dark">
-                        <i class="bi bi-list-task me-2 text-primary"></i>Danh sách đơn (@(Model?.Count() ?? 0))
-                    </h6>
-                    <span class="badge bg-light text-muted fw-normal">Gần đây</span>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-dark text-white rounded-top-4">
+                    <h5 class="mb-0">Danh sách hóa đơn</h5>
                 </div>
 
-                <div class="card-body p-2 invoice-list-container">
+                <div class="list-group list-group-flush" style="max-height: 75vh; overflow-y: auto;">
                     @if (Model != null && Model.Any())
                     {
                         foreach (var item in Model)
                         {
-                            var initial = !string.IsNullOrEmpty(item.CustomerName) ? item.CustomerName.Substring(0, 1).ToUpper() : "?";
-
                             <button type="button"
-                                    class="list-group-item list-group-item-action p-3 invoice-item"
+                                    class="list-group-item list-group-item-action border-0 py-3 invoice-item"
                                     data-id="@item.OrderId">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <div class="fw-bold invoice-code text-dark">#@item.OrderCode</div>
-                                        <div class="small text-muted">
-                                            <i class="bi bi-clock me-1"></i>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")
-                                        </div>
+                                        <div class="fw-bold">@item.OrderCode</div>
+                                        <div class="small text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                        <div class="small">@item.CustomerName</div>
                                     </div>
                                     <div class="text-end">
-                                        <div class="fw-bold text-dark mb-1">@item.TotalAmount.ToString("N0") đ</div>
+                                        <div class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</div>
                                         @if (item.PaymentStatus == "Paid")
                                         {
-                                            <span class="badge badge-soft-success px-2 py-1 rounded-pill small">Đã thanh toán</span>
+                                            <span class="badge bg-success">Đã thanh toán</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill small">Chưa thanh toán</span>
+                                            <span class="badge bg-danger">Chưa thanh toán</span>
                                         }
                                     </div>
-                                </div>
-
-                                <div class="d-flex align-items-center pt-2 border-top border-light text-muted small">
-                                    <div class="avatar-sm rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold me-2 text-secondary">
-                                        @initial
-                                    </div>
-                                    <span class="text-truncate" style="max-width: 180px;">@item.CustomerName</span>
                                 </div>
                             </button>
                         }
                     }
                     else
                     {
-                        <div class="p-5 text-center text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <span>Chưa có hóa đơn nào.</span>
-                        </div>
+                        <div class="p-4 text-center text-muted">Chưa có hóa đơn.</div>
                     }
                 </div>
             </div>
         </div>
 
-        <!-- Cột bên phải: Nơi hiển thị Partial View chi tiết -->
-        <div class="col-lg-8 col-xl-8">
+        <div class="col-lg-8">
             <div id="invoiceDetail">
-                <div class="card border-0 shadow-sm rounded-4 h-100 min-vh-50 d-flex align-items-center justify-content-center">
+                <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body text-center py-5">
-                        <div class="rounded-circle bg-light d-inline-flex p-4 mb-3 text-muted">
-                            <i class="bi bi-receipt-cutoff fs-1"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark">Chưa chọn hóa đơn</h5>
-                        <p class="text-muted mb-0 small">Vui lòng chọn một hóa đơn ở danh sách bên trái để xem thông tin chi tiết.</p>
+                        <div class="mb-3" style="font-size:48px;">🧾</div>
+                        <h5 class="fw-bold">Chưa chọn hóa đơn</h5>
+                        <p class="text-muted mb-0">Vui lòng chọn một hóa đơn ở bên trái để xem chi tiết.</p>
                     </div>
                 </div>
             </div>
@@ -152,49 +78,40 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
 
-            // Xử lý khi click vào từng item trong danh sách
-            $(".invoice-item").click(function() {
-                // Đổi trạng thái active
+            $(".invoice-item").click(function () {
                 $(".invoice-item").removeClass("active");
                 $(this).addClass("active");
 
                 let id = $(this).data("id");
 
-                // Spinner Loading đẹp mắt
                 $("#invoiceDetail").html(`
-                            <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
-                                <div class="py-5">
-                                    <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
-                                    <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
-                                </div>
-                            </div>
-                        `);
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body text-center py-5">
+                            <div class="spinner-border text-primary mb-3" role="status"></div>
+                            <p class="mb-0">Đang tải chi tiết hóa đơn...</p>
+                        </div>
+                    </div>
+                `);
 
-                // Gọi AJAX đến Action lấy Partial View
                 $.ajax({
-                    url: '@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })',
+                    url: '@Url.Action("GetInvoicePartial", "Order")',
                     type: 'GET',
                     data: { id: id },
-                    success: function(res) {
+                    success: function (res) {
                         $("#invoiceDetail").html(res);
                     },
-                    error: function() {
+                    error: function () {
                         $("#invoiceDetail").html(`
-                                    <div class="alert alert-danger rounded-4 shadow-sm p-4 d-flex align-items-center" role="alert">
-                                        <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">Không thể tải chi tiết hóa đơn</h6>
-                                            <p class="mb-0 small">Đã xảy ra lỗi trong quá trình lấy dữ liệu. Vui lòng thử lại sau!</p>
-                                        </div>
-                                    </div>
-                                `);
+                            <div class="alert alert-danger rounded-4 shadow-sm">
+                                Không tải được chi tiết hóa đơn.
+                            </div>
+                        `);
                     }
                 });
             });
 
-            // Tự động kích hoạt (Click) hóa đơn đầu tiên nếu danh sách không rỗng
             var firstInvoice = $(".invoice-item").first();
             if (firstInvoice.length) {
                 firstInvoice.trigger("click");
