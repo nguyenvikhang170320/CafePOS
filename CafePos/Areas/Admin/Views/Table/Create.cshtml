@@ -1,0 +1,43 @@
+﻿@model CafePos.Models.Table
+@{
+    ViewData["Title"] = "Thêm mới bàn ăn";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-3 mt-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle-fill me-2"></i>Thêm Bàn Ăn Mới</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <!-- Ô nhập Khu / Tầng -->
+                    <div class="form-group mb-3">
+                        <label asp-for="Area" class="form-label fw-bold text-secondary">Khu vực / Tầng</label>
+                        <input asp-for="Area" class="form-control form-control-lg border-2" placeholder="VD: Khu A, Khu B, Tầng 1, Sân vườn..." />
+                        <span asp-validation-for="Area" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Ô nhập Tên Bàn -->
+                    <div class="form-group mb-3">
+                        <label asp-for="TableName" class="form-label fw-bold text-secondary">Tên bàn</label>
+                        <input asp-for="TableName" class="form-control form-control-lg border-2" placeholder="VD: Bàn 01, Bàn VIP 2..." required />
+                        <span asp-validation-for="TableName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input border-2" type="checkbox" asp-for="IsActive" id="IsActiveSwitch" checked />
+                        <label class="form-check-label fw-bold text-secondary" for="IsActiveSwitch">Cho phép bàn hoạt động ngay</label>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-5 shadow">Lưu bàn</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

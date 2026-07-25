@@ -3,9 +3,14 @@ using CafePos.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace CafePos.Controllers
 {
+    [Authorize(Roles = "Admin,Employee")]
     public class OrderController : Controller
     {
         private readonly CafePosDbContext _context;
@@ -15,29 +20,53 @@ namespace CafePos.Controllers
             _context = context;
         }
 
-        // Danh sách đơn
         public async Task<IActionResult> Index()
         {
-            var orders = await _context.Orders
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
-
+            var orders = await _context.Orders.OrderByDescending(x => x.CreatedDate).ToListAsync();
             return View(orders);
         }
 
-        // Danh sách hóa đơn + khung xem ajax
         public async Task<IActionResult> Invoice()
         {
-            var orders = await _context.Orders
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
-
+            var orders = await _context.Orders.OrderByDescending(x => x.CreatedDate).ToListAsync();
             return View(orders);
         }
 
-        // Chi tiết full page
         public async Task<IActionResult> Detail(int id)
         {
+            var order = await _context.Orders
+                .Include(x => x.Table)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(x => x.OrderItemToppings)
+                .FirstOrDefaultAsync(x => x.OrderId == id);
+
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Checkout(int id)
+        {
+            var order = await _context.Orders
+                .Include(x => x.Table)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(x => x.OrderItemToppings)
+                .FirstOrDefaultAsync(x => x.OrderId == id);
+
+            if (order == null) return NotFound();
+
+            ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
+            ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+            return View(order);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Checkout(int id, List<int>? selectedToppingIds, decimal discountAmount, string paymentMethod, int? tableId)
+        {
+            ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
+            ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+
             var order = await _context.Orders
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
@@ -45,55 +74,15 @@ namespace CafePos.Controllers
 
             if (order == null) return NotFound();
 
-            return View(order);
-        }
+            string oldStatus = order.OrderStatus;
 
-        // Checkout - GET
-       
-        public async Task<IActionResult> Checkout(int id)
-        {
-            var order = await _context.Orders
-                .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
-            return View(order);
-        }
-
-        // Checkout - POST
-       
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(int id,List<int>? selectedToppingIds,decimal discountAmount,string paymentMethod)
-        {
-            ViewBag.Toppings = await _context.Toppings
-                .Where(x => x.IsActive)
-                .ToListAsync();
-
-            var order = await _context.Orders
-                .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
-            // Chặn thanh toán lặp
-            if (order.PaymentStatus == "Paid")
-            {
-                TempData["Message"] = "Đơn hàng này đã được thanh toán rồi";
-                TempData["MessageType"] = "warning";
-                return RedirectToAction(nameof(Detail), new { id = order.OrderId });
-            }
             if (order.PaymentStatus == "Paid" || order.OrderStatus == "Completed")
             {
-                TempData["Message"] = "Đơn hàng đã checkout trước đó";
+                TempData["Message"] = "Đơn hàng này đã được thanh toán trước đó";
                 TempData["MessageType"] = "warning";
                 return RedirectToAction(nameof(Detail), new { id = order.OrderId });
             }
+
             if (string.IsNullOrWhiteSpace(paymentMethod))
             {
                 TempData["Message"] = "Vui lòng chọn phương thức thanh toán";
@@ -102,45 +91,35 @@ namespace CafePos.Controllers
             }
 
             var firstItem = order.OrderItems.FirstOrDefault();
-            if (firstItem == null)
+            if (firstItem != null)
             {
-                TempData["Message"] = "Đơn hàng chưa có món nào";
-                TempData["MessageType"] = "error";
-                return View(order);
-            }
+                if (firstItem.OrderItemToppings == null) firstItem.OrderItemToppings = new List<OrderItemTopping>();
 
-            if (firstItem.OrderItemToppings == null)
-                firstItem.OrderItemToppings = new List<OrderItemTopping>();
-
-            // Thêm topping mới, tránh add trùng
-            if (selectedToppingIds != null && selectedToppingIds.Any())
-            {
-                var toppings = await _context.Toppings
-                    .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
-                    .ToListAsync();
-
-                foreach (var topping in toppings)
+                if (selectedToppingIds != null && selectedToppingIds.Any())
                 {
-                    bool existed = firstItem.OrderItemToppings
-                        .Any(x => x.ToppingId == topping.ToppingId);
+                    var toppings = await _context.Toppings
+                        .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
+                        .ToListAsync();
 
-                    if (!existed)
+                    foreach (var topping in toppings)
                     {
-                        firstItem.OrderItemToppings.Add(new OrderItemTopping
+                        bool existed = firstItem.OrderItemToppings.Any(x => x.ToppingId == topping.ToppingId);
+                        if (!existed)
                         {
-                            ToppingId = topping.ToppingId,
-                            ToppingNameSnapshot = topping.Name,
-                            Price = topping.Price,
-                            Quantity = 1,
-                            TotalPrice = topping.Price
-                        });
+                            firstItem.OrderItemToppings.Add(new OrderItemTopping
+                            {
+                                ToppingId = topping.ToppingId,
+                                ToppingNameSnapshot = topping.Name,
+                                Price = topping.Price,
+                                Quantity = 1,
+                                TotalPrice = topping.Price
+                            });
+                        }
                     }
                 }
             }
 
-            // Tính lại tiền toàn bộ đơn
             decimal subTotal = 0;
-
             foreach (var item in order.OrderItems)
             {
                 decimal toppingTotal = item.OrderItemToppings?.Sum(x => x.TotalPrice) ?? 0;
@@ -151,73 +130,35 @@ namespace CafePos.Controllers
             order.SubTotal = subTotal;
             order.DiscountAmount = discountAmount < 0 ? 0 : discountAmount;
             order.TotalAmount = order.SubTotal - order.DiscountAmount;
+            if (order.TotalAmount < 0) order.TotalAmount = 0;
 
-            if (order.TotalAmount < 0)
-                order.TotalAmount = 0;
-
+            order.TableId = tableId;
             order.PaymentMethod = paymentMethod;
             order.PaymentStatus = "Paid";
             order.OrderStatus = "Completed";
 
-            await _context.SaveChangesAsync();
-
-            TempData["Message"] = "Checkout thành công";
-            TempData["MessageType"] = "success";
-
-            return RedirectToAction(nameof(Detail), new { id = order.OrderId });
-        }
-
-        // AJAX: trả partial hóa đơn
-        [HttpGet]
-        public async Task<IActionResult> GetInvoicePartial(int id)
-        {
-            var order = await _context.Orders
-                .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
-            return PartialView("_InvoicePartial", order);
-        }
-
-        // AJAX: cập nhật trạng thái thanh toán
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
-        public async Task<IActionResult> MarkAsPaid(int id, string paymentMethod)
-        {
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(x => x.OrderId == id);
-
-            if (order == null)
-                return Json(new { success = false, message = "Không tìm thấy hóa đơn" });
-
-            order.PaymentStatus = "Paid";
-            order.PaymentMethod = paymentMethod;
-            order.OrderStatus = "Completed";
-
-            await _context.SaveChangesAsync();
-
-            return Json(new
+            _context.Payments.Add(new Payment
             {
-                success = true,
-                message = "Thanh toán thành công"
+                OrderId = order.OrderId,
+                Method = paymentMethod,
+                Amount = order.TotalAmount,
+                PaidAt = DateTime.Now
             });
-        }
 
-        // In hóa đơn
-        public async Task<IActionResult> PrintInvoice(int id)
-        {
-            var order = await _context.Orders
-                .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
+            _context.OrderStatusLogs.Add(new OrderStatusLog
+            {
+                OrderId = order.OrderId,
+                OldStatus = oldStatus,
+                NewStatus = "Completed",
+                ChangedAt = DateTime.Now,
+                ChangedBy = User.Identity?.Name ?? "Thu ngân tại quầy"
+            });
 
-            if (order == null) return NotFound();
+            await _context.SaveChangesAsync();
 
-            return View(order);
+            TempData["Message"] = "Checkout thanh toán thành công";
+            TempData["MessageType"] = "success";
+            return RedirectToAction(nameof(Detail), new { id = order.OrderId });
         }
     }
 }
-

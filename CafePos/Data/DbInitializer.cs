@@ -11,41 +11,67 @@ namespace CafePos.Data
             // 1. Tự động áp dụng các file Migration (Tương đương lệnh Update-Database)
             context.Database.Migrate();
 
-            // 2. Kiểm tra xem bảng Roles đã có dữ liệu chưa. Nếu có rồi thì dừng lại.
-            if (context.Roles.Any())
+            // 2. Kiểm tra xem bảng Roles đã có dữ liệu chưa. Nếu có rồi thì chuyển qua kiểm tra bảng user.
+            // Seed Roles
+            if (!context.Roles.Any())
             {
-                return;   // Database đã được seed rồi
+                var roles = new Role[]
+                {
+                    new Role { Name = "Admin" },
+                    new Role { Name = "Staff" },
+                    new Role { Name = "Employee" }
+                };
+
+                context.Roles.AddRange(roles);
+                context.SaveChanges();
             }
 
-            // 3. Nếu chưa có, tiến hành tạo sẵn dữ liệu cho bảng Roles
-            var roles = new Role[]
-            {
-                // Lưu ý: Tùy theo cấu trúc Model của bạn, nếu RoleId là tự tăng (Identity) 
-                // thì không cần gán RoleId = 1, 2. Ở đây mình làm chuẩn theo DB của bạn.
-                new Role { Name = "Admin" },
-                new Role { Name = "Staff" },
-                new Role { Name = "Employee"}
-            };
-
-            context.Roles.AddRange(roles);
-            context.SaveChanges(); // Lưu Role xuống DB trước để lấy ID
-
-            // 4. Tạo sẵn 1 tài khoản Admin mặc định để test đăng nhập
+            // Seed Admin User
             if (!context.Users.Any())
             {
-                var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
-
+                var adminRole = context.Roles.First(r => r.Name == "Admin");
+                var staffRole = context.Roles.First(r => r.Name == "Staff");
+                var employeeRole = context.Roles.First(r => r.Name == "Employee");
                 var adminUser = new User
                 {
                     Username = "admin",
-                    // Mã hóa mật khẩu "123456" bằng thư viện BCrypt bạn vừa cài
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin@123"),
                     FullName = "Quản trị viên Hệ thống",
                     RoleId = adminRole.RoleId,
-                    IsActive = true
+                    IsActive = true,
+                    Email = "admincafe@gmail.com",
+                    NgayCapNhat = DateTime.Now,
+                    TrangThai = "Hoạt động"
                 };
 
-                context.Users.Add(adminUser);
+
+                var staffUser = new User
+                {
+                    Username = "Khang",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
+                    FullName = "Nguyễn Vĩ Khang",
+                    RoleId = staffRole.RoleId,
+                    IsActive = true,
+                    Email = "nguyenvikhang849@gmail.com",
+                    NgayCapNhat = DateTime.Now,
+                    TrangThai = "Hoạt động"
+                };
+
+
+                var employeeUser = new User
+                {
+                    Username = "Lan",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234567"),
+                    FullName = "Nguyễn Ngọc Lan",
+                    RoleId = employeeRole.RoleId,
+                    IsActive = true,
+                    Email = "nguyenngoclan@gmail.com",
+                    NgayCapNhat = DateTime.Now,
+                    TrangThai = "Hoạt động"
+                };
+
+
+                context.Users.AddRange(adminUser, staffUser, employeeUser); 
                 context.SaveChanges();
             }
         }

@@ -3,11 +3,15 @@ using CafePos.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace CafePos.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles ="Staff")]
     public class CustomerOrderController : Controller
     {
         private readonly CafePosDbContext _context;
@@ -27,23 +31,17 @@ namespace CafePos.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-     string? note,
-     string? phone,
-     List<int> productIds,
-     List<int> quantities,
-     List<int>? selectedToppingIds)
+            string? note,
+            string? phone,
+            List<int> productIds,
+            List<int> quantities,
+            List<int?>? productSizeIds,
+            List<int>? selectedToppingIds)
         {
             await LoadCreateViewData();
 
-            var customerName = User.FindFirst("FullName")?.Value;
+            var customerName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrWhiteSpace(customerName))
-            {
-                TempData["Message"] = "Không lấy được thông tin khách hàng từ tài khoản đăng nhập";
-                TempData["MessageType"] = "error";
-                return View();
-            }
 
             if (string.IsNullOrWhiteSpace(phone))
             {
@@ -59,17 +57,9 @@ namespace CafePos.Controllers
                 return View();
             }
 
-            var userExists = await _context.Users.AnyAsync(x => x.UserId == userId);
-            if (!userExists)
-            {
-                TempData["Message"] = "Tài khoản đăng nhập không tồn tại trong hệ thống";
-                TempData["MessageType"] = "error";
-                return View();
-            }
-
             if (productIds == null || quantities == null || !productIds.Any() || !quantities.Any())
             {
-                TempData["Message"] = "Dữ liệu món không hợp lệ";
+                TempData["Message"] = "Dữ liệu món chọn không hợp lệ";
                 TempData["MessageType"] = "error";
                 return View();
             }
@@ -88,28 +78,43 @@ namespace CafePos.Controllers
             for (int i = 0; i < productIds.Count; i++)
             {
                 if (i >= quantities.Count) continue;
-
                 int quantity = quantities[i];
                 if (quantity <= 0) continue;
 
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(x => x.ProductId == productIds[i] && x.IsActive);
-
+                var product = await _context.Products.FirstOrDefaultAsync(x => x.ProductId == productIds[i] && x.IsActive);
                 if (product == null) continue;
+
+                decimal extraPrice = 0;
+                string? sizeName = null;
+                int? selectedSizeId = null;
+
+                if (productSizeIds != null && i < productSizeIds.Count)
+                {
+                    selectedSizeId = productSizeIds[i];
+                    if (selectedSizeId.HasValue && selectedSizeId.Value > 0)
+                    {
+                        var productSize = await _context.ProductSizes
+                            .FirstOrDefaultAsync(ps => ps.ProductSizeId == selectedSizeId.Value && ps.ProductId == product.ProductId);
+                        if (productSize != null)
+                        {
+                            extraPrice = productSize.ExtraPrice;
+                            sizeName = productSize.SizeName;
+                        }
+                    }
+                }
 
                 var orderItem = new OrderItem
                 {
                     ProductId = product.ProductId,
                     Quantity = quantity,
                     ProductNameSnapshot = product.Name,
-                    UnitPrice = product.BasePrice,
-                    SizeNameSnapshot = null,
-                    ItemNote = null,
+                    UnitPrice = product.BasePrice + extraPrice,
+                    ProductSizeId = selectedSizeId,
+                    SizeNameSnapshot = sizeName,
                     OrderItemToppings = new List<OrderItemTopping>()
                 };
 
                 decimal toppingTotal = 0;
-
                 foreach (var top in selectedToppings)
                 {
                     var itemTopping = new OrderItemTopping
@@ -120,20 +125,18 @@ namespace CafePos.Controllers
                         Quantity = quantity,
                         TotalPrice = top.Price * quantity
                     };
-
                     orderItem.OrderItemToppings.Add(itemTopping);
                     toppingTotal += itemTopping.TotalPrice;
                 }
 
-                orderItem.LineTotal = (product.BasePrice * quantity) + toppingTotal;
+                orderItem.LineTotal = (orderItem.UnitPrice * quantity) + toppingTotal;
                 subTotal += orderItem.LineTotal;
-
                 validItems.Add(orderItem);
             }
 
             if (!validItems.Any())
             {
-                TempData["Message"] = "Vui lòng chọn ít nhất 1 món và nhập số lượng lớn hơn 0";
+                TempData["Message"] = "Vui lòng chọn ít nhất 1 món với số lượng lớn hơn 0";
                 TempData["MessageType"] = "error";
                 return View();
             }
@@ -148,7 +151,6 @@ namespace CafePos.Controllers
                 Note = note,
                 OrderStatus = "Pending",
                 PaymentStatus = "Unpaid",
-                PaymentMethod = null,
                 SubTotal = subTotal,
                 DiscountAmount = 0,
                 TotalAmount = subTotal,
@@ -160,13 +162,13 @@ namespace CafePos.Controllers
 
             TempData["Message"] = "Đặt món thành công";
             TempData["MessageType"] = "success";
-
             return RedirectToAction(nameof(MyOrders));
         }
 
         private async Task LoadCreateViewData()
         {
             ViewBag.Products = await _context.Products
+                .Include(p => p.ProductSizes.Where(ps => !ps.IsDeleted))
                 .Where(x => x.IsActive)
                 .OrderBy(x => x.Name)
                 .ToListAsync();
@@ -176,20 +178,14 @@ namespace CafePos.Controllers
                 .OrderBy(x => x.Name)
                 .ToListAsync();
 
-            ViewBag.CustomerName = User.FindFirst("FullName")?.Value;
+            ViewBag.CustomerName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name;
             ViewBag.CustomerPhone = User.FindFirst("PhoneNumber")?.Value;
         }
 
         public async Task<IActionResult> MyOrders()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-            {
-                TempData["Message"] = "Không xác định được tài khoản đăng nhập";
-                TempData["MessageType"] = "error";
-                return View(new List<Order>());
-            }
+            int.TryParse(userIdClaim, out int userId);
 
             var orders = await _context.Orders
                 .Where(x => x.UserId == userId)
@@ -199,44 +195,17 @@ namespace CafePos.Controllers
             return View(orders);
         }
 
-        public async Task<IActionResult> Invoice(string phone)
-        {
-            if (string.IsNullOrWhiteSpace(phone))
-                return View(new List<Order>());
-
-            var orders = await _context.Orders
-                .Where(x => x.CustomerPhone == phone)
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
-
-            ViewBag.Phone = phone;
-            return View(orders);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetInvoicePartial(int id)
-        {
-            var order = await _context.Orders
-                .Include(x => x.OrderItems)
-                    .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
-            return PartialView("_CustomerInvoicePartial", order);
-        }
-
         public async Task<IActionResult> Detail(int id)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdClaim, out int userId);
+
             var order = await _context.Orders
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
-                .FirstOrDefaultAsync(x => x.OrderId == id);
+                .FirstOrDefaultAsync(x => x.OrderId == id && x.UserId == userId);
 
-            if (order == null)
-                return NotFound();
-
+            if (order == null) return NotFound();
             return View(order);
         }
     }

@@ -1,341 +1,356 @@
 is_global = true
 build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = CafePos
 build_property.RootNamespace = CafePos
-build_property.ProjectDir = C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos\
+build_property.ProjectDir = E:\Source Code Tự làm\CafePOS\CafePos\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
-build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\tuankenofficial2025\source\repos\CafePOS\CafePos
+build_property.GenerateRazorMetadataSourceChecksumAttributes = true
+build_property.MSBuildProjectDirectory = E:\Source Code Tự làm\CafePOS\CafePos
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Category/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Category/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ2F0ZWdvcnlcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Category/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Category/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ2F0ZWdvcnlcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Category/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Category/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ2F0ZWdvcnlcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Category/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Category/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ2F0ZWdvcnlcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Category/Trash.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Category/Trash.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcQ2F0ZWdvcnlcVHJhc2guY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Employee/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Employee/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRW1wbG95ZWVcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Employee/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Employee/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRW1wbG95ZWVcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Employee/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Employee/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRW1wbG95ZWVcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Employee/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Employee/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRW1wbG95ZWVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Employee/Trash.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Employee/Trash.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcRW1wbG95ZWVcVHJhc2guY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Home/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/Checkout.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/Checkout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcQ2hlY2tvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/Invoice.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/Invoice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcSW52b2ljZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/PrintInvoice.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/PrintInvoice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcUHJpbnRJbnZvaWNlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Order/_InvoicePartial.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Order/_InvoicePartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcT3JkZXJcX0ludm9pY2VQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFNpemVcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFNpemVcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFNpemVcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFNpemVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Trash.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/ProductSize/Trash.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFNpemVcVHJhc2guY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Product/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Product/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Product/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Product/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFxEZXRhaWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Product/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Product/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Product/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Product/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Product/Trash.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Product/Trash.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUHJvZHVjdFxUcmFzaC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Revenue/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Revenue/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcUmV2ZW51ZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Shared/_AdminLayout.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Shared/_AdminLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcU2hhcmVkXF9BZG1pbkxheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/ChangePassword.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Table/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFibGVcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Table/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFibGVcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Table/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFibGVcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Table/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFibGVcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/ChangePassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cQ2hhbmdlUGFzc3dvcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Details.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Profile.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/TaiKhoan/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVGFpS2hvYW5cUHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Topping/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Topping/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVG9wcGluZ1xDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Topping/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Topping/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVG9wcGluZ1xEZXRhaWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Topping/Edit.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Topping/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVG9wcGluZ1xFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Topping/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Topping/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVG9wcGluZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/Topping/Trash.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/Topping/Trash.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcVG9wcGluZ1xUcmFzaC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/_ViewImports.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Areas/Admin/Views/_ViewStart.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Areas/Admin/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXNcQWRtaW5cVmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Account/ForgotPassword.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Account/ForgotPassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Account/Login.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Account/Register.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Account/ResetPassword.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Account/ResetPassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZXNldFBhc3N3b3JkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Category/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Category/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2F0ZWdvcnlcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Category/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Category/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2F0ZWdvcnlcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/CustomerOrder/Create.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/CustomerOrder/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJPcmRlclxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/CustomerOrder/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/CustomerOrder/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJPcmRlclxEZXRhaWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/CustomerOrder/Invoice.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/CustomerOrder/Invoice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJPcmRlclxJbnZvaWNlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/CustomerOrder/MyOrders.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/CustomerOrder/MyOrders.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJPcmRlclxNeU9yZGVycy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/CustomerOrder/_CustomerInvoicePartial.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/CustomerOrder/_CustomerInvoicePartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJPcmRlclxfQ3VzdG9tZXJJbnZvaWNlUGFydGlhbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Employee/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Employee/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Employee/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Employee/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW1wbG95ZWVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Home/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Home/Privacy.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/Checkout.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/Checkout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcQ2hlY2tvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcQ3JlYXRlLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/Invoice.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/Invoice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcSW52b2ljZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/PrintInvoice.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/PrintInvoice.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcUHJpbnRJbnZvaWNlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Order/_InvoicePartial.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Order/_InvoicePartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3JkZXJcX0ludm9pY2VQYXJ0aWFsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/ProductSize/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/ProductSize/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdFNpemVcRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/ProductSize/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/ProductSize/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdFNpemVcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Product/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Product/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdFxEZXRhaWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Product/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Product/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Revenue/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Revenue/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmV2ZW51ZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Shared/Error.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Shared/_ValidationScriptsPartial.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/TaiKhoan/ChangePassword.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/TaiKhoan/ChangePassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFpS2hvYW5cQ2hhbmdlUGFzc3dvcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/TaiKhoan/Details.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/TaiKhoan/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFpS2hvYW5cRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/TaiKhoan/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/TaiKhoan/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFpS2hvYW5cSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/TaiKhoan/Profile.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/TaiKhoan/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFpS2hvYW5cUHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Topping/Detail.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Topping/Detail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVG9wcGluZ1xEZXRhaWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Topping/Index.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Topping/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVG9wcGluZ1xJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/_ViewImports.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/_ViewStart.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/tuankenofficial2025/source/repos/CafePOS/CafePos/Views/Shared/_Layout.cshtml]
+[E:/Source Code Tự làm/CafePOS/CafePos/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-yd9t6vtxga
