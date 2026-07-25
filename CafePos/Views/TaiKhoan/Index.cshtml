@@ -50,7 +50,7 @@
                         </a>
                     }
 
-                    @if (!showDeleted)
+                    if (!showDeleted)
                     {
                         <a asp-action="Create" class="btn btn-sm btn-success shadow-sm">
                             <i class="bi bi-person-plus-fill"></i> Thêm tài khoản
@@ -69,7 +69,7 @@
                         <i class="bi bi-search"></i>
                     </span>
                     <input type="text" name="searchString" class="form-control bg-light border-0 small"
-                           placeholder="Tìm theo tên tài khoản, họ tên, email..."
+                           placeholder="Tìm theo tên tài khoản, email..."
                            value="@currentFilter" />
 
                     <button class="btn btn-primary" type="submit">
@@ -87,11 +87,11 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle" width="100%" cellspacing="0">
+                    <!-- CHỈ ĐỂ ĐÚNG 7 CỘT TIÊU ĐỀ -->
                     <thead class="table-light text-dark text-nowrap">
                         <tr>
                             <th class="text-center" style="width: 70px;">Mã</th>
                             <th>Tên đăng nhập</th>
-                            <th>Họ và tên</th>
                             <th>Email</th>
                             <th class="text-center">Loại tài khoản</th>
                             <th class="text-center">Trạng thái</th>
@@ -105,11 +105,16 @@
                             foreach (var item in Model)
                             {
                                 <tr>
+                                    <!-- Cột 1: Mã -->
                                     <td class="text-center fw-bold text-secondary">@item.UserId</td>
+                                    
+                                    <!-- Cột 2: Tên đăng nhập -->
                                     <td class="fw-bold text-primary">@item.Username</td>
-                                    <td>@item.FullName</td>
+                                    
+                                    <!-- Cột 3: Email -->
                                     <td>@item.Email</td>
 
+                                    <!-- Cột 4: Loại tài khoản -->
                                     <td class="text-center">
                                         @if (item.Role != null && item.Role.Name == "Admin")
                                         {
@@ -129,6 +134,7 @@
                                         }
                                     </td>
 
+                                    <!-- Cột 5: Trạng thái -->
                                     <td class="text-center">
                                         @if (item.TrangThai == "Hoạt động")
                                         {
@@ -140,10 +146,12 @@
                                         }
                                     </td>
 
+                                    <!-- Cột 6: Ngày cập nhật -->
                                     <td>
                                         @item.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")
                                     </td>
 
+                                    <!-- Cột 7: Thao tác -->
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm shadow-sm" role="group">
                                             @if (showDeleted)
@@ -196,7 +204,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="7" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                     Không tìm thấy tài khoản nào phù hợp.
                                 </td>
@@ -220,23 +228,23 @@
                             searchString = currentFilter,
                             showDeleted = showDeleted
                         }),
-                                                new PagedListRenderOptions
-                                                {
-                                                    LiElementClasses = new[] { "page-item" },
-                                                    PageClasses = new[] { "page-link" },
-                                                    MaximumPageNumbersToDisplay = 5,
-                                                    DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                                                    EllipsesFormat = "...",
-                                                    DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-                                                    DisplayLinkToLastPage = PagedListDisplayMode.Always,
-                                                    DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-                                                    DisplayLinkToNextPage = PagedListDisplayMode.Always,
-                                                    LinkToFirstPageFormat = "Trang đầu",
-                                                    LinkToPreviousPageFormat = "«",
-                                                    LinkToNextPageFormat = "»",
-                                                    LinkToLastPageFormat = "Trang cuối",
-                                                    ActiveLiElementClass = "active"
-                                                })
+                        new PagedListRenderOptions
+                        {
+                            LiElementClasses = new[] { "page-item" },
+                            PageClasses = new[] { "page-link" },
+                            MaximumPageNumbersToDisplay = 5,
+                            DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                            EllipsesFormat = "...",
+                            DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                            DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                            DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                            LinkToFirstPageFormat = "Trang đầu",
+                            LinkToPreviousPageFormat = "«",
+                            LinkToNextPageFormat = "»",
+                            LinkToLastPageFormat = "Trang cuối",
+                            ActiveLiElementClass = "active"
+                        })
                     </div>
                 </div>
             </div>

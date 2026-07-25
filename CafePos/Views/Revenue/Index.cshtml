@@ -1,143 +1,100 @@
-﻿@model CafePos.ViewModels.ReportDashboardViewModel
+﻿@model CafePos.Models.ViewModels.ShiftReportViewModel
 
 @{
-    ViewData["Title"] = "Báo cáo doanh thu";
+    ViewData["Title"] = "Báo cáo ca làm việc";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container py-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">Báo cáo doanh thu</h2>
-            <p class="text-muted mb-0">Thống kê doanh thu theo tháng, năm và món bán chạy.</p>
+            <h2 class="fw-bold mb-1">Báo cáo ca làm việc</h2>
+            <p class="text-muted mb-0">
+                Ngày: <strong>@Model.ReportDate.ToString("dd/MM/yyyy")</strong> | Nhân viên: <strong>@Model.EmployeeName</strong>
+            </p>
         </div>
-
-        <form method="get" asp-action="Index" class="d-flex gap-2">
-            <input type="number" name="year" value="@Model.SelectedYear" class="form-control" style="width: 140px;" />
-            <button type="submit" class="btn btn-primary">Xem</button>
-        </form>
+        <button onclick="window.print()" class="btn btn-outline-secondary d-print-none">
+            <i class="bi bi-printer me-1"></i> In báo cáo kết ca
+        </button>
     </div>
 
+    <!-- Thống kê nhanh trong ca -->
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white">
                 <div class="card-body">
-                    <h6 class="text-muted">Tổng doanh thu năm @Model.SelectedYear</h6>
-                    <h3 class="fw-bold text-success">@Model.TotalRevenueThisYear.ToString("N0") đ</h3>
+                    <h6 class="opacity-75">Tổng doanh thu ca</h6>
+                    <h3 class="fw-bold mb-0">@Model.TotalRevenue.ToString("N0") đ</h3>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white">
                 <div class="card-body">
-                    <h6 class="text-muted">Tổng số đơn năm @Model.SelectedYear</h6>
-                    <h3 class="fw-bold text-primary">@Model.TotalOrdersThisYear</h3>
+                    <h6 class="opacity-75">Tiền mặt (Trong két)</h6>
+                    <h3 class="fw-bold mb-0">@Model.CashRevenue.ToString("N0") đ</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="opacity-75">Chuyển khoản / App</h6>
+                    <h3 class="fw-bold mb-0">@Model.BankTransferRevenue.ToString("N0") đ</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white">
+                <div class="card-body">
+                    <h6 class="opacity-75">Tổng số đơn ca</h6>
+                    <h3 class="fw-bold mb-0">@Model.TotalOrders đơn</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">Doanh thu theo tháng</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Tháng</th>
-                            <th>Số đơn</th>
-                            <th>Doanh thu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.MonthlyRevenues != null && Model.MonthlyRevenues.Any())
-                        {
-                            foreach (var item in Model.MonthlyRevenues)
-                            {
-                                <tr>
-                                    <td>Tháng @item.Month/@item.Year</td>
-                                    <td>@item.TotalOrders</td>
-                                    <td class="fw-bold text-danger">@item.TotalRevenue.ToString("N0") đ</td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu doanh thu theo tháng.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">Doanh thu theo năm</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Năm</th>
-                            <th>Số đơn</th>
-                            <th>Doanh thu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.YearlyRevenues != null && Model.YearlyRevenues.Any())
-                        {
-                            foreach (var item in Model.YearlyRevenues)
-                            {
-                                <tr>
-                                    <td>@item.Year</td>
-                                    <td>@item.TotalOrders</td>
-                                    <td class="fw-bold text-success">@item.TotalRevenue.ToString("N0") đ</td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu doanh thu theo năm.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
+    <!-- Danh sách các đơn hàng đã thanh toán trong ngày -->
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body">
-            <h5 class="fw-bold mb-3">Top món bán chạy</h5>
+            <h5 class="fw-bold mb-3">Danh sách đơn hàng trong ca</h5>
             <div class="table-responsive">
-                <table class="table table-bordered align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Tên món</th>
-                            <th>Số lượng bán</th>
-                            <th>Doanh thu</th>
+                            <th>Mã đơn</th>
+                            <th>Thời gian</th>
+                            <th>Phương thức</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Tổng tiền</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.BestSellingProducts != null && Model.BestSellingProducts.Any())
+                        @if (Model.TodayOrders != null && Model.TodayOrders.Any())
                         {
-                            foreach (var item in Model.BestSellingProducts)
+                            foreach (var order in Model.TodayOrders)
                             {
                                 <tr>
-                                    <td>@item.ProductName</td>
-                                    <td>@item.TotalQuantitySold</td>
-                                    <td class="fw-bold text-primary">@item.TotalRevenue.ToString("N0") đ</td>
+                                    <td><strong>#@order.OrderId</strong></td>
+                                    <td>@order.CreatedDate.ToString("HH:mm")</td>
+                                    <td>
+                                        <span class="badge @(order.PaymentMethod == "Cash" || order.PaymentMethod == "Tiền mặt" ? "bg-success" : "bg-info")">
+                                            @order.PaymentMethod
+                                        </span>
+                                    </td>
+                                    <td><span class="badge bg-secondary">@order.OrderStatus</span></td>
+                                    <td class="text-end fw-bold">@order.TotalAmount.ToString("N0") đ</td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu món bán chạy.</td>
+                                <td colspan="5" class="text-center text-muted py-4">Chưa phát sinh đơn hàng nào trong ca hôm nay.</td>
                             </tr>
                         }
                     </tbody>
@@ -146,3 +103,5 @@
         </div>
     </div>
 </div>
+
+

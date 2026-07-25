@@ -37,6 +37,13 @@
                                 <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label asp-for="PositionId" class="form-label fw-bold">Chức danh / Vị trí</label>
+                            <select asp-for="PositionId" asp-items="ViewBag.PositionId" class="form-select rounded-3">
+                                <option value="">-- Chọn chức danh --</option>
+                            </select>
+                            <span asp-validation-for="PositionId" class="text-danger small"></span>
+                        </div>
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">

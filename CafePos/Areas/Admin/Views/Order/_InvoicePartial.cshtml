@@ -122,7 +122,7 @@
             </div>
         </div>
 
-        <!-- Quick Payment Buttons (Kích hoạt Script AJAX) -->
+        <!-- Quick Payment Buttons -->
         @if (Model.PaymentStatus != "Paid")
         {
             <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -146,12 +146,13 @@
                             data-method="Banking">
                         <i class="bi bi-qr-code me-1"></i> Chuyển khoản
                     </button>
-                    <button type="button"
-                            class="btn btn-primary btn-sm rounded-pill px-3 btn-mark-paid"
-                            data-id="@Model.OrderId"
-                            data-method="">
-                        <i class="bi bi-qr-code me-1"></i> Chuyển khoản
-                    </button>
+                    <a asp-area="Admin"
+                       asp-controller="Order"
+                       asp-action="Checkout"
+                       asp-route-id="@Model.OrderId"
+                       class="btn btn-dark btn-sm rounded-pill px-3">
+                        <i class="bi bi-credit-card me-1"></i> VNPAY / POS
+                    </a>
                 </div>
             </div>
         }
@@ -258,34 +259,86 @@
     </div>
 </div>
 
-<!-- AJAX Script Xử Lý Thanh Toán Nhanh -->
+<!-- Modal Chọn Nhân Viên Khi Thanh Toán Nhanh -->
+<div class="modal fade" id="quickPayStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Chọn nhân viên thực hiện</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <input type="hidden" id="quickPayOrderId" />
+                <input type="hidden" id="quickPayMethod" />
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nhân viên trực ca <span class="text-danger">*</span></label>
+                    <select id="quickPayEmployeeId" class="form-select rounded-3">
+                        <option value="">-- Chọn nhân viên thu ngân --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" id="btnConfirmQuickPay" class="btn btn-success rounded-pill px-4 fw-bold">Xác nhận thanh toán</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AJAX Script Xử Lý Thanh Toán Nhanh Kèm EmployeeId -->
 <script>
     $(document).ready(function() {
+        let staffModal = new bootstrap.Modal(document.getElementById('quickPayStaffModal'));
+
         $(".btn-mark-paid").off("click").on("click", function() {
             let id = $(this).data("id");
             let method = $(this).data("method");
 
-            if (confirm(`Xác nhận thanh toán đơn hàng này bằng [${method}]?`)) {
-                $.ajax({
-                    url: '@Url.Action("MarkAsPaid", "Order", new { area = "Admin" })',
-                    type: 'POST',
-                    data: { id: id, paymentMethod: method },
-                    success: function(res) {
-                        if (res.success) {
-                            $.get('@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })',
-                                { id: id },
-                                function(html) {
-                                    $("#invoiceDetail").html(html);
-                                });
-                        } else {
-                            alert(res.message || "Không thể cập nhật trạng thái thanh toán.");
-                        }
-                    },
-                    error: function() {
-                        alert("Có lỗi xảy ra khi gửi yêu cầu thanh toán.");
-                    }
-                });
+            $("#quickPayOrderId").val(id);
+            $("#quickPayMethod").val(method);
+
+            // Tải danh sách nhân viên Quản lý & Thu ngân vào Modal
+            $.get('@Url.Action("GetActiveCashiers", "Order", new { area = "Admin" })', function(data) {
+                let $select = $("#quickPayEmployeeId");
+                $select.empty().append('<option value="">-- Chọn nhân viên thu ngân --</option>');
+                if (data && data.length > 0) {
+                    $.each(data, function(i, emp) {
+                        $select.append(`<option value="${emp.employeeId}">${emp.fullName} (${emp.positionName})</option>`);
+                    });
+                }
+                staffModal.show();
+            });
+        });
+
+        $("#btnConfirmQuickPay").click(function() {
+            let id = $("#quickPayOrderId").val();
+            let method = $("#quickPayMethod").val();
+            let employeeId = $("#quickPayEmployeeId").val();
+
+            if (!employeeId) {
+                alert("Vui lòng chọn nhân viên thực hiện thanh toán!");
+                return;
             }
+
+            staffModal.hide();
+
+            $.ajax({
+                url: '@Url.Action("MarkAsPaid", "Order", new { area = "Admin" })',
+                type: 'POST',
+                data: { id: id, paymentMethod: method, employeeId: employeeId },
+                success: function(res) {
+                    if (res.success) {
+                        $.get('@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })', { id: id }, function(html) {
+                            $("#invoiceDetail").html(html);
+                        });
+                    } else {
+                        alert(res.message || "Không thể cập nhật trạng thái thanh toán.");
+                    }
+                },
+                error: function() {
+                    alert("Có lỗi xảy ra khi gửi yêu cầu thanh toán.");
+                }
+            });
         });
     });
 </script>

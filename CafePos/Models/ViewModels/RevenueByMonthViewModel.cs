@@ -1,4 +1,4 @@
-﻿namespace CafePos.ViewModels
+﻿namespace CafePos.Models.ViewModels
 {
     public class RevenueByMonthViewModel
     {

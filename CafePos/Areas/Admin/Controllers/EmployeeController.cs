@@ -26,6 +26,7 @@ namespace CafePos.Areas.Admin.Controllers
         {
             var employees = await _db.Employees
                 .Include(e => e.User)
+                .Include(e => e.Position) // Nạp kèm chức danh
                 .Where(e => e.User != null && e.User.IsActive)
                 .OrderBy(e => e.EmployeeId)
                 .ToListAsync();
@@ -38,6 +39,7 @@ namespace CafePos.Areas.Admin.Controllers
         public IActionResult Create()
         {
             LoadAvailableUsers();
+            LoadPositions(); // 🌟 Load danh sách Chức danh
             return View(new EmployeeVM());
         }
 
@@ -51,11 +53,9 @@ namespace CafePos.Areas.Admin.Controllers
                 ModelState.AddModelError("UserId", "Vui lòng chọn tài khoản nhân viên.");
             }
 
-            User? user = null;
-
             if (obj.UserId.HasValue)
             {
-                user = await _db.Users
+                var user = await _db.Users
                     .FirstOrDefaultAsync(u => u.UserId == obj.UserId.Value && u.IsActive && u.RoleId == 3);
 
                 if (user == null)
@@ -95,13 +95,16 @@ namespace CafePos.Areas.Admin.Controllers
                     var newEmp = new Employee
                     {
                         UserId = obj.UserId!.Value,
+                        FullName = obj.FullName,
+                        PositionId = obj.PositionId, // Gán Chức danh
                         EmployeeCode = string.IsNullOrWhiteSpace(obj.EmployeeCode)
-                            ? "NV" + obj.UserId.Value
-                            : obj.EmployeeCode,
+                                        ? $"NV{obj.UserId.Value:000}"
+                                        : obj.EmployeeCode.Trim(),
                         PhoneNumber = obj.PhoneNumber,
                         Address = obj.Address,
                         ImageUrl = obj.ImageUrl,
-                        HireDate = DateTime.Now
+                        HireDate = DateTime.Now,
+                        IsActive = true
                     };
 
                     _db.Employees.Add(newEmp);
@@ -117,6 +120,7 @@ namespace CafePos.Areas.Admin.Controllers
             }
 
             LoadAvailableUsers(obj.UserId);
+            LoadPositions(obj.PositionId); // 🌟 Giữ lại giá trị Position đã chọn khi gặp lỗi
             return View(obj);
         }
 
@@ -125,6 +129,7 @@ namespace CafePos.Areas.Admin.Controllers
         {
             var trashList = await _db.Employees
                 .Include(e => e.User)
+                .Include(e => e.Position)
                 .Where(e => e.User != null && !e.User.IsActive)
                 .OrderBy(e => e.EmployeeId)
                 .ToListAsync();
@@ -139,6 +144,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             var employee = await _db.Employees
                 .Include(e => e.User)
+                .Include(e => e.Position)
                 .FirstOrDefaultAsync(e => e.EmployeeId == id);
 
             if (employee == null) return NotFound();
@@ -154,6 +160,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             var emp = await _db.Employees
                 .Include(e => e.User)
+                .Include(e => e.Position)
                 .FirstOrDefaultAsync(x => x.EmployeeId == id);
 
             if (emp == null) return NotFound();
@@ -161,7 +168,8 @@ namespace CafePos.Areas.Admin.Controllers
             var vm = new EmployeeVM
             {
                 UserId = emp.UserId,
-                FullName = emp.User?.FullName,
+                FullName = emp.FullName,
+                PositionId = emp.PositionId,
                 Username = emp.User?.Username,
                 EmployeeCode = emp.EmployeeCode,
                 PhoneNumber = emp.PhoneNumber,
@@ -169,6 +177,7 @@ namespace CafePos.Areas.Admin.Controllers
                 ImageUrl = emp.ImageUrl
             };
 
+            LoadPositions(emp.PositionId); // 🌟 Load danh sách Chức danh
             return View(vm);
         }
 
@@ -178,8 +187,9 @@ namespace CafePos.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int id, EmployeeVM obj, IFormFile? file)
         {
             var empDb = await _db.Employees
-                .Include(e => e.User)
-                .FirstOrDefaultAsync(x => x.EmployeeId == id);
+                 .Include(e => e.User)
+                 .Include(e => e.Position)
+                 .FirstOrDefaultAsync(x => x.EmployeeId == id);
 
             if (empDb == null) return NotFound();
 
@@ -191,16 +201,13 @@ namespace CafePos.Areas.Admin.Controllers
             {
                 try
                 {
-                    if (empDb.User != null)
-                    {
-                        empDb.User.FullName = obj.FullName;
-                    }
-
+                    empDb.FullName = obj.FullName;
+                    empDb.PositionId = obj.PositionId; // Cập nhật Chức danh
                     empDb.EmployeeCode = obj.EmployeeCode;
                     empDb.PhoneNumber = obj.PhoneNumber;
                     empDb.Address = obj.Address;
 
-                    if (file != null)
+                    if (file != null && file.Length > 0)
                     {
                         var result = await _employeeService.AddPhotoAsync(file, "CafePos/Employee");
                         empDb.ImageUrl = result.SecureUrl.ToString();
@@ -218,6 +225,7 @@ namespace CafePos.Areas.Admin.Controllers
             }
 
             obj.Username = empDb.User?.Username;
+            LoadPositions(obj.PositionId); // 🌟 Giữ lại danh sách chức danh khi Form lỗi
             return View(obj);
         }
 
@@ -263,6 +271,7 @@ namespace CafePos.Areas.Admin.Controllers
             return RedirectToAction(nameof(Trash));
         }
 
+        // 🌟 Hàm trợ giúp Load danh sách Tài khoản khả dụng
         private void LoadAvailableUsers(int? selectedUserId = null)
         {
             var availableUsers = _db.Users
@@ -273,11 +282,21 @@ namespace CafePos.Areas.Admin.Controllers
                 .Select(u => new
                 {
                     u.UserId,
-                    DisplayText = u.Username + " - " + u.FullName
+                    DisplayText = $"{u.Username} ({u.Email})"
                 })
                 .ToList();
 
             ViewBag.UserId = new SelectList(availableUsers, "UserId", "DisplayText", selectedUserId);
+        }
+
+        // 🌟 Hàm trợ giúp Load danh sách Chức danh (Positions)
+        private void LoadPositions(int? selectedPositionId = null)
+        {
+            var positions = _db.Set<Position>()
+                .OrderBy(p => p.PositionName)
+                .ToList();
+
+            ViewBag.PositionId = new SelectList(positions, "PositionId", "PositionName", selectedPositionId);
         }
     }
 }

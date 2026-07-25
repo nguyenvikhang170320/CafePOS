@@ -77,8 +77,24 @@
             <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">Đăng nhập</button>
 
             <div class="text-center auth-links">
-                <a asp-controller="Account" asp-action="Register" class="small text-success d-block mb-2">Đăng ký mới</a>
-                <a asp-controller="Account" asp-action="ForgotPassword" class="small text-primary">Quên mật khẩu?</a>
+
+                <div class="alert alert-info py-2 mb-3 small">
+                    <strong>Khách hàng</strong> chưa có tài khoản?
+                    <a asp-controller="Account" asp-action="Register" class="fw-bold text-success">
+                        Đăng ký ngay
+                    </a>
+                </div>
+
+                <div class="small text-muted mb-2">
+                    Tài khoản <strong>Nhân viên</strong> và <strong>Quản trị viên</strong> được cấp bởi hệ thống.
+                </div>
+
+                <a asp-controller="Account"
+                   asp-action="ForgotPassword"
+                   class="small text-primary">
+                    Quên mật khẩu?
+                </a>
+
             </div>
         </form>
 
@@ -87,6 +103,7 @@
         <div class="text-center">
             <p class="mb-2 text-muted small">Đăng nhập nhanh với vai trò:</p>
             <button type="button" class="btn btn-danger btn-sm" onclick="fillLogin('admin', 'admin@123')">Admin</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="fillLogin('nhanvien', '1234567')">Nhân viên</button>
         </div>
     </div>
 

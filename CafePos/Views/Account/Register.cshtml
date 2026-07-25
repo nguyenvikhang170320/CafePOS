@@ -9,145 +9,265 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <style>
-        body {
-            background: #f2f5ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .register-box {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            width: 420px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .btn-gradient {
-            background: linear-gradient(90deg, #28a745, #20c997);
-            color: white;
-            border: none;
-        }
-
-            .btn-gradient:hover {
-                opacity: 0.9;
-                color: white;
+            body {
+                background: #f2f5ff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding: 20px;
             }
 
-        .btn-outline-secondary:focus {
-            box-shadow: none;
-        }
+            .register-box {
+                background: white;
+                width: 430px;
+                border-radius: 12px;
+                padding: 30px;
+                box-shadow: 0 5px 18px rgba(0,0,0,.12);
+            }
+
+            .btn-gradient {
+                background: linear-gradient(90deg,#28a745,#20c997);
+                color: white;
+                border: none;
+            }
+
+                .btn-gradient:hover {
+                    color: white;
+                    opacity: .9;
+                }
+
+            .btn-outline-secondary:focus {
+                box-shadow: none;
+            }
     </style>
 </head>
 
 <body>
+
     <div class="register-box">
-        <h4 class="text-center mb-4">📝 Khởi tạo Tài khoản</h4>
+
+        <h3 class="text-center mb-2">
+            📝 Đăng ký tài khoản
+        </h3>
+
+        <p class="text-center text-muted small mb-4">
+            Tài khoản đăng ký sẽ được tạo với vai trò
+            <strong>Staff (Khách hàng)</strong>.
+        </p>
 
         @if (ViewBag.ErrorMessage != null)
         {
-            <div class="alert alert-danger text-center shadow-sm">
+            <div class="alert alert-danger">
                 @ViewBag.ErrorMessage
             </div>
         }
 
-        <form id="registerForm" asp-action="Register" asp-controller="Account" method="post">
+        <form id="registerForm"
+              asp-controller="Account"
+              asp-action="Register"
+              method="post">
+
             @Html.AntiForgeryToken()
 
             <div class="mb-3">
-                <label for="fullName" class="form-label fw-bold">Họ và tên</label>
-                <input type="text" id="fullName" name="fullName" class="form-control"
-                       placeholder="Nhập tên hiển thị của bạn" required />
+                <label class="form-label fw-bold">
+                    Họ và tên
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       name="fullName"
+                       placeholder="Nhập họ và tên"
+                       required />
             </div>
 
             <div class="mb-3">
-                <label for="username" class="form-label fw-bold">Tên đăng nhập</label>
-                <input type="text" id="username" name="username" class="form-control"
-                       placeholder="Nhập tên đăng nhập" required />
+                <label class="form-label fw-bold">
+                    Tên đăng nhập
+                </label>
+
+                <input type="text"
+                       class="form-control"
+                       name="username"
+                       placeholder="Nhập tên đăng nhập"
+                       required />
             </div>
 
             <div class="mb-3">
-                <label for="email" class="form-label fw-bold">Email</label>
-                <input type="email" id="email" name="email" class="form-control"
-                       placeholder="Nhập địa chỉ email" required />
+                <label class="form-label fw-bold">
+                    Email
+                </label>
+
+                <input type="email"
+                       class="form-control"
+                       name="email"
+                       placeholder="example@gmail.com"
+                       required />
             </div>
 
             <div class="mb-3">
-                <label for="password" class="form-label fw-bold">Mật khẩu</label>
+
+                <label class="form-label fw-bold">
+                    Mật khẩu
+                </label>
+
                 <div class="input-group">
-                    <input type="password" id="password" name="password" class="form-control"
-                           placeholder="Nhập mật khẩu bảo mật" required />
-                    <button class="btn btn-outline-secondary toggle-password" type="button"
-                            data-target="password" title="Hiện mật khẩu">
+
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-control"
+                           placeholder="Ít nhất 6 ký tự"
+                           required />
+
+                    <button class="btn btn-outline-secondary toggle-password"
+                            type="button"
+                            data-target="password">
+
                         👁️
+
                     </button>
+
                 </div>
+
             </div>
 
-            <div class="mb-4">
-                <label for="confirmPassword" class="form-label fw-bold">Xác nhận mật khẩu</label>
+            <div class="mb-3">
+
+                <label class="form-label fw-bold">
+                    Xác nhận mật khẩu
+                </label>
+
                 <div class="input-group">
-                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
-                           placeholder="Nhập lại mật khẩu lần nữa" required />
-                    <button class="btn btn-outline-secondary toggle-password" type="button"
-                            data-target="confirmPassword" title="Hiện mật khẩu">
+
+                    <input type="password"
+                           id="confirmPassword"
+                           name="confirmPassword"
+                           class="form-control"
+                           placeholder="Nhập lại mật khẩu"
+                           required />
+
+                    <button class="btn btn-outline-secondary toggle-password"
+                            type="button"
+                            data-target="confirmPassword">
+
                         👁️
+
                     </button>
+
                 </div>
-                <div id="passwordError" class="text-danger mt-1 small" style="display: none;">
-                    Mật khẩu xác nhận không khớp!
+
+                <div id="passwordError"
+                     class="alert alert-danger mt-2 py-2"
+                     style="display:none">
+
+                    Mật khẩu xác nhận không khớp.
+
                 </div>
+
             </div>
 
-            <button type="submit" class="btn btn-gradient w-100 mb-3 fw-bold">
-                Xác nhận Đăng ký
+            <div class="form-check mb-3">
+
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="agree"
+                       required />
+
+                <label class="form-check-label" for="agree">
+
+                    Tôi đồng ý với điều khoản sử dụng của hệ thống.
+
+                </label>
+
+            </div>
+
+            <button class="btn btn-gradient w-100 fw-bold mb-3"
+                    type="submit">
+
+                Đăng ký
+
             </button>
 
-            <div class="text-center mt-3">
-                <span class="text-muted small">Đã có tài khoản?</span>
-                <a asp-controller="Account" asp-action="Login" class="small text-decoration-none fw-bold">
-                    Quay lại Đăng nhập
+            <div class="text-center">
+
+                <span class="text-muted">
+                    Đã có tài khoản?
+                </span>
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="text-decoration-none fw-bold">
+
+                    Đăng nhập
+
                 </a>
+
             </div>
+
         </form>
+
     </div>
 
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
-            var password = document.getElementById('password').value;
-            var confirmPassword = document.getElementById('confirmPassword').value;
 
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                document.getElementById('passwordError').style.display = 'block';
-            } else {
-                document.getElementById('passwordError').style.display = 'none';
-            }
-        });
+            document.getElementById("registerForm").addEventListener("submit", function(e) {
 
-        document.querySelectorAll('.toggle-password').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var targetId = this.getAttribute('data-target');
-                var input = document.getElementById(targetId);
+                let password = document.getElementById("password").value;
+                let confirm = document.getElementById("confirmPassword").value;
 
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    this.textContent = '🙈';
-                    this.title = 'Ẩn mật khẩu';
-                } else {
-                    input.type = 'password';
-                    this.textContent = '👁️';
-                    this.title = 'Hiện mật khẩu';
+                if (password.length < 6) {
+
+                    e.preventDefault();
+                    alert("Mật khẩu phải có ít nhất 6 ký tự.");
+
+                    return;
                 }
+
+                if (password !== confirm) {
+
+                    e.preventDefault();
+
+                    document.getElementById("passwordError").style.display = "block";
+
+                    return;
+                }
+
+                document.getElementById("passwordError").style.display = "none";
+
             });
-        });
+
+            document.querySelectorAll(".toggle-password").forEach(function(btn) {
+
+                btn.addEventListener("click", function() {
+
+                    let target = document.getElementById(this.dataset.target);
+
+                    if (target.type === "password") {
+
+                        target.type = "text";
+                        this.textContent = "🙈";
+
+                    }
+                    else {
+
+                        target.type = "password";
+                        this.textContent = "👁️";
+
+                    }
+
+                });
+
+            });
+
     </script>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

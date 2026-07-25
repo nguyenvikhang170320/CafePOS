@@ -4,6 +4,7 @@ using CafePos.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CafePos.Migrations
 {
     [DbContext(typeof(CafePosDbContext))]
-    partial class CafePosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260725143024_UpdateModelControllerVaViewModel")]
+    partial class UpdateModelControllerVaViewModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -310,12 +313,6 @@ namespace CafePos.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,0)");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Method")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -323,21 +320,10 @@ namespace CafePos.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("OrderInfo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("PaidAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ResponseCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TransactionNo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("PaymentId");
-
-                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("OrderId");
 
@@ -626,17 +612,11 @@ namespace CafePos.Migrations
 
             modelBuilder.Entity("CafePos.Models.Payment", b =>
                 {
-                    b.HasOne("CafePos.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
                     b.HasOne("CafePos.Models.Order", "Order")
                         .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Employee");
 
                     b.Navigation("Order");
                 });

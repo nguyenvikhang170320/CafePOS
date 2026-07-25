@@ -19,6 +19,7 @@ namespace CafePos.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Table> Tables { get; set; }
+        public DbSet<Position> Positions { get; set; }
         public DbSet<OrderStatusLog> OrderStatusLogs { get; set; }
         public DbSet<PasswordResetToken> PasswordResetToken { get; set; }
 

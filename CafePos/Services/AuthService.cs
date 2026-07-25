@@ -21,8 +21,10 @@ namespace CafePos.Services
             username = username.Trim();
 
             var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == username && u.IsActive == true);
+             .Include(x => x.Role)
+             .Include(x => x.Employee)
+                 .ThenInclude(e => e.Position)
+             .FirstOrDefaultAsync(x => x.Username == username);
 
             if (user == null)
                 return null;
@@ -52,8 +54,7 @@ namespace CafePos.Services
                 throw new Exception("Mật khẩu không được để trống.");
 
             user.Username = user.Username.Trim();
-            user.FullName = user.FullName?.Trim();
-            user.Email = user.Email?.Trim();
+            user.Email = user.Email.Trim();
 
             bool existedUsername = await _context.Users.AnyAsync(x => x.Username == user.Username);
             if (existedUsername)

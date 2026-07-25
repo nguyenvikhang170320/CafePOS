@@ -50,10 +50,10 @@
                             </div>
 
                             <div class="col-12 mb-3">
-                                <label asp-for="FullName" class="form-label fw-bold">
-                                    <i class="bi bi-telephone me-2"></i> Tên đầy đủ
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-briefcase me-2"></i> Chức danh
                                 </label>
-                                <input asp-for="FullName" class="form-control" readonly />
+                                <input value="@Model.Employee?.Position?.PositionName" class="form-control" readonly />
                             </div>
                         </div>
                     </form>

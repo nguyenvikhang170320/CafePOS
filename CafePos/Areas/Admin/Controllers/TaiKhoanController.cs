@@ -28,8 +28,9 @@ namespace CafePos.Areas.Admin.Controllers
 
         private void LoadRoles(int? selectedRoleId = null)
         {
+            // Bỏ RoleId = 1 (Admin) và RoleId = 2 (Khách hàng)
             var roles = _context.Roles
-                .Where(r => r.RoleId != 1)
+                .Where(r => r.RoleId != 1 && r.RoleId != 2)
                 .OrderBy(r => r.RoleId)
                 .ToList();
 
@@ -48,6 +49,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             var query = _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
                 .AsQueryable();
 
             if (showDeleted)
@@ -63,8 +65,8 @@ namespace CafePos.Areas.Admin.Controllers
             if (!string.IsNullOrWhiteSpace(searchString))
             {
                 query = query.Where(x => x.Username.Contains(searchString)
-                    || x.FullName.Contains(searchString)
-                    || (x.Email != null && x.Email.Contains(searchString)));
+                    || (x.Email != null && x.Email.Contains(searchString))
+                    || (x.Employee != null && x.Employee.FullName.Contains(searchString)));
             }
 
             if (!isAdmin && currentUserId.HasValue)
@@ -84,6 +86,8 @@ namespace CafePos.Areas.Admin.Controllers
         {
             var user = await _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
+                    .ThenInclude(e => e.Position)
                 .FirstOrDefaultAsync(x => x.UserId == id);
 
             if (user == null) return NotFound();
@@ -108,11 +112,12 @@ namespace CafePos.Areas.Admin.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(User users)
+        public async Task<IActionResult> Create(User users, string fullName)
         {
-            if (users.RoleId == 1)
+            // 1. Kiểm tra họ tên nhân viên
+            if (string.IsNullOrWhiteSpace(fullName))
             {
-                ModelState.AddModelError("RoleId", "Không được phép tạo tài khoản Admin!");
+                ModelState.AddModelError("FullName", "Vui lòng nhập Họ và Tên cho nhân viên!");
             }
 
             if (_context.Users.Any(x => x.Username == users.Username))
@@ -133,20 +138,34 @@ namespace CafePos.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
+                // Ép cố định Role Nhân viên nếu tạo từ Admin
+                users.RoleId = 3;
                 users.PasswordHash = BCrypt.Net.BCrypt.HashPassword(users.PasswordHash);
                 users.IsActive = true;
-                users.TrangThai = string.IsNullOrWhiteSpace(users.TrangThai) ? "Hoạt động" : users.TrangThai;
+                users.TrangThai = "Hoạt động";
                 users.NgayCapNhat = DateTime.Now;
 
                 _context.Users.Add(users);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync(); // Lưu để sinh tự động UserId
 
-                TempData["SuccessMessage"] = "Tạo tài khoản thành công!";
+                // Tự động tạo Hồ sơ Nhân viên tương ứng
+                var employee = new Employee
+                {
+                    UserId = users.UserId,
+                    FullName = fullName.Trim(),
+                    HireDate = DateTime.Now,
+                    IsActive = true
+                };
+                _context.Employees.Add(employee);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Tạo tài khoản nhân viên '{fullName}' thành công!";
                 return RedirectToAction(nameof(Index));
             }
 
             users.PasswordHash = string.Empty;
-            LoadRoles(users.RoleId == 0 ? null : users.RoleId);
+            ViewBag.FullName = fullName;
+            LoadRoles(users.RoleId);
             LoadTrangThai(users.TrangThai);
             return View(users);
         }
@@ -156,10 +175,14 @@ namespace CafePos.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var user = await _context.Users
+                .Include(x => x.Employee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.UserId == id);
 
             if (user == null) return NotFound();
+
+            // Nếu tài khoản này có bản ghi Employee, gửi FullName sang View
+            ViewBag.FullName = user.Employee?.FullName;
 
             LoadTrangThai(user.TrangThai);
             return View(user);
@@ -168,11 +191,12 @@ namespace CafePos.Areas.Admin.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, User model)
+        public async Task<IActionResult> Edit(int id, User model, string? fullName)
         {
             if (id != model.UserId) return NotFound();
 
             var existing = await _context.Users
+                .Include(x => x.Employee)
                 .FirstOrDefaultAsync(x => x.UserId == id);
 
             if (existing == null) return NotFound();
@@ -188,6 +212,12 @@ namespace CafePos.Areas.Admin.Controllers
                 ModelState.AddModelError("Email", "Email đã tồn tại!");
             }
 
+            // Nếu là RoleId = 3 (Nhân viên), bắt buộc nhập tên
+            if (existing.RoleId == 3 && string.IsNullOrWhiteSpace(fullName))
+            {
+                ModelState.AddModelError("FullName", "Vui lòng nhập Họ và Tên cho nhân viên!");
+            }
+
             ModelState.Remove("PasswordHash");
             ModelState.Remove("Role");
             ModelState.Remove("RoleId");
@@ -195,11 +225,31 @@ namespace CafePos.Areas.Admin.Controllers
             if (ModelState.IsValid)
             {
                 existing.Username = model.Username;
-                existing.FullName = model.FullName;
                 existing.Email = model.Email;
                 existing.TrangThai = model.TrangThai;
                 existing.IsActive = model.TrangThai == "Hoạt động";
                 existing.NgayCapNhat = DateTime.Now;
+
+                // 🌟 NẾU LÀ NHÂN VIÊN -> CẬP NHẬT / TẠO MỚI HỌ TÊN BẢNG EMPLOYEES
+                if (existing.RoleId == 3 && !string.IsNullOrWhiteSpace(fullName))
+                {
+                    if (existing.Employee != null)
+                    {
+                        existing.Employee.FullName = fullName.Trim();
+                    }
+                    else
+                    {
+                        // Trường hợp trước đây chưa có bản ghi Employee
+                        var newEmp = new Employee
+                        {
+                            UserId = existing.UserId,
+                            FullName = fullName.Trim(),
+                            HireDate = DateTime.Now,
+                            IsActive = true
+                        };
+                        _context.Employees.Add(newEmp);
+                    }
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -207,6 +257,7 @@ namespace CafePos.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ViewBag.FullName = fullName;
             LoadTrangThai(model.TrangThai);
             return View(model);
         }
@@ -224,7 +275,7 @@ namespace CafePos.Areas.Admin.Controllers
                 _context.Update(user);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Đã xóa tài khoản '{user.Username}' thành công!";
+                TempData["SuccessMessage"] = $"Đã khóa tài khoản '{user.Username}' thành công!";
             }
 
             return RedirectToAction(nameof(Index));
@@ -328,6 +379,7 @@ namespace CafePos.Areas.Admin.Controllers
 
             var user = await _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.UserId == currentUserId.Value);
 

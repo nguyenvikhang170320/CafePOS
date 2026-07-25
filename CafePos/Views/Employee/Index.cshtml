@@ -92,7 +92,7 @@
                                 <td>
                                     @if (!string.IsNullOrEmpty(item.ImageUrl))
                                     {
-                                        <img src="@item.ImageUrl" class="emp-img" alt="@item.User.FullName" />
+                                        <img src="@item.ImageUrl" class="emp-img" alt="@item.FullName" />
                                     }
                                     else
                                     {
@@ -102,7 +102,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-dark">@item.User.FullName</div>
+                                    <div class="fw-bold text-dark">@item.FullName</div>
                                     <span class="text-muted small">Vào làm: @item.HireDate.ToString("dd/MM/yyyy")</span>
                                 </td>
                                 <td>

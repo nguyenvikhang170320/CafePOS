@@ -16,7 +16,7 @@
                 <dd class="col-sm-9">@Model.Username</dd>
 
                 <dt class="col-sm-3">Họ và tên</dt>
-                <dd class="col-sm-9">@Model.FullName</dd>
+                <dd class="col-sm-9">@Model.Employee?.Position?.PositionName</dd>
 
                 <dt class="col-sm-3">Email</dt>
                 <dd class="col-sm-9">@Model.Email</dd>

@@ -25,6 +25,37 @@ namespace CafePos.Data
                 context.Roles.AddRange(roles);
                 context.SaveChanges();
             }
+            if (!context.Positions.Any())
+            {
+                context.Positions.AddRange(
+                    new Position
+                    {
+                        PositionName = "Quản lý",
+                        Description = "Quản lý cửa hàng",
+                        IsActive = true
+                    },
+                    new Position
+                    {
+                        PositionName = "Thu ngân",
+                        Description = "Thu ngân",
+                        IsActive = true
+                    },
+                    new Position
+                    {
+                        PositionName = "Pha chế",
+                        Description = "Nhân viên pha chế",
+                        IsActive = true
+                    },
+                    new Position
+                    {
+                        PositionName = "Phục vụ",
+                        Description = "Nhân viên phục vụ",
+                        IsActive = true
+                    }
+                );
+
+                context.SaveChanges();
+            }
 
             // Seed Admin User
             if (!context.Users.Any())
@@ -32,46 +63,57 @@ namespace CafePos.Data
                 var adminRole = context.Roles.First(r => r.Name == "Admin");
                 var staffRole = context.Roles.First(r => r.Name == "Staff");
                 var employeeRole = context.Roles.First(r => r.Name == "Employee");
+
                 var adminUser = new User
                 {
                     Username = "admin",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin@123"),
-                    FullName = "Quản trị viên Hệ thống",
                     RoleId = adminRole.RoleId,
-                    IsActive = true,
                     Email = "admincafe@gmail.com",
-                    NgayCapNhat = DateTime.Now,
-                    TrangThai = "Hoạt động"
+                    IsActive = true,
+                    TrangThai = "Hoạt động",
+                    NgayCapNhat = DateTime.Now
                 };
-
 
                 var staffUser = new User
                 {
                     Username = "Khang",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
-                    FullName = "Nguyễn Vĩ Khang",
                     RoleId = staffRole.RoleId,
-                    IsActive = true,
                     Email = "nguyenvikhang849@gmail.com",
-                    NgayCapNhat = DateTime.Now,
-                    TrangThai = "Hoạt động"
+                    IsActive = true,
+                    TrangThai = "Hoạt động",
+                    NgayCapNhat = DateTime.Now
                 };
-
 
                 var employeeUser = new User
                 {
-                    Username = "Lan",
+                    Username = "nhanvien",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234567"),
-                    FullName = "Nguyễn Ngọc Lan",
                     RoleId = employeeRole.RoleId,
+                    Email = "nhanvien@gmail.com",
                     IsActive = true,
-                    Email = "nguyenngoclan@gmail.com",
-                    NgayCapNhat = DateTime.Now,
-                    TrangThai = "Hoạt động"
+                    TrangThai = "Hoạt động",
+                    NgayCapNhat = DateTime.Now
                 };
 
+                context.Users.AddRange(adminUser, staffUser, employeeUser);
+                context.SaveChanges();
 
-                context.Users.AddRange(adminUser, staffUser, employeeUser); 
+                var thuNgan = context.Positions.First(x => x.PositionName == "Thu ngân");
+
+                context.Employees.Add(new Employee
+                {
+                    UserId = employeeUser.UserId,
+                    FullName = "Nguyễn Ngọc Lan",
+                    EmployeeCode = "NV001",
+                    PositionId = thuNgan.PositionId,
+                    PhoneNumber = "0900000000",
+                    Address = "Đồng Tháp",
+                    HireDate = DateTime.Now,
+                    IsActive = true
+                });
+
                 context.SaveChanges();
             }
         }

@@ -111,10 +111,9 @@
                     <i class="bi bi-cup-hot"></i> Sản Phầm Chọn Size
                 </a>
             </li>
-
-            <li class="@(currentController == "Employee" ? "active" : "")">
-                <a asp-area="Admin" asp-controller="Employee" asp-action="Index">
-                    <i class="bi bi-people"></i> Quản lý Nhân viên
+            <li class="@(currentController == "Table" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Table" asp-action="Index">
+                    <i class="bi bi-tag"></i> Quản lý Khu & Bàn
                 </a>
             </li>
             <li class="@(currentController == "Topping" ? "active" : "")">
@@ -122,6 +121,12 @@
                     <i class="bi bi-people"></i> Quản lý Topping
                 </a>
             </li>
+            <li class="@(currentController == "Employee" ? "active" : "")">
+                <a asp-area="Admin" asp-controller="Employee" asp-action="Index">
+                    <i class="bi bi-people"></i> Quản lý Nhân viên
+                </a>
+            </li>
+          
             <li class="@(currentController == "Order" ? "active" : "")">
                 <a asp-area="Admin" asp-controller="Order" asp-action="Index">
                     <i class="bi bi-cart"></i> Đơn hàng

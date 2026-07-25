@@ -48,6 +48,7 @@ namespace CafePos.Controllers
 
             var query = _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
                 .AsQueryable();
 
             if (showDeleted)
@@ -62,9 +63,11 @@ namespace CafePos.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                query = query.Where(x => x.Username.Contains(searchString)
-                    || x.FullName.Contains(searchString)
-                    || (x.Email != null && x.Email.Contains(searchString)));
+                query = query.Where(x =>
+                    x.Username.Contains(searchString)
+                    || (x.Employee != null && x.Employee.FullName.Contains(searchString))
+                    || (x.Email != null && x.Email.Contains(searchString))
+                );
             }
 
             if (!isAdmin && currentUserId.HasValue)
@@ -84,13 +87,15 @@ namespace CafePos.Controllers
         {
             var user = await _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
+                    .ThenInclude(e => e.Position)
                 .FirstOrDefaultAsync(x => x.UserId == id);
 
             if (user == null) return NotFound();
             return View(user);
         }
 
-      
+
 
         [HttpGet]
         public async Task<IActionResult> ChangePassword(int id)
@@ -171,6 +176,8 @@ namespace CafePos.Controllers
 
             var user = await _context.Users
                 .Include(x => x.Role)
+                .Include(x => x.Employee)
+                    .ThenInclude(e => e.Position)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.UserId == currentUserId.Value);
 

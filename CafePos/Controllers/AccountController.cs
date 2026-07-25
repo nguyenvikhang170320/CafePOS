@@ -45,13 +45,15 @@ namespace CafePos.Controllers
             if (user != null)
             {
                 var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username ?? ""),
-            new Claim(ClaimTypes.Email, user.Email ?? ""),
-            new Claim(ClaimTypes.Role, user.Role?.Name ?? ""),
-            new Claim("FullName", user.FullName ?? "Người dùng"),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
-        };
+                    {
+                        new Claim(ClaimTypes.Name, user.Username ?? ""),
+                        new Claim(ClaimTypes.Email, user.Email ?? ""),
+                        new Claim(ClaimTypes.Role, user.Role?.Name ?? ""),
+                        new Claim("FullName", user.Employee?.FullName ?? user.Username),
+                        new Claim("Position", user.Employee?.Position?.PositionName ?? ""),
+                        new Claim("EmployeeCode", user.Employee?.EmployeeCode ?? ""),
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                    };
 
                 var claimsIdentity = new ClaimsIdentity(
                     claims,
@@ -88,7 +90,6 @@ namespace CafePos.Controllers
             return View();
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(string username, string password, string fullName, string email)
@@ -102,37 +103,41 @@ namespace CafePos.Controllers
                 return View();
             }
 
-            var existedUser = await _context.Users.AnyAsync(x => x.Username == username);
-            if (existedUser)
+            username = username.Trim();
+            email = email.Trim();
+            fullName = fullName.Trim();
+
+            // Kiểm tra Username
+            if (await _context.Users.AnyAsync(x => x.Username == username))
             {
                 ViewBag.ErrorMessage = "Tên đăng nhập đã tồn tại.";
                 return View();
             }
 
-            var existedEmail = await _context.Users.AnyAsync(x => x.Email == email);
-            if (existedEmail)
+            // Kiểm tra Email
+            if (await _context.Users.AnyAsync(x => x.Email == email))
             {
                 ViewBag.ErrorMessage = "Email đã tồn tại.";
                 return View();
             }
 
+            // Tạo tài khoản khách hàng (Staff)
             var newUser = new User
             {
                 Username = username,
-                FullName = fullName,
                 Email = email,
-                RoleId = 2,
+                RoleId = 2, // Staff (Khách hàng)
                 IsActive = true,
                 TrangThai = "Hoạt động",
                 NgayCapNhat = DateTime.Now
             };
 
-            await _authService.RegisterAsync(newUser, password);
+            // Lưu User
+            newUser = await _authService.RegisterAsync(newUser, password);
 
             TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-            return RedirectToAction("Login");
+            return RedirectToAction(nameof(Login));
         }
-
         // ==========================================
         // 3. ĐĂNG XUẤT
         // ==========================================

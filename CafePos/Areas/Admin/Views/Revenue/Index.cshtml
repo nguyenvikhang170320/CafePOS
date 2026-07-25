@@ -1,4 +1,4 @@
-﻿@model CafePos.ViewModels.ReportDashboardViewModel
+﻿@model CafePos.Models.ViewModels.ReportDashboardViewModel
 
 @{
     ViewData["Title"] = "Báo cáo doanh thu";
@@ -6,6 +6,7 @@
 }
 
 <div class="container py-4">
+    <!-- Header & Year Selector -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">Báo cáo doanh thu</h2>
@@ -18,6 +19,7 @@
         </form>
     </div>
 
+    <!-- Cards Summary -->
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4">
@@ -38,11 +40,24 @@
         </div>
     </div>
 
+    <!-- Biểu đồ doanh thu 7 ngày gần nhất -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i>Biểu đồ doanh thu 7 ngày gần nhất
+            </h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doanh thu theo tháng -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">Doanh thu theo tháng</h5>
             <div class="table-responsive">
-                <table class="table table-bordered align-middle">
+                <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Tháng</th>
@@ -74,11 +89,12 @@
         </div>
     </div>
 
+    <!-- Doanh thu theo năm -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">Doanh thu theo năm</h5>
             <div class="table-responsive">
-                <table class="table table-bordered align-middle">
+                <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Năm</th>
@@ -110,11 +126,12 @@
         </div>
     </div>
 
+    <!-- Top món bán chạy -->
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body">
             <h5 class="fw-bold mb-3">Top món bán chạy</h5>
             <div class="table-responsive">
-                <table class="table table-bordered align-middle">
+                <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Tên món</th>
@@ -146,3 +163,62 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <!-- Thư viện Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lấy dữ liệu 7 ngày từ ViewModel (Giả định ViewModel có danh sách Last7DaysRevenues)
+            const rawData = @Html.Raw(Json.Serialize(Model.Last7DaysRevenues ?? new List<CafePos.Models.ViewModels.DailyRevenueViewModel>()));
+
+            const labels = rawData.map(item => item.DateFormatted || item.Date);
+            const dataValues = rawData.map(item => item.TotalRevenue);
+
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: dataValues,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#0d6efd'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let value = context.raw || 0;
+                                    return 'Doanh thu: ' + value.toLocaleString('vi-VN') + ' đ';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN') + ' đ';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
