@@ -6943,11 +6943,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Source Code Tự làm\\CafePOS\\CafePos\\CafePos.csproj",
+      "projectUniqueName": "E:\\Projects\\CafePOS\\CafePos\\CafePos.csproj",
       "projectName": "CafePos",
-      "projectPath": "E:\\Source Code Tự làm\\CafePOS\\CafePos\\CafePos.csproj",
+      "projectPath": "E:\\Projects\\CafePOS\\CafePos\\CafePos.csproj",
       "packagesPath": "C:\\Users\\tuankenvlog2000\\.nuget\\packages\\",
-      "outputPath": "E:\\Source Code Tự làm\\CafePOS\\CafePos\\obj\\",
+      "outputPath": "E:\\Projects\\CafePOS\\CafePos\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

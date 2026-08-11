@@ -70,7 +70,7 @@
                         </li>
 
                         @* STAFF: khách hàng *@
-                        @if (User.IsInRole("Staff"))
+                        @if (User.IsInRole("Customer"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link @(currentController == "CustomerOrder" && currentAction == "Create" ? "active" : "")"

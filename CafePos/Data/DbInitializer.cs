@@ -18,7 +18,7 @@ namespace CafePos.Data
                 var roles = new Role[]
                 {
                     new Role { Name = "Admin" },
-                    new Role { Name = "Staff" },
+                    new Role { Name = "Customer" },
                     new Role { Name = "Employee" }
                 };
 
@@ -60,11 +60,13 @@ namespace CafePos.Data
             if (!context.Users.Any())
             {
                 var adminRole = context.Roles.First(r => r.Name == "Admin");
-                var staffRole = context.Roles.First(r => r.Name == "Staff"); // Hoặc KhachHang nếu bạn dùng Role này
+                var staffRole = context.Roles.First(r => r.Name == "Customer"); // Hoặc KhachHang nếu bạn dùng Role này
                 var employeeRole = context.Roles.First(r => r.Name == "Employee");
 
                 var quanLy = context.Positions.First(x => x.PositionName == "Quản lý");
                 var thuNgan = context.Positions.First(x => x.PositionName == "Thu ngân");
+                var phucVu = context.Positions.First(x => x.PositionName == "Phục vụ");
+                var phaChe = context.Positions.First(x => x.PositionName == "Pha chế");
 
                 // 1. Tạo các tài khoản User
                 var adminUser = new User
@@ -89,18 +91,40 @@ namespace CafePos.Data
                     NgayCapNhat = DateTime.Now
                 };
 
+               
                 var employeeUser = new User
                 {
-                    Username = "nhanvien",
+                    Username = "nhanvienphucvu",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234567"),
                     RoleId = employeeRole.RoleId,
-                    Email = "nhanvien@gmail.com",
+                    Email = "nhanvienphucvu@gmail.com",
                     IsActive = true,
                     TrangThai = "Hoạt động",
                     NgayCapNhat = DateTime.Now
                 };
+                var employeeUser1 = new User
+                {
+                    Username = "nhanvienphache",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234567"),
+                    RoleId = employeeRole.RoleId,
+                    Email = "nhanvienphache@gmail.com",
+                    IsActive = true,
+                    TrangThai = "Hoạt động",
+                    NgayCapNhat = DateTime.Now
+                };
+                var employeeUser2 = new User
+                {
+                    Username = "nhanvienthungan",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("1234567"),
+                    RoleId = employeeRole.RoleId,
+                    Email = "nhanvienthungan@gmail.com",
+                    IsActive = true,
+                    TrangThai = "Hoạt động",
+                    NgayCapNhat = DateTime.Now
+                };
+                
 
-                context.Users.AddRange(adminUser, staffUser, employeeUser);
+                context.Users.AddRange(adminUser, staffUser, employeeUser, employeeUser1, employeeUser2);
                 context.SaveChanges();
 
                 // 2. Chỉ tạo Hồ sơ Employee cho Admin và Nhân viên (BỎ KHANG RA)
@@ -118,11 +142,33 @@ namespace CafePos.Data
                     },
                     new Employee
                     {
-                        UserId = employeeUser.UserId,
-                        FullName = "Nguyễn Ngọc Lan",
-                        EmployeeCode = "NV001",
-                        PositionId = thuNgan.PositionId,
+                        UserId = employeeUser1.UserId,
+                        FullName = "Nguyễn Ngọc Thảo",
+                        EmployeeCode = "NV002",
+                        PositionId = phaChe.PositionId,
                         PhoneNumber = "0900000000",
+                        Address = "Đồng Tháp",
+                        HireDate = DateTime.Now,
+                        IsActive = true
+                    },
+                    new Employee
+                    {
+                        UserId = employeeUser2.UserId,
+                        FullName = "Nguyễn Ngọc Lan",
+                        EmployeeCode = "NV003",
+                        PositionId = thuNgan.PositionId,
+                        PhoneNumber = "0900000003",
+                        Address = "Đồng Tháp",
+                        HireDate = DateTime.Now,
+                        IsActive = true
+                    },
+                    new Employee
+                    {
+                        UserId = employeeUser.UserId,
+                        FullName = "Nguyễn Tuấn Ken",
+                        EmployeeCode = "NV004",
+                        PositionId = phucVu.PositionId,
+                        PhoneNumber = "0900000004",
                         Address = "Đồng Tháp",
                         HireDate = DateTime.Now,
                         IsActive = true

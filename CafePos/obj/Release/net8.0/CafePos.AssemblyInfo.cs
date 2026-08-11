@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CafePos")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+494a4850655affb6e0dc78571bf21abc0ba15ff8")]
 [assembly: System.Reflection.AssemblyProductAttribute("CafePos")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CafePos")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

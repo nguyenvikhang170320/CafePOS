@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CafePos.Controllers
 {
-    [Authorize(Roles = "Staff")] // 🔒 Bắt buộc đăng nhập
+    [Authorize(Roles = "Customer")] // 🔒 Bắt buộc đăng nhập
     public class CustomerOrderController : Controller
     {
         private readonly CafePosDbContext _context;
