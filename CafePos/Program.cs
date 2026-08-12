@@ -2,11 +2,17 @@
 using CafePos.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using CafePos.Services.API;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddScoped<JwtTokenService>();
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Missing Jwt:Key");
+
 builder.Services.AddDistributedMemoryCache(); // <-- THÊM DÒNG NÀY
 builder.Services.AddSession(options =>        // <-- THÊM DÒNG NÀY
 {
@@ -24,12 +30,54 @@ builder.Services.AddDbContext<CafePosDbContext>(options =>
     ));
 
 // ---- THÊM ĐOẠN NÀY ĐỂ KÍCH HOẠT COOKIE AUTHENTICATION ----
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+builder.Services
+    .AddAuthentication(options =>
     {
-        options.LoginPath = "/Account/Login"; // Đường dẫn bị đá về nếu chưa đăng nhập
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Đường dẫn khi không có quyền
-    });
+        // Web MVC mặc định dùng Cookie
+        options.DefaultAuthenticateScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+
+        options.DefaultSignInScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(
+        CookieAuthenticationDefaults.AuthenticationScheme,
+        options =>
+        {
+            options.LoginPath = "/Account/Login";
+            options.AccessDeniedPath = "/Account/AccessDenied";
+        })
+    .AddJwtBearer(
+        JwtBearerDefaults.AuthenticationScheme,
+        options =>
+        {
+            options.TokenValidationParameters =
+                new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+
+                    ValidIssuer =
+                        builder.Configuration["Jwt:Issuer"],
+
+                    ValidAudience =
+                        builder.Configuration["Jwt:Audience"],
+
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtKey)
+                        ),
+
+                    ClockSkew = TimeSpan.Zero
+                };
+        });
+
+builder.Services.AddAuthorization();
 // ĐĂNG KÝ CÁC SERVICE TẠI ĐÂY
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();

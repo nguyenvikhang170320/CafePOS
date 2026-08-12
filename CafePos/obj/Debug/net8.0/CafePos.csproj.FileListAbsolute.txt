@@ -1216,3 +1216,4 @@ E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\refint\CafePos.dll
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\CafePos.pdb
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\CafePos.genruntimeconfig.cache
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\ref\CafePos.dll
+E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

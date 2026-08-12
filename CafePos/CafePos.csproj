@@ -14,8 +14,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Controllers\API\AuthController.cs" Link="Controllers\API\AuthController.cs" />
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Controllers\API\MenuController.cs" Link="Controllers\API\MenuController.cs" />
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Controllers\API\OrdersController.cs" Link="Controllers\API\OrdersController.cs" />
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Controllers\API\PaymentsController.cs" Link="Controllers\API\PaymentsController.cs" />
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Controllers\API\TablesController.cs" Link="Controllers\API\TablesController.cs" />
+    <Compile Include="C:\Users\tuankenvlog2000\Desktop\Note\Backend\Services\API\JwtTokenService.cs" Link="Services\API\JwtTokenService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="CloudinaryDotNet" Version="1.28.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.30" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.29" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.24" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
@@ -28,6 +38,8 @@
 
   <ItemGroup>
     <Folder Include="Areas\Admin\Views\Product\" />
+    <Folder Include="Controllers\API\" />
+    <Folder Include="Services\API\" />
   </ItemGroup>
 
 </Project>

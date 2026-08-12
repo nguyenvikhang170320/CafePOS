@@ -40,5 +40,7 @@ namespace CafePos.Models
         // Link tới danh sách topping của món này
         [ValidateNever]
         public virtual ICollection<OrderItemTopping> OrderItemToppings { get; set; }
+        [ValidateNever]
+        public virtual ProductSize? ProductSize { get; set; }
     }
 }
