@@ -1,7 +1,35 @@
 ﻿@model Order
 
+@{
+    var paymentMethodText = Model.PaymentMethod switch
+    {
+        "Cash" => "Tiền mặt",
+        "Banking" => "Chuyển khoản / QR",
+        "VNPAY" => "VNPAY",
+        "Card" => "Thẻ",
+        null => "Chưa chọn",
+        "" => "Chưa chọn",
+        _ => Model.PaymentMethod
+    };
+
+    var bankId = ViewBag.BankId?.ToString() ?? "";
+    var accountNumber = ViewBag.BankAccountNumber?.ToString() ?? "";
+    var accountName = ViewBag.BankAccountName?.ToString() ?? "";
+
+    var qrDescription = $"CafePOS {Model.OrderCode}";
+
+    var vietQrUrl =
+        $"https://img.vietqr.io/image/{bankId}-{accountNumber}-compact2.png" +
+        $"?amount={Model.TotalAmount:0}" +
+        $"&addInfo={Uri.EscapeDataString(qrDescription)}" +
+        $"&accountName={Uri.EscapeDataString(accountName)}";
+     var canPay =
+        ViewBag.CanPay is bool value
+        &&
+        value;
+}
+
 <style>
-    /* Custom Soft Badges & Elements */
     .badge-soft-success {
         background-color: #d1e7dd;
         color: #0f5132;
@@ -33,312 +61,1102 @@
 </style>
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
     <!-- Header -->
     <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <h5 class="mb-0 fw-bold text-dark">Hóa đơn #@Model.OrderCode</h5>
+
+                <h5 class="mb-0 fw-bold text-dark">
+                    Hóa đơn #@Model.OrderCode
+                </h5>
+
                 @if (Model.PaymentStatus == "Paid")
                 {
-                    <span class="badge badge-soft-success rounded-pill px-3"><i class="bi bi-check-circle-fill me-1"></i>Đã thanh toán</span>
+                    <span class="badge badge-soft-success rounded-pill px-3">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        Đã thanh toán
+                    </span>
                 }
                 else
                 {
-                    <span class="badge badge-soft-danger rounded-pill px-3"><i class="bi bi-clock-fill me-1"></i>Chưa thanh toán</span>
+                    <span class="badge badge-soft-danger rounded-pill px-3">
+                        <i class="bi bi-clock-fill me-1"></i>
+                        Chưa thanh toán
+                    </span>
                 }
+
             </div>
+
             <div class="text-muted small">
-                <i class="bi bi-calendar3 me-1"></i>Ngày tạo: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                <i class="bi bi-calendar3 me-1"></i>
+                Ngày tạo: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
             </div>
         </div>
 
+
         <!-- Action Links -->
         <div class="d-flex gap-2">
-            <a 
+
+            <a asp-area="Admin"
                asp-controller="Order"
                asp-action="PrintInvoice"
                asp-route-id="@Model.OrderId"
                target="_blank"
                class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
-                <i class="bi bi-printer me-1"></i> In hóa đơn
+
+                <i class="bi bi-printer me-1"></i>
+                In hóa đơn
+
             </a>
 
-            <a 
+
+            <a asp-area="Admin"
                asp-controller="Order"
                asp-action="Checkout"
                asp-route-id="@Model.OrderId"
                class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
-                <i class="bi bi-pencil-square me-1"></i> Sửa / POS
+
+                <i class="bi bi-pencil-square me-1"></i>
+                Sửa / POS
+
             </a>
+
         </div>
+
     </div>
 
+
     <div class="card-body p-4">
+
         <!-- Client & Order Status Info -->
         <div class="row g-3 mb-4">
+
             <div class="col-md-6">
                 <div class="p-3 bg-light rounded-4 h-100 border border-light">
+
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-person-circle fs-5 text-primary me-2"></i>
-                        <span class="fw-bold text-dark">Thông tin khách hàng</span>
+                        <span class="fw-bold text-dark">
+                            Thông tin khách hàng
+                        </span>
                     </div>
-                    <div class="small text-muted">Họ tên</div>
-                    <div class="fw-semibold text-dark mb-2">@(string.IsNullOrEmpty(Model.CustomerName) ? "Khách vãng lai" : Model.CustomerName)</div>
 
-                    <div class="small text-muted">Số điện thoại</div>
-                    <div class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model.CustomerPhone) ? "Chưa cung cấp" : Model.CustomerPhone)</div>
+                    <div class="small text-muted">
+                        Họ tên
+                    </div>
+
+                    <div class="fw-semibold text-dark mb-2">
+                        @(string.IsNullOrEmpty(Model.CustomerName)
+                            ? "Khách vãng lai"
+                            : Model.CustomerName)
+                    </div>
+
+                    <div class="small text-muted">
+                        Số điện thoại
+                    </div>
+
+                    <div class="fw-semibold text-dark">
+                        @(string.IsNullOrEmpty(Model.CustomerPhone)
+                            ? "Chưa cung cấp"
+                            : Model.CustomerPhone)
+                    </div>
+
                 </div>
             </div>
 
+
             <div class="col-md-6">
                 <div class="p-3 bg-light rounded-4 h-100 border border-light">
+
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-info-circle fs-5 text-primary me-2"></i>
-                        <span class="fw-bold text-dark">Trạng thái đơn hàng</span>
+                        <span class="fw-bold text-dark">
+                            Trạng thái đơn hàng
+                        </span>
                     </div>
+
+
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small text-muted">Trạng thái xử lý:</span>
+
+                        <span class="small text-muted">
+                            Trạng thái xử lý:
+                        </span>
+
                         <div>
+
                             @if (Model.OrderStatus == "Completed")
                             {
-                                <span class="badge badge-soft-success rounded-pill">Hoàn thành</span>
+                                <span class="badge badge-soft-success rounded-pill">
+                                    Hoàn thành
+                                </span>
                             }
                             else if (Model.OrderStatus == "Pending")
                             {
-                                <span class="badge badge-soft-warning rounded-pill">Chờ xử lý</span>
+                                <span class="badge badge-soft-warning rounded-pill">
+                                    Chờ xử lý
+                                </span>
                             }
                             else
                             {
-                                <span class="badge badge-soft-secondary rounded-pill">@(Model.OrderStatus == "Cancelled" ? "Đã hủy" : Model.OrderStatus)</span>
+                                <span class="badge badge-soft-secondary rounded-pill">
+                                    @(Model.OrderStatus == "Cancelled"
+                                        ? "Đã hủy"
+                                        : Model.OrderStatus)
+                                </span>
                             }
+
                         </div>
+
                     </div>
+
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="small text-muted">Phương thức thanh toán:</span>
-                        <span class="fw-semibold text-dark small">@(string.IsNullOrEmpty(Model.PaymentMethod) ? "Chưa chọn" : Model.PaymentMethod)</span>
+
+                        <span class="small text-muted">
+                            Phương thức thanh toán:
+                        </span>
+
+                        <span class="fw-semibold text-dark small">
+                            @paymentMethodText
+                        </span>
+
                     </div>
+
                 </div>
             </div>
+
         </div>
 
+
+
         <!-- Quick Payment Buttons -->
-        @if (Model.PaymentStatus != "Paid")
-        {
-            <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-exclamation-triangle-fill fs-4 text-warning me-3"></i>
-                    <div>
-                        <div class="fw-bold text-dark">Đơn hàng chưa thanh toán</div>
-                        <div class="small text-muted">Bấm chọn phương thức bên phải để xác nhận thanh toán nhanh.</div>
-                    </div>
+        @if (
+    Model.PaymentStatus != "Paid"
+    &&
+    canPay
+)
+{
+    <div class="alert alert-warning border-0 rounded-4 p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+        <div class="d-flex align-items-center">
+
+            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning me-3"></i>
+
+            <div>
+                <div class="fw-bold text-dark">
+                    Đơn hàng chưa thanh toán
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="button"
-                            class="btn btn-success btn-sm rounded-pill px-3 btn-mark-paid"
-                            data-id="@Model.OrderId"
-                            data-method="Cash">
-                        <i class="bi bi-cash me-1"></i> Tiền mặt
-                    </button>
-                    <button type="button"
-                            class="btn btn-primary btn-sm rounded-pill px-3 btn-mark-paid"
-                            data-id="@Model.OrderId"
-                            data-method="Banking">
-                        <i class="bi bi-qr-code me-1"></i> Chuyển khoản
-                    </button>
-                    <a asp-area="Admin"
-                       asp-controller="Order"
-                       asp-action="Checkout"
-                       asp-route-id="@Model.OrderId"
-                       class="btn btn-dark btn-sm rounded-pill px-3">
-                        <i class="bi bi-credit-card me-1"></i> VNPAY / POS
-                    </a>
+
+                <div class="small text-muted">
+                    Bấm chọn phương thức bên phải để xác nhận thanh toán nhanh.
                 </div>
             </div>
-        }
+
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            <button type="button"
+                    class="btn btn-success btn-sm rounded-pill px-3 btn-mark-paid"
+                    data-id="@Model.OrderId"
+                    data-method="Cash">
+
+                <i class="bi bi-cash me-1"></i>
+                Tiền mặt
+
+            </button>
+
+
+            <button type="button"
+                    class="btn btn-success btn-sm rounded-pill px-3 btn-mark-paid"
+                    data-id="@Model.OrderId"
+                    data-method="Card">
+
+                <i class="bi bi-credit-card me-1"></i>
+                Thẻ ATM
+
+            </button>
+
+
+            <button type="button"
+                    class="btn btn-primary btn-sm rounded-pill px-3 btn-mark-paid"
+                    data-id="@Model.OrderId"
+                    data-method="Banking">
+
+                <i class="bi bi-qr-code me-1"></i>
+                Chuyển khoản / QR
+
+            </button>
+
+
+            <a asp-area="Admin"
+               asp-controller="Order"
+               asp-action="Checkout"
+               asp-route-id="@Model.OrderId"
+               class="btn btn-dark btn-sm rounded-pill px-3">
+
+                <i class="bi bi-credit-card me-1"></i>
+                VNPAY / POS
+
+            </a>
+
+        </div>
+
+    </div>
+}
+else if (
+    Model.PaymentStatus != "Paid"
+    &&
+    !canPay
+)
+{
+    <div class="alert alert-secondary border-0 rounded-4 p-3 mb-4">
+
+        <i class="bi bi-lock-fill me-2"></i>
+
+        <strong>
+            Đơn hàng chưa thanh toán.
+        </strong>
+
+        <span class="ms-1">
+            Chỉ Quản lý hoặc Thu ngân mới được thực hiện thanh toán.
+        </span>
+
+    </div>
+}
+
 
         <!-- Product Table -->
         <div class="table-responsive rounded-3 border">
+
             <table class="table align-middle mb-0">
+
                 <thead class="bg-light text-muted small text-uppercase">
+
                     <tr>
-                        <th class="ps-3">Món</th>
-                        <th class="text-center">SL</th>
-                        <th class="text-end">Đơn giá</th>
-                        <th>Topping</th>
-                        <th class="text-end pe-3">Thành tiền</th>
+                        <th class="ps-3">
+                            Món
+                        </th>
+
+                        <th class="text-center">
+                            SL
+                        </th>
+
+                        <th class="text-end">
+                            Đơn giá
+                        </th>
+
+                        <th>
+                            Topping
+                        </th>
+
+                        <th class="text-end pe-3">
+                            Thành tiền
+                        </th>
                     </tr>
+
                 </thead>
+
+
                 <tbody>
-                    @if (Model.OrderItems != null && Model.OrderItems.Any())
+
+                    @if (Model.OrderItems != null &&
+                         Model.OrderItems.Any())
                     {
+
                         foreach (var item in Model.OrderItems)
                         {
+
                             <tr>
+
                                 <td class="ps-3">
-                                    <div class="fw-bold text-dark">@item.ProductNameSnapshot</div>
+
+                                    <div class="fw-bold text-dark">
+                                        @item.ProductNameSnapshot
+                                    </div>
+
 
                                     @if (!string.IsNullOrEmpty(item.SizeNameSnapshot))
                                     {
                                         <div class="small text-muted">
-                                            Size: <span class="badge bg-light text-dark border">@item.SizeNameSnapshot</span>
+
+                                            Size:
+
+                                            <span class="badge bg-light text-dark border">
+                                                @item.SizeNameSnapshot
+                                            </span>
+
                                         </div>
                                     }
+
 
                                     @if (!string.IsNullOrEmpty(item.ItemNote))
                                     {
                                         <div class="small text-warning mt-1">
-                                            <i class="bi bi-chat-left-dots me-1"></i>Ghi chú: @item.ItemNote
+
+                                            <i class="bi bi-chat-left-dots me-1"></i>
+
+                                            Ghi chú:
+                                            @item.ItemNote
+
                                         </div>
                                     }
+
                                 </td>
-                                <td class="text-center fw-bold text-dark">@item.Quantity</td>
-                                <td class="text-end text-muted">@item.UnitPrice.ToString("N0") đ</td>
+
+
+                                <td class="text-center fw-bold text-dark">
+                                    @item.Quantity
+                                </td>
+
+
+                                <td class="text-end text-muted">
+                                    @item.UnitPrice.ToString("N0") đ
+                                </td>
+
+
                                 <td>
-                                    @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
+
+                                    @if (item.OrderItemToppings != null &&
+                                         item.OrderItemToppings.Any())
                                     {
+
                                         <div class="d-flex flex-wrap gap-1">
+
                                             @foreach (var top in item.OrderItemToppings)
                                             {
+
                                                 <span class="topping-chip text-muted">
-                                                    + @top.ToppingNameSnapshot (x@top.Quantity)
-                                                    <span class="text-primary fw-semibold">+@top.TotalPrice.ToString("N0")đ</span>
+
+                                                    + @top.ToppingNameSnapshot
+                                                    (x@top.Quantity)
+
+                                                    <span class="text-primary fw-semibold">
+                                                        +@top.TotalPrice.ToString("N0")đ
+                                                    </span>
+
                                                 </span>
+
                                             }
+
                                         </div>
+
                                     }
                                     else
                                     {
-                                        <span class="text-muted small">Không</span>
+                                        <span class="text-muted small">
+                                            Không
+                                        </span>
                                     }
+
                                 </td>
-                                <td class="text-end pe-3 fw-bold text-dark">@item.LineTotal.ToString("N0") đ</td>
+
+
+                                <td class="text-end pe-3 fw-bold text-dark">
+                                    @item.LineTotal.ToString("N0") đ
+                                </td>
+
                             </tr>
+
                         }
+
                     }
                     else
                     {
+
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Không có món nào trong đơn.</td>
+
+                            <td colspan="5"
+                                class="text-center text-muted py-4">
+
+                                Không có món nào trong đơn.
+
+                            </td>
+
                         </tr>
+
                     }
+
                 </tbody>
+
             </table>
+
         </div>
+
+
 
         <!-- Note & Total Summary -->
         <div class="row mt-4 g-3">
+
             <div class="col-md-6">
+
                 @if (!string.IsNullOrEmpty(Model.Note))
                 {
+
                     <div class="p-3 bg-light rounded-4 border border-light">
-                        <div class="fw-bold text-dark mb-1"><i class="bi bi-sticky me-1 text-primary"></i>Ghi chú đơn hàng</div>
-                        <div class="text-muted small">@Model.Note</div>
+
+                        <div class="fw-bold text-dark mb-1">
+
+                            <i class="bi bi-sticky me-1 text-primary"></i>
+
+                            Ghi chú đơn hàng
+
+                        </div>
+
+                        <div class="text-muted small">
+                            @Model.Note
+                        </div>
+
                     </div>
+
                 }
+
             </div>
+
 
             <div class="col-md-6">
+
                 <div class="p-3 bg-light rounded-4 border border-light">
+
+
                     <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>Tạm tính</span>
-                        <span>@Model.SubTotal.ToString("N0") đ</span>
+
+                        <span>
+                            Tạm tính
+                        </span>
+
+                        <span>
+                            @Model.SubTotal.ToString("N0") đ
+                        </span>
+
                     </div>
+
+
                     <div class="d-flex justify-content-between mb-2 text-muted">
-                        <span>Giảm giá</span>
-                        <span class="text-danger">-@Model.DiscountAmount.ToString("N0") đ</span>
+
+                        <span>
+                            Giảm giá
+                        </span>
+
+                        <span class="text-danger">
+                            -@Model.DiscountAmount.ToString("N0") đ
+                        </span>
+
                     </div>
+
+
                     <hr class="my-2" />
+
+
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-dark">Tổng tiền</span>
-                        <span class="fw-bold text-primary fs-4">@Model.TotalAmount.ToString("N0") đ</span>
+
+                        <span class="fw-bold text-dark">
+                            Tổng tiền
+                        </span>
+
+                        <span class="fw-bold text-primary fs-4">
+                            @Model.TotalAmount.ToString("N0") đ
+                        </span>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<!-- Modal Chọn Nhân Viên Khi Thanh Toán Nhanh -->
-<div class="modal fade" id="quickPayStaffModal" tabindex="-1" aria-hidden="true">
+
+
+<!-- ========================================================= -->
+<!-- MODAL BANKING / VIETQR -->
+<!-- ========================================================= -->
+
+<div class="modal fade"
+     id="bankingQrModal"
+     tabindex="-1"
+     aria-hidden="true">
+
     <div class="modal-dialog modal-dialog-centered">
+
         <div class="modal-content rounded-4 border-0 shadow">
+
+
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Chọn nhân viên thực hiện</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <h5 class="modal-title fw-bold">
+
+                    <i class="bi bi-qr-code-scan text-primary me-2"></i>
+
+                    Quét QR chuyển khoản
+
+                </h5>
+
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
             </div>
+
+
+
             <div class="modal-body py-4">
-                <input type="hidden" id="quickPayOrderId" />
-                <input type="hidden" id="quickPayMethod" />
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nhân viên trực ca <span class="text-danger">*</span></label>
-                    <select id="quickPayEmployeeId" class="form-select rounded-3">
-                        <option value="">-- Chọn nhân viên thu ngân --</option>
-                    </select>
+
+
+                <div class="text-center">
+
+
+                    @if (
+                        !string.IsNullOrWhiteSpace(bankId) &&
+                        !string.IsNullOrWhiteSpace(accountNumber)
+                    )
+                    {
+
+                        <img src="@vietQrUrl"
+                             alt="VietQR"
+                             class="img-fluid rounded-3 border bg-white p-2"
+                             style="max-width:320px;" />
+
+
+                        <div class="mt-3">
+
+                            <div class="fw-bold fs-5">
+                                @accountName
+                            </div>
+
+
+                            <div class="text-muted">
+                                STK: @accountNumber
+                            </div>
+
+
+                            <div class="fs-3 fw-bold text-danger mt-2">
+
+                                @Model.TotalAmount.ToString("N0") đ
+
+                            </div>
+
+
+                            <div class="small text-muted mt-2">
+
+                                Nội dung:
+
+                                <strong>
+                                    @qrDescription
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="alert alert-warning border-0 rounded-4 mt-3 mb-0 text-start">
+
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+
+                            Chỉ xác nhận sau khi kiểm tra tiền đã vào tài khoản.
+
+                        </div>
+
+                    }
+                    else
+                    {
+
+                        <div class="alert alert-danger border-0 rounded-4 mb-0">
+
+                            Chưa cấu hình thông tin ngân hàng để tạo VietQR.
+
+                        </div>
+
+                    }
+
                 </div>
+
             </div>
+
+
+
             <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" id="btnConfirmQuickPay" class="btn btn-success rounded-pill px-4 fw-bold">Xác nhận thanh toán</button>
+
+
+                <button type="button"
+                        class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">
+
+                    Hủy
+
+                </button>
+
+
+                <button type="button"
+                        id="btnBankingContinue"
+                        class="btn btn-primary rounded-pill px-4 fw-bold"
+                        @((string.IsNullOrWhiteSpace(bankId) ||
+                           string.IsNullOrWhiteSpace(accountNumber))
+                            ? "disabled"
+                            : "")>
+
+                    <i class="bi bi-check2-circle me-1"></i>
+
+                    Đã nhận tiền - tiếp tục
+
+                </button>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<!-- AJAX Script Xử Lý Thanh Toán Nhanh Kèm EmployeeId -->
+
+
+<!-- ========================================================= -->
+<!-- MODAL CHỌN NHÂN VIÊN -->
+<!-- ========================================================= -->
+
+<div class="modal fade"
+     id="quickPayStaffModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content rounded-4 border-0 shadow">
+
+
+            <div class="modal-header border-0 pb-0">
+
+                <h5 class="modal-title fw-bold">
+
+                    <i class="bi bi-person-badge text-primary me-2"></i>
+
+                    Chọn nhân viên thực hiện
+
+                </h5>
+
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+
+            <div class="modal-body py-4">
+
+                <input type="hidden"
+                       id="quickPayOrderId" />
+
+                <input type="hidden"
+                       id="quickPayMethod" />
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-bold">
+
+                        Nhân viên trực ca
+
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+
+                    <select id="quickPayEmployeeId"
+                            class="form-select rounded-3">
+
+                        <option value="">
+                            -- Chọn nhân viên thu ngân --
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="modal-footer border-0 pt-0">
+
+
+                <button type="button"
+                        class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">
+
+                    Hủy
+
+                </button>
+
+
+                <button type="button"
+                        id="btnConfirmQuickPay"
+                        class="btn btn-success rounded-pill px-4 fw-bold">
+
+                    Xác nhận thanh toán
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- AJAX / JAVASCRIPT -->
+<!-- ========================================================= -->
+
 <script>
-    $(document).ready(function() {
-        let staffModal = new bootstrap.Modal(document.getElementById('quickPayStaffModal'));
 
-        $(".btn-mark-paid").off("click").on("click", function() {
-            let id = $(this).data("id");
-            let method = $(this).data("method");
+    $(document).ready(function () {
 
-            $("#quickPayOrderId").val(id);
-            $("#quickPayMethod").val(method);
 
-            // Tải danh sách nhân viên Quản lý & Thu ngân vào Modal
-            $.get('@Url.Action("GetActiveCashiers", "Order", new { area = "Admin" })', function(data) {
-                let $select = $("#quickPayEmployeeId");
-                $select.empty().append('<option value="">-- Chọn nhân viên thu ngân --</option>');
-                if (data && data.length > 0) {
-                    $.each(data, function(i, emp) {
-                        $select.append(`<option value="${emp.employeeId}">${emp.fullName} (${emp.positionName})</option>`);
-                    });
-                }
-                staffModal.show();
-            });
-        });
+        const staffModalElement =
+            document.getElementById(
+                'quickPayStaffModal'
+            );
 
-        $("#btnConfirmQuickPay").click(function() {
-            let id = $("#quickPayOrderId").val();
-            let method = $("#quickPayMethod").val();
-            let employeeId = $("#quickPayEmployeeId").val();
 
-            if (!employeeId) {
-                alert("Vui lòng chọn nhân viên thực hiện thanh toán!");
-                return;
-            }
+        const bankingQrModalElement =
+            document.getElementById(
+                'bankingQrModal'
+            );
 
-            staffModal.hide();
 
-            $.ajax({
-                url: '@Url.Action("MarkAsPaid", "Order", new { area = "Admin" })',
-                type: 'POST',
-                data: { id: id, paymentMethod: method, employeeId: employeeId },
-                success: function(res) {
-                    if (res.success) {
-                        $.get('@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })', { id: id }, function(html) {
-                            $("#invoiceDetail").html(html);
-                        });
-                    } else {
-                        alert(res.message || "Không thể cập nhật trạng thái thanh toán.");
+        let staffModal =
+            new bootstrap.Modal(
+                staffModalElement
+            );
+
+
+        let bankingQrModal =
+            new bootstrap.Modal(
+                bankingQrModalElement
+            );
+
+
+
+        // =====================================================
+        // LOAD DANH SÁCH THU NGÂN
+        // =====================================================
+
+        function loadCashiersAndShowStaffModal() {
+
+
+            $.get(
+                '@Url.Action(
+                    "GetActiveCashiers",
+                    "Order",
+                    new { area = "Admin" }
+                )',
+
+                function (data) {
+
+
+                    let $select =
+                        $("#quickPayEmployeeId");
+
+
+                    $select
+                        .empty()
+                        .append(
+                            '<option value="">-- Chọn nhân viên thu ngân --</option>'
+                        );
+
+
+                    if (
+                        data &&
+                        data.length > 0
+                    )
+                    {
+
+                        $.each(
+                            data,
+                            function (i, emp) {
+
+
+                                $select.append(
+
+                                    `<option value="${emp.employeeId}">
+                                        ${emp.fullName}
+                                        (${emp.positionName})
+                                    </option>`
+
+                                );
+
+                            }
+                        );
+
                     }
-                },
-                error: function() {
-                    alert("Có lỗi xảy ra khi gửi yêu cầu thanh toán.");
+
+
+                    staffModal.show();
+
                 }
+
+            ).fail(function () {
+
+                alert(
+                    "Không tải được danh sách nhân viên thu ngân."
+                );
+
             });
-        });
+
+        }
+
+
+
+        // =====================================================
+        // BẤM NÚT PHƯƠNG THỨC THANH TOÁN
+        // =====================================================
+
+        $(".btn-mark-paid")
+            .off("click")
+            .on(
+                "click",
+                function () {
+
+
+                    let id =
+                        $(this).data("id");
+
+
+                    let method =
+                        $(this).data("method");
+
+
+                    $("#quickPayOrderId")
+                        .val(id);
+
+
+                    $("#quickPayMethod")
+                        .val(method);
+
+
+
+                    // =========================================
+                    // BANKING
+                    // =========================================
+
+                    if (
+                        method === "Banking"
+                    )
+                    {
+
+                        bankingQrModal.show();
+
+                        return;
+
+                    }
+
+
+
+                    // =========================================
+                    // CASH / CARD
+                    // =========================================
+
+                    loadCashiersAndShowStaffModal();
+
+                }
+            );
+
+
+
+        // =====================================================
+        // BANKING - ĐÃ NHẬN TIỀN
+        // =====================================================
+
+        $("#btnBankingContinue")
+            .off("click")
+            .on(
+                "click",
+                function () {
+
+
+                    bankingQrModal.hide();
+
+
+                    setTimeout(
+                        function () {
+
+                            loadCashiersAndShowStaffModal();
+
+                        },
+                        250
+                    );
+
+                }
+            );
+
+
+
+        // =====================================================
+        // XÁC NHẬN THANH TOÁN
+        // =====================================================
+
+        $("#btnConfirmQuickPay")
+            .off("click")
+            .on(
+                "click",
+                function () {
+
+
+                    let id =
+                        $("#quickPayOrderId")
+                            .val();
+
+
+                    let method =
+                        $("#quickPayMethod")
+                            .val();
+
+
+                    let employeeId =
+                        $("#quickPayEmployeeId")
+                            .val();
+
+
+
+                    if (!employeeId)
+                    {
+
+                        alert(
+                            "Vui lòng chọn nhân viên thực hiện thanh toán!"
+                        );
+
+                        return;
+
+                    }
+
+
+
+                    // BANKING xác nhận lần cuối
+                    if (
+                        method === "Banking"
+                    )
+                    {
+
+                        const confirmed =
+                            confirm(
+                                "Bạn đã kiểm tra và chắc chắn tiền đã vào tài khoản chưa?"
+                            );
+
+
+                        if (!confirmed)
+                        {
+
+                            return;
+
+                        }
+
+                    }
+
+
+
+                    staffModal.hide();
+
+
+
+                    $.ajax({
+
+                        url:
+                            '@Url.Action(
+                                "MarkAsPaid",
+                                "Order",
+                                new { area = "Admin" }
+                            )',
+
+                        type:
+                            'POST',
+
+                        data:
+                        {
+                            id: id,
+                            paymentMethod: method,
+                            employeeId: employeeId
+                        },
+
+
+                        success:
+                            function (res)
+                            {
+
+
+                                if (
+                                    res.success
+                                )
+                                {
+
+                                    $.get(
+
+                                        '@Url.Action(
+                                            "GetInvoicePartial",
+                                            "Order",
+                                            new { area = "Admin" }
+                                        )',
+
+                                        {
+                                            id: id
+                                        },
+
+                                        function (html)
+                                        {
+
+                                            $("#invoiceDetail")
+                                                .html(html);
+
+                                        }
+
+                                    );
+
+                                }
+                                else
+                                {
+
+                                    alert(
+                                        res.message ||
+                                        "Không thể cập nhật trạng thái thanh toán."
+                                    );
+
+                                }
+
+                            },
+
+
+                        error:
+                            function ()
+                            {
+
+                                alert(
+                                    "Có lỗi xảy ra khi gửi yêu cầu thanh toán."
+                                );
+
+                            }
+
+                    });
+
+                }
+            );
+
     });
+
 </script>

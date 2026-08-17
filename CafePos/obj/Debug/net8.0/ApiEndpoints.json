@@ -95,6 +95,27 @@
   },
   {
     "ContainingType": "CafePos.Controllers.API.OrdersController",
+    "Method": "AddItems",
+    "RelativePath": "api/orders/{id}/items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "CafePos.DTOs.Orders.AddOrderItemsRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CafePos.Controllers.API.OrdersController",
     "Method": "UpdateStatus",
     "RelativePath": "api/orders/{id}/status",
     "HttpMethod": "PATCH",

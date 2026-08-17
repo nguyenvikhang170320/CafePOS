@@ -4,94 +4,385 @@
     ViewData["Title"] = "Đơn của tôi";
 }
 
-<div class="container py-4">
+<style>
+    .my-orders {
+        --coffee: #6f2f06;
+        --line: #eadfd5;
+        --muted: #7b7169;
+    }
+
+        .my-orders .page-title {
+            font-weight: 800;
+            color: #241b16;
+        }
+
+        .my-orders .order-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(67,41,24,.05);
+        }
+
+        .my-orders .order-table thead th {
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: #756a62;
+            background: #faf7f4;
+            white-space: nowrap;
+        }
+
+        .my-orders .status-pill {
+            display: inline-flex;
+            padding: .38rem .7rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 700;
+        }
+
+        .my-orders .pending {
+            background: #fff1dc;
+            color: #b96100;
+        }
+
+        .my-orders .completed {
+            background: #e3f4e8;
+            color: #197a3a;
+        }
+
+        .my-orders .cancelled {
+            background: #fde4e2;
+            color: #c23b33;
+        }
+
+        .my-orders .unpaid {
+            background: #f1efed;
+            color: #6e655e;
+        }
+
+        .my-orders .paid {
+            background: #e3f4e8;
+            color: #197a3a;
+        }
+
+        .my-orders .banking {
+            background: #e5f0ff;
+            color: #1556a3;
+        }
+
+        .my-orders .cash {
+            background: #fff0df;
+            color: #8f4b0c;
+        }
+
+        .my-orders .new-order-btn {
+            background: var(--coffee);
+            border-color: var(--coffee);
+        }
+
+            .my-orders .new-order-btn:hover {
+                background: #4a1d03;
+                border-color: #4a1d03;
+            }
+
+    @@media (max-width: 767.98px) {
+        .my-orders .order-table {
+            min-width: 980px;
+        }
+    }
+</style>
+
+<div class="container py-4 my-orders">
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+
         <div>
-            <h3 class="fw-bold mb-1">📋 Đơn hàng của tôi</h3>
-            <p class="text-muted mb-0 small">Theo dõi trạng thái và lịch sử đặt nước của bạn.</p>
+
+            <h3 class="page-title mb-1">
+                Đơn hàng của tôi
+            </h3>
+
+            <p class="text-muted mb-0">
+                Theo dõi trạng thái và lịch sử đặt nước của bạn.
+            </p>
+
         </div>
-        <a asp-action="Create" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
-            ☕ Đặt món mới
+
+
+        <a asp-action="Create"
+           class="btn new-order-btn text-white rounded-pill px-4 fw-bold shadow-sm">
+
+            + Đặt món mới
+
         </a>
+
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Mã đơn</th>
-                            <th>Thời gian đặt</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái đơn</th>
-                            <th>Thanh toán</th>
-                            <th class="text-end pe-4">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td class="ps-4 fw-bold text-primary">#@item.OrderCode</td>
-                                    <td class="small text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td class="fw-bold text-danger">@item.TotalAmount.ToString("N0") đ</td>
-                                    <td>
-                                        @if (item.OrderStatus == "Pending")
-                                        {
-                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">⏳ Chờ xác nhận</span>
-                                        }
-                                        else if (item.OrderStatus == "Completed")
-                                        {
-                                            <span class="badge bg-success px-3 py-2 rounded-pill">✅ Đã hoàn thành</span>
-                                        }
-                                        else if (item.OrderStatus == "Cancelled")
-                                        {
-                                            <span class="badge bg-danger px-3 py-2 rounded-pill">❌ Đã hủy</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-info text-dark px-3 py-2 rounded-pill">@item.OrderStatus</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (item.PaymentStatus == "Paid")
-                                        {
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Đã thanh toán</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border">Chưa thanh toán</span>
-                                        }
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <div class="btn-group">
-                                            <a asp-action="Detail" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-primary rounded-pill me-1">
-                                                🔍 Chi tiết
-                                            </a>
-                                            <a asp-action="Invoice" asp-route-phone="@item.CustomerPhone" class="btn btn-sm btn-outline-dark rounded-pill">
-                                                📄 Hóa đơn
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-5">
-                                    <div class="fs-1 mb-2">🥤</div>
-                                    <p class="mb-2">Bạn chưa có đơn hàng nào.</p>
-                                    <a asp-action="Create" class="btn btn-sm btn-primary rounded-pill px-3">Thử đặt món ngay</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+
+    <div class="order-card bg-white overflow-hidden">
+
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <div class="fw-bold">
+                    Lịch sử đơn hàng
+                </div>
+
+                <div class="small text-muted">
+                    @(Model?.Count() ?? 0) đơn
+                </div>
+
             </div>
+
+
+            <a asp-action="Invoice"
+               class="btn btn-sm btn-outline-dark rounded-pill px-3">
+
+                Hóa đơn của tôi
+
+            </a>
+
         </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0 order-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="ps-4">
+                            Mã đơn
+                        </th>
+
+                        <th>
+                            Thời gian
+                        </th>
+
+                        <th>
+                            Tổng tiền
+                        </th>
+
+                        <th>
+                            Trạng thái đơn
+                        </th>
+
+                        <th>
+                            Phương thức
+                        </th>
+
+                        <th>
+                            Thanh toán
+                        </th>
+
+                        <th class="text-end pe-4">
+                            Thao tác
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (
+                        Model != null
+                        &&
+                        Model.Any()
+                    )
+                    {
+
+                        foreach (var item in Model)
+                        {
+
+                            var orderStatusText =
+                                item.OrderStatus switch
+                                {
+                                    "Pending" => "Chờ xử lý",
+                                    "Completed" => "Đã hoàn thành",
+                                    "Cancelled" => "Đã hủy",
+                                    _ => item.OrderStatus
+                                };
+
+
+                            var orderStatusClass =
+                                item.OrderStatus switch
+                                {
+                                    "Pending" => "pending",
+                                    "Completed" => "completed",
+                                    "Cancelled" => "cancelled",
+                                    _ => "unpaid"
+                                };
+
+
+                            var paymentMethodText =
+                                item.PaymentMethod switch
+                                {
+                                    "Cash" => "Tiền mặt",
+                                    "Banking" => "Banking / QR",
+                                    _ => "Chưa chọn"
+                                };
+
+
+                            var paymentMethodClass =
+                                item.PaymentMethod == "Banking"
+                                    ? "banking"
+                                    : "cash";
+
+
+                            <tr>
+
+                                <td class="ps-4">
+
+                                    <div class="fw-bold text-dark">
+                                        #@item.OrderCode
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        Mã đơn hàng
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div>
+                                        @item.CreatedDate.ToString("dd/MM/yyyy")
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        @item.CreatedDate.ToString("HH:mm")
+                                    </div>
+
+                                </td>
+
+
+                                <td class="fw-bold text-danger">
+
+                                    @item.TotalAmount.ToString("N0") đ
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-pill @orderStatusClass">
+                                        @orderStatusText
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-pill @paymentMethodClass">
+                                        @paymentMethodText
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    @if (item.PaymentStatus == "Paid")
+                                    {
+
+                                        <span class="status-pill paid">
+                                            Đã thanh toán
+                                        </span>
+
+                                    }
+                                    else if (
+                                        item.PaymentMethod == "Banking"
+                                    )
+                                    {
+
+                                        <span class="status-pill unpaid">
+                                            Chờ xác nhận
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="status-pill unpaid">
+                                            Chưa thanh toán
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <td class="text-end pe-4">
+
+                                    <a asp-action="Detail"
+                                       asp-route-id="@item.OrderId"
+                                       class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1">
+
+                                        Chi tiết
+
+                                    </a>
+
+
+                                    <a asp-action="Invoice"
+                                       asp-route-phone="@item.CustomerPhone"
+                                       class="btn btn-sm btn-outline-dark rounded-pill px-3">
+
+                                        Hóa đơn
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    }
+                    else
+                    {
+
+                        <tr>
+
+                            <td colspan="7"
+                                class="text-center py-5">
+
+                                <div class="fs-2 mb-2">
+                                    ☕
+                                </div>
+
+                                <div class="fw-bold mb-1">
+                                    Bạn chưa có đơn hàng nào
+                                </div>
+
+                                <div class="text-muted small mb-3">
+                                    Đặt món đầu tiên để bắt đầu lịch sử đơn hàng.
+                                </div>
+
+                                <a asp-action="Create"
+                                   class="btn new-order-btn text-white rounded-pill px-4">
+
+                                    Đặt món ngay
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
     </div>
+
 </div>

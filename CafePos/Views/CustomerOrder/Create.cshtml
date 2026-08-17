@@ -1,187 +1,980 @@
 ﻿@using CafePos.Models
+
 @{
     ViewData["Title"] = "Đặt món Online";
-    var products = ViewBag.Products as List<Product> ?? new List<Product>();
-    var toppings = ViewBag.Toppings as List<Topping> ?? new List<Topping>();
+
+    var products =
+        ViewBag.Products as List<Product>
+        ??
+        new List<Product>();
+
+    var toppings =
+        ViewBag.Toppings as List<Topping>
+        ??
+        new List<Topping>();
 }
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
+<style>
 
-    <!-- Thông tin người nhận -->
-    <div class="row mb-3">
-        <div class="col-md-6 mb-3 mb-md-0">
-            <label class="form-label fw-bold">Tên người đặt</label>
-            <input type="text" class="form-control" value="@ViewBag.CustomerName" readonly />
-        </div>
-        <div class="col-md-6">
-            <label class="form-label fw-bold">Số điện thoại nhận hàng <span class="text-danger">*</span></label>
-            <input type="text" name="phone" class="form-control" value="@ViewBag.CustomerPhone" placeholder="Nhập số điện thoại nhận hàng" required />
-        </div>
-    </div>
+    .co-page {
+        --coffee:#6f2f06;
+        --coffee-dark:#4b1f04;
+        --cream:#fffaf5;
+        --line:#eadfd5;
+        --muted:#7b7169;
+    }
 
-    <div class="mb-4">
-        <label class="form-label fw-bold">Ghi chú giao hàng / Địa chỉ</label>
-        <textarea name="note" class="form-control" rows="2" placeholder="Ví dụ: Giao ít đá, số nhà 123..."></textarea>
-    </div>
+    .co-page .page-title {
+        font-weight:800;
+        color:#241b16;
+    }
 
-    <h5 class="fw-bold mb-3">📋 Danh sách món</h5>
-    <div class="table-responsive mb-3">
-        <table class="table table-bordered align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Tên món & Topping</th>
-                    <th style="width: 120px;">Đơn giá</th>
-                    <th style="width: 180px;">Chọn Size</th>
-                    <th style="width: 110px;">Số lượng</th>
-                    <th style="width: 140px;" class="text-end">Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (products.Any())
-                {
-                    for (int i = 0; i < products.Count; i++)
-                    {
-                        var item = products[i];
-                        var sizes = item.ProductSizes?.Where(s => !s.IsDeleted).ToList() ?? new List<ProductSize>();
+    .co-page .soft-card {
+        border:1px solid var(--line);
+        border-radius:18px;
+        box-shadow:0 8px 24px rgba(68,41,24,.06);
+        background:#fff;
+    }
 
-                        <tr class="product-row">
-                            <td>
-                                <input type="hidden" name="productIds" value="@item.ProductId" />
-                                <strong class="text-primary fs-6">@item.Name</strong>
+    .co-page .section-title {
+        font-weight:800;
+        color:#2d211b;
+    }
 
-                                <!-- 🌟 TOPPING RIÊNG CHO TỪNG MÓN -->
-                                @if (toppings.Any())
-                                {
-                                    <div class="mt-2 pt-2 border-top">
-                                        <small class="fw-bold text-muted d-block mb-1">Thêm Topping:</small>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            @foreach (var top in toppings)
-                                            {
-                                                <div class="form-check form-check-inline me-2 mb-1">
-                                                    <!-- Đặt name dạng array để Controller nhận đúng theo từng món: itemToppings[i] -->
-                                                    <input class="form-check-input topping-checkbox"
-                                                           type="checkbox"
-                                                           name="itemToppings_@i"
-                                                           value="@top.ToppingId"
-                                                           data-price="@top.Price"
-                                                           id="top_@(i)_@top.ToppingId">
-                                                    <label class="form-check-label small" for="top_@(i)_@top.ToppingId">
-                                                        @top.Name <span class="text-danger">(+@top.Price.ToString("N0")đ)</span>
-                                                    </label>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                            </td>
-                            <td>
-                                <span class="unit-price text-muted" data-base-price="@item.BasePrice">
-                                    @item.BasePrice.ToString("N0") đ
-                                </span>
-                            </td>
-                            <td>
-                                @if (sizes.Any())
-                                {
-                                    <select name="productSizeIds" class="form-select form-select-sm size-select">
-                                        <option value="" data-extra-price="0">Size M (Mặc định)</option>
-                                        @foreach (var s in sizes)
-                                        {
-                                            <option value="@s.ProductSizeId" data-extra-price="@s.ExtraPrice">
-                                                Size @s.SizeName (+@s.ExtraPrice.ToString("N0") đ)
-                                            </option>
-                                        }
-                                    </select>
-                                }
-                                else
-                                {
-                                    <input type="hidden" name="productSizeIds" value="" />
-                                    <span class="text-muted small">N/A</span>
-                                }
-                            </td>
-                            <td>
-                                <input type="number"
-                                       name="quantities"
-                                       class="form-control form-control-sm text-center quantity-input"
-                                       value="0"
-                                       min="0"
-                                       max="99" />
-                            </td>
-                            <td class="text-end">
-                                <span class="line-total text-danger fw-bold">0 đ</span>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
+    .co-page .form-control,
+    .co-page .form-select {
+        border-radius:12px;
+        border-color:#ddd3ca;
+        min-height:44px;
+    }
 
-    <!-- DÒNG TỔNG CỘNG TIỀN ĐƠN HÀNG -->
-    <div class="card bg-light border-0 p-3 mb-4 rounded-3 text-end shadow-sm">
-        <div class="fs-5">
-            Tổng tiền món: <strong id="grandTotal" class="text-danger fs-4">0 đ</strong>
-        </div>
-    </div>
+    .co-page .form-control:focus,
+    .co-page .form-select:focus {
+        border-color:#b78360;
+        box-shadow:0 0 0 .2rem rgba(111,47,6,.10);
+    }
 
-    <button type="submit" class="btn btn-success btn-lg w-100 font-weight-bold shadow-sm">
-        🛒 Đặt Món Ngay
-    </button>
-</form>
+    .co-page .menu-table thead th {
+        white-space:nowrap;
+        font-size:.78rem;
+        text-transform:uppercase;
+        letter-spacing:.03em;
+        color:#756a62;
+        background:#faf7f4;
+    }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+    .co-page .menu-table td {
+        padding-top:14px;
+        padding-bottom:14px;
+    }
 
-        function calculateRowAndTotal() {
-            let grandTotal = 0;
+    .co-page .product-name {
+        color:#2a201a;
+        font-weight:800;
+    }
 
-            document.querySelectorAll(".product-row").forEach(function(row) {
-                let unitPriceEl = row.querySelector(".unit-price");
-                let basePrice = parseFloat(unitPriceEl.getAttribute("data-base-price")) || 0;
+    .co-page .price {
+        color:var(--coffee);
+        font-weight:800;
+    }
 
-                // Giá Size
-                let extraPrice = 0;
-                let sizeSelect = row.querySelector(".size-select");
-                if (sizeSelect) {
-                    let selectedOption = sizeSelect.options[sizeSelect.selectedIndex];
-                    extraPrice = parseFloat(selectedOption.getAttribute("data-extra-price")) || 0;
-                }
+    .co-page .summary-card {
+        background:linear-gradient(135deg,#fff8f1,#fff);
+        border:1px solid #ead9ca;
+    }
 
-                // Số lượng
-                let quantityInput = row.querySelector(".quantity-input");
-                let quantity = parseInt(quantityInput.value) || 0;
+    .co-page .submit-btn {
+        background:var(--coffee);
+        border-color:var(--coffee);
+        border-radius:14px;
+        min-height:52px;
+        font-weight:800;
+    }
 
-                // Tính tiền Topping của RIÊNG MÓN NÀY
-                let toppingTotalPerUnit = 0;
-                row.querySelectorAll(".topping-checkbox:checked").forEach(function(topCb) {
-                    toppingTotalPerUnit += parseFloat(topCb.getAttribute("data-price")) || 0;
-                });
+    .co-page .submit-btn:hover {
+        background:var(--coffee-dark);
+        border-color:var(--coffee-dark);
+    }
 
-                // Thành tiền món = (Giá gốc + Size + Toppings) * Số lượng
-                let lineTotal = 0;
-                if (quantity > 0) {
-                    lineTotal = (basePrice + extraPrice + toppingTotalPerUnit) * quantity;
-                }
+    .co-page .topping-box {
+        background:#faf8f6;
+        border:1px dashed #ded3ca;
+        border-radius:12px;
+        padding:10px 12px;
+    }
 
-                let lineTotalEl = row.querySelector(".line-total");
-                if (lineTotalEl) {
-                    lineTotalEl.textContent = lineTotal.toLocaleString('vi-VN') + " đ";
-                }
+    .co-page .payment-option {
+        border:2px solid #e5ddd6;
+        border-radius:16px;
+        padding:18px;
+        cursor:pointer;
+        transition:.2s;
+        background:#fff;
+        height:100%;
+    }
 
-                grandTotal += lineTotal;
-            });
+    .co-page .payment-option:hover {
+        border-color:#b78360;
+        background:#fffaf5;
+    }
 
-            let grandTotalEl = document.getElementById("grandTotal");
-            if (grandTotalEl) {
-                grandTotalEl.textContent = grandTotal.toLocaleString('vi-VN') + " đ";
-            }
+    .co-page .payment-option:has(.form-check-input:checked) {
+        border-color:var(--coffee);
+        background:#fff8f1;
+        box-shadow:0 0 0 3px rgba(111,47,6,.06);
+    }
+
+    @@media (max-width: 767.98px) {
+
+        .co-page .menu-table {
+            min-width:760px;
         }
 
-        // Bắt sự kiện thay đổi
-        document.querySelectorAll(".size-select, .quantity-input, .topping-checkbox").forEach(function(el) {
-            el.addEventListener("change", calculateRowAndTotal);
-            el.addEventListener("input", calculateRowAndTotal);
-        });
+        .co-page .container-head {
+            align-items:flex-start!important;
+        }
 
-    });
+    }
+
+</style>
+
+
+<div class="container py-4 co-page">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4 container-head">
+
+        <div>
+
+            <h3 class="page-title mb-1">
+                Đặt món Online
+            </h3>
+
+            <p class="text-muted mb-0">
+                Chọn món, size, topping và phương thức thanh toán.
+            </p>
+
+        </div>
+
+
+        <a asp-action="MyOrders"
+           class="btn btn-outline-secondary rounded-pill px-3">
+
+            Đơn của tôi
+
+        </a>
+
+    </div>
+
+
+    <form asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+
+        <!-- =============================================== -->
+        <!-- THÔNG TIN GIAO HÀNG -->
+        <!-- =============================================== -->
+
+        <div class="soft-card p-4 mb-4">
+
+            <h5 class="section-title mb-3">
+                Thông tin nhận món
+            </h5>
+
+
+            <div class="row g-3">
+
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Tên người đặt
+                    </label>
+
+                    <input type="text"
+                           class="form-control bg-light"
+                           value="@ViewBag.CustomerName"
+                           readonly />
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+
+                        Số điện thoại nhận hàng
+
+                        <span class="text-danger">
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <input type="text"
+                           name="phone"
+                           class="form-control"
+                           value="@ViewBag.CustomerPhone"
+                           placeholder="Nhập số điện thoại nhận hàng"
+                           required />
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <label class="form-label fw-semibold">
+                        Địa chỉ / ghi chú giao hàng
+                    </label>
+
+                    <textarea name="note"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Ví dụ: 123 Nguyễn Trãi, gọi trước khi giao, ít đá..."></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =============================================== -->
+        <!-- PHƯƠNG THỨC THANH TOÁN -->
+        <!-- =============================================== -->
+
+        <div class="soft-card p-4 mb-4">
+
+            <h5 class="section-title mb-2">
+                Phương thức thanh toán
+            </h5>
+
+            <p class="text-muted small mb-3">
+                Chọn cách bạn muốn thanh toán cho đơn giao online.
+            </p>
+
+
+            <div class="row g-3">
+
+
+                <!-- CASH -->
+                <div class="col-md-6">
+
+                    <label class="payment-option d-block">
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <input class="form-check-input mt-1 payment-method"
+                                   type="radio"
+                                   name="paymentMethod"
+                                   value="Cash"
+                                   checked />
+
+
+                            <div>
+
+                                <div class="fw-bold mb-1">
+
+                                    <i class="bi bi-cash me-1 text-success"></i>
+
+                                    Tiền mặt khi nhận hàng
+
+                                </div>
+
+
+                                <div class="small text-muted">
+
+                                    Bạn thanh toán tiền mặt cho nhân viên
+                                    khi nhận món.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+
+
+                <!-- BANKING -->
+                <div class="col-md-6">
+
+                    <label class="payment-option d-block">
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <input class="form-check-input mt-1 payment-method"
+                                   type="radio"
+                                   name="paymentMethod"
+                                   value="Banking" />
+
+
+                            <div>
+
+                                <div class="fw-bold mb-1">
+
+                                    <i class="bi bi-qr-code-scan me-1 text-primary"></i>
+
+                                    Chuyển khoản / VietQR
+
+                                </div>
+
+
+                                <div class="small text-muted">
+
+                                    Sau khi đặt món, hệ thống sẽ hiển thị
+                                    mã QR để bạn chuyển khoản.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div id="bankingHint"
+                 class="alert alert-info border-0 rounded-4 mt-3 mb-0 d-none">
+
+                <i class="bi bi-info-circle-fill me-1"></i>
+
+                Sau khi đặt món, bạn sẽ được chuyển tới trang đơn hàng
+                để quét VietQR và thanh toán.
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =============================================== -->
+        <!-- DANH SÁCH MÓN -->
+        <!-- =============================================== -->
+
+        <div class="soft-card overflow-hidden mb-4">
+
+            <div class="p-4 pb-2">
+
+                <h5 class="section-title mb-1">
+                    Danh sách món
+                </h5>
+
+                <p class="text-muted small mb-0">
+                    Đặt số lượng lớn hơn 0 cho những món bạn muốn chọn.
+                </p>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table align-middle mb-0 menu-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th class="ps-4">
+                                Món & topping
+                            </th>
+
+                            <th style="width:120px;">
+                                Đơn giá
+                            </th>
+
+                            <th style="width:190px;">
+                                Size
+                            </th>
+
+                            <th style="width:110px;">
+                                Số lượng
+                            </th>
+
+                            <th style="width:140px;"
+                                class="text-end pe-4">
+                                Thành tiền
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        @if (products.Any())
+                        {
+
+                            for (
+                                int i = 0;
+                                i < products.Count;
+                                i++
+                            )
+                            {
+
+                                var item =
+                                    products[i];
+
+
+                                var sizes =
+                                    item.ProductSizes?
+                                        .Where(
+                                            s =>
+                                                !s.IsDeleted
+                                        )
+                                        .ToList()
+
+                                    ??
+                                    new List<ProductSize>();
+
+
+                                <tr class="product-row">
+
+
+                                    <td class="ps-4">
+
+
+                                        <input type="hidden"
+                                               name="productIds"
+                                               value="@item.ProductId" />
+
+
+                                        <div class="product-name">
+                                            @item.Name
+                                        </div>
+
+
+                                        @if (toppings.Any())
+                                        {
+
+                                            <div class="topping-box mt-2">
+
+                                                <small class="fw-semibold text-muted d-block mb-2">
+                                                    Topping thêm
+                                                </small>
+
+
+                                                <div class="d-flex flex-wrap gap-2">
+
+
+                                                    @foreach (
+                                                        var top
+                                                        in toppings
+                                                    )
+                                                    {
+
+                                                        <div class="form-check form-check-inline m-0">
+
+
+                                                            <input class="form-check-input topping-checkbox"
+                                                                   type="checkbox"
+                                                                   name="itemToppings_@i"
+                                                                   value="@top.ToppingId"
+                                                                   data-price="@top.Price"
+                                                                   id="top_@(i)_@top.ToppingId">
+
+
+                                                            <label class="form-check-label small"
+                                                                   for="top_@(i)_@top.ToppingId">
+
+                                                                @top.Name
+
+                                                                <span class="price">
+                                                                    +@top.Price.ToString("N0")đ
+                                                                </span>
+
+                                                            </label>
+
+                                                        </div>
+
+                                                    }
+
+                                                </div>
+
+                                            </div>
+
+                                        }
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        <span class="unit-price price"
+                                              data-base-price="@item.BasePrice">
+
+                                            @item.BasePrice.ToString("N0") đ
+
+                                        </span>
+
+                                    </td>
+
+
+
+                                    <td>
+
+
+                                        @if (sizes.Any())
+                                        {
+
+                                            <select name="productSizeIds"
+                                                    class="form-select form-select-sm size-select">
+
+
+                                                <option value=""
+                                                        data-extra-price="0">
+
+                                                    Mặc định
+
+                                                </option>
+
+
+                                                @foreach (
+                                                    var s
+                                                    in sizes
+                                                )
+                                                {
+
+                                                    <option value="@s.ProductSizeId"
+                                                            data-extra-price="@s.ExtraPrice">
+
+                                                        @s.SizeName
+
+                                                        (+@s.ExtraPrice.ToString("N0") đ)
+
+                                                    </option>
+
+                                                }
+
+                                            </select>
+
+                                        }
+                                        else
+                                        {
+
+                                            <input type="hidden"
+                                                   name="productSizeIds"
+                                                   value="" />
+
+                                            <span class="text-muted small">
+                                                Không có size
+                                            </span>
+
+                                        }
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        <input type="number"
+                                               name="quantities"
+                                               class="form-control form-control-sm text-center quantity-input"
+                                               value="0"
+                                               min="0"
+                                               max="99" />
+
+                                    </td>
+
+
+
+                                    <td class="text-end pe-4">
+
+                                        <span class="line-total text-danger fw-bold">
+                                            0 đ
+                                        </span>
+
+                                    </td>
+
+
+                                </tr>
+
+                            }
+
+                        }
+                        else
+                        {
+
+                            <tr>
+
+                                <td colspan="5"
+                                    class="text-center text-muted py-5">
+
+                                    Hiện chưa có món nào đang bán.
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =============================================== -->
+        <!-- TỔNG TIỀN -->
+        <!-- =============================================== -->
+
+        <div class="summary-card rounded-4 p-4 mb-3 d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <div class="text-muted small">
+                    Tổng tiền dự kiến
+                </div>
+
+                <div class="small text-muted">
+                    Tổng tiền của các món đã chọn.
+                </div>
+
+            </div>
+
+
+            <strong id="grandTotal"
+                    class="text-danger fs-3">
+
+                0 đ
+
+            </strong>
+
+        </div>
+
+
+
+        <button type="submit"
+                id="submitOrderButton"
+                class="btn btn-lg w-100 shadow-sm submit-btn text-white">
+
+            Đặt món ngay
+
+        </button>
+
+
+    </form>
+
+</div>
+
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function ()
+        {
+
+
+            // =============================================
+            // TÍNH TIỀN
+            // =============================================
+
+            function calculateRowAndTotal()
+            {
+
+                let grandTotal = 0;
+
+
+                document
+                    .querySelectorAll(
+                        ".product-row"
+                    )
+                    .forEach(
+                        function (row)
+                        {
+
+
+                            const unitPriceEl =
+                                row.querySelector(
+                                    ".unit-price"
+                                );
+
+
+                            const basePrice =
+                                parseFloat(
+                                    unitPriceEl?.getAttribute(
+                                        "data-base-price"
+                                    )
+                                )
+                                ||
+                                0;
+
+
+                            let extraPrice = 0;
+
+
+                            const sizeSelect =
+                                row.querySelector(
+                                    ".size-select"
+                                );
+
+
+                            if (sizeSelect)
+                            {
+
+                                const selectedOption =
+                                    sizeSelect.options[
+                                        sizeSelect.selectedIndex
+                                    ];
+
+
+                                extraPrice =
+                                    parseFloat(
+                                        selectedOption.getAttribute(
+                                            "data-extra-price"
+                                        )
+                                    )
+                                    ||
+                                    0;
+
+                            }
+
+
+                            const quantityInput =
+                                row.querySelector(
+                                    ".quantity-input"
+                                );
+
+
+                            const quantity =
+                                parseInt(
+                                    quantityInput?.value
+                                )
+                                ||
+                                0;
+
+
+                            let toppingTotalPerUnit =
+                                0;
+
+
+                            row
+                                .querySelectorAll(
+                                    ".topping-checkbox:checked"
+                                )
+                                .forEach(
+                                    function (topCb)
+                                    {
+
+                                        toppingTotalPerUnit +=
+                                            parseFloat(
+                                                topCb.getAttribute(
+                                                    "data-price"
+                                                )
+                                            )
+                                            ||
+                                            0;
+
+                                    }
+                                );
+
+
+                            const lineTotal =
+                                quantity > 0
+                                    ?
+                                    (
+                                        basePrice
+                                        +
+                                        extraPrice
+                                        +
+                                        toppingTotalPerUnit
+                                    )
+                                    *
+                                    quantity
+
+                                    :
+                                    0;
+
+
+                            const lineTotalEl =
+                                row.querySelector(
+                                    ".line-total"
+                                );
+
+
+                            if (lineTotalEl)
+                            {
+
+                                lineTotalEl.textContent =
+                                    lineTotal.toLocaleString(
+                                        "vi-VN"
+                                    )
+                                    +
+                                    " đ";
+
+                            }
+
+
+                            grandTotal +=
+                                lineTotal;
+
+                        }
+                    );
+
+
+                const grandTotalEl =
+                    document.getElementById(
+                        "grandTotal"
+                    );
+
+
+                if (grandTotalEl)
+                {
+
+                    grandTotalEl.textContent =
+                        grandTotal.toLocaleString(
+                            "vi-VN"
+                        )
+                        +
+                        " đ";
+
+                }
+
+            }
+
+
+
+            document
+                .querySelectorAll(
+                    ".size-select, .quantity-input, .topping-checkbox"
+                )
+                .forEach(
+                    function (el)
+                    {
+
+                        el.addEventListener(
+                            "change",
+                            calculateRowAndTotal
+                        );
+
+                        el.addEventListener(
+                            "input",
+                            calculateRowAndTotal
+                        );
+
+                    }
+                );
+
+
+
+            // =============================================
+            // CASH / BANKING
+            // =============================================
+
+            const paymentMethods =
+                document.querySelectorAll(
+                    ".payment-method"
+                );
+
+
+            const bankingHint =
+                document.getElementById(
+                    "bankingHint"
+                );
+
+
+            const submitButton =
+                document.getElementById(
+                    "submitOrderButton"
+                );
+
+
+            function updatePaymentUI()
+            {
+
+                const selected =
+                    document.querySelector(
+                        '.payment-method:checked'
+                    );
+
+
+                if (!selected)
+                {
+                    return;
+                }
+
+
+                if (
+                    selected.value ===
+                    "Banking"
+                )
+                {
+
+                    bankingHint?.classList.remove(
+                        "d-none"
+                    );
+
+
+                    if (submitButton)
+                    {
+                        submitButton.textContent =
+                            "Đặt món & chuyển khoản";
+                    }
+
+                }
+                else
+                {
+
+                    bankingHint?.classList.add(
+                        "d-none"
+                    );
+
+
+                    if (submitButton)
+                    {
+                        submitButton.textContent =
+                            "Đặt món - thanh toán khi nhận hàng";
+                    }
+
+                }
+
+            }
+
+
+
+            paymentMethods
+                .forEach(
+                    function (radio)
+                    {
+
+                        radio.addEventListener(
+                            "change",
+                            updatePaymentUI
+                        );
+
+                    }
+                );
+
+
+            calculateRowAndTotal();
+
+            updatePaymentUI();
+
+        }
+    );
+
 </script>

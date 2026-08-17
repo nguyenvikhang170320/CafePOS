@@ -4,56 +4,101 @@
     ViewData["Title"] = "Hóa đơn điện tử";
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .invoice-page { --coffee:#6f2f06; --line:#eadfd5; --muted:#7b7169; }
+    .invoice-page .page-title { color:#241b16; font-weight:800; }
+    .invoice-page .panel { border:1px solid var(--line); border-radius:18px; box-shadow:0 8px 24px rgba(67,41,24,.05); background:#fff; overflow:hidden; }
+    .invoice-page .invoice-list { max-height:68vh; overflow-y:auto; }
+    .invoice-page .invoice-item { border:0; border-bottom:1px solid #f0e8e2; padding:16px; background:#fff; transition:.15s ease; }
+    .invoice-page .invoice-item:hover { background:#fff9f4; }
+    .invoice-page .invoice-item.active { background:#fff4e9!important; border-left:4px solid var(--coffee); color:inherit; }
+    .invoice-page .invoice-item.active .text-primary { color:var(--coffee)!important; }
+    .invoice-page .status-pill { display:inline-flex; padding:.3rem .6rem; border-radius:999px; font-size:.7rem; font-weight:700; }
+    .invoice-page .pending { background:#fff1dc; color:#b96100; }
+    .invoice-page .completed { background:#e3f4e8; color:#197a3a; }
+    .invoice-page .cancelled { background:#fde4e2; color:#c23b33; }
+    .invoice-page .placeholder-card { min-height:320px; display:flex; align-items:center; justify-content:center; }
+    @@media (max-width: 991.98px) {
+        .invoice-page .invoice-list { max-height:340px; }
+    }
+</style>
+
+<div class="container py-4 invoice-page">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h3 class="fw-bold mb-1">📄 Hóa đơn của tôi</h3>
-            <p class="text-muted mb-0 small">Chọn một hóa đơn từ danh sách để xem chi tiết.</p>
+            <h3 class="page-title mb-1">Hóa đơn của tôi</h3>
+            <p class="text-muted mb-0">Chọn hóa đơn để xem chi tiết giao dịch.</p>
         </div>
         <a asp-action="MyOrders" class="btn btn-outline-secondary rounded-pill px-4">
-            ⬅️ Quay lại Đơn của tôi
+            ← Quay lại Đơn của tôi
         </a>
     </div>
 
     <div class="row g-4">
-        <!-- Danh sách hóa đơn bên trái -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white fw-bold py-3">Danh sách hóa đơn</div>
-                <div class="list-group list-group-flush" style="max-height: 65vh; overflow-y: auto;">
+            <div class="panel">
+                <div class="p-3 border-bottom">
+                    <div class="fw-bold">Danh sách hóa đơn</div>
+                    <div class="small text-muted">@(Model?.Count() ?? 0) hóa đơn</div>
+                </div>
+
+                <div class="list-group list-group-flush invoice-list">
                     @if (Model != null && Model.Any())
                     {
                         foreach (var item in Model)
                         {
+                            var orderStatusText = item.OrderStatus switch
+                            {
+                                "Pending" => "Chờ xử lý",
+                                "Completed" => "Đã hoàn thành",
+                                "Cancelled" => "Đã hủy",
+                                _ => item.OrderStatus
+                            };
+
+                            var orderStatusClass = item.OrderStatus switch
+                            {
+                                "Pending" => "pending",
+                                "Completed" => "completed",
+                                "Cancelled" => "cancelled",
+                                _ => "pending"
+                            };
+
                             <button type="button"
-                                    class="list-group-item list-group-item-action p-3 customer-invoice-item border-bottom"
+                                    class="invoice-item customer-invoice-item text-start"
                                     data-id="@item.OrderId">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold text-primary">#@item.OrderCode</span>
-                                    <span class="text-danger fw-bold">@item.TotalAmount.ToString("N0") đ</span>
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <div>
+                                        <div class="fw-bold text-primary">#@item.OrderCode</div>
+                                        <small class="text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    <div class="fw-bold text-danger text-nowrap">@item.TotalAmount.ToString("N0") đ</div>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</small>
-                                    <small class="badge bg-light text-dark border">@item.OrderStatus</small>
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <span class="status-pill @orderStatusClass">@orderStatusText</span>
+                                    <small class="text-muted">Xem chi tiết →</small>
                                 </div>
                             </button>
                         }
                     }
                     else
                     {
-                        <div class="p-4 text-center text-muted">Không có hóa đơn nào.</div>
+                        <div class="p-5 text-center">
+                            <div class="fs-2 mb-2">📄</div>
+                            <div class="fw-bold">Chưa có hóa đơn</div>
+                            <div class="small text-muted">Hóa đơn sẽ xuất hiện tại đây sau khi bạn đặt món.</div>
+                        </div>
                     }
                 </div>
             </div>
         </div>
 
-        <!-- Vùng hiển thị chi tiết hóa đơn bên phải -->
         <div class="col-lg-8">
             <div id="customerInvoiceDetail">
-                <div class="card border-0 shadow-sm rounded-4 text-center py-5">
-                    <div class="card-body">
-                        <div class="fs-1 text-muted mb-2">📑</div>
-                        <h5 class="text-muted">Vui lòng chọn một hóa đơn bên trái để xem thông tin chi tiết.</h5>
+                <div class="panel placeholder-card text-center p-5">
+                    <div>
+                        <div class="fs-1 text-muted mb-3">📑</div>
+                        <h5 class="fw-bold mb-1">Chọn một hóa đơn</h5>
+                        <p class="text-muted mb-0">Thông tin chi tiết sẽ hiển thị tại đây.</p>
                     </div>
                 </div>
             </div>
@@ -63,26 +108,46 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            $(".customer-invoice-item").click(function() {
-                $(".customer-invoice-item").removeClass("active bg-light");
-                $(this).addClass("active bg-light");
+        $(document).ready(function () {
+            function loadInvoice($item) {
+                $(".customer-invoice-item").removeClass("active");
+                $item.addClass("active");
 
-                let id = $(this).data("id");
-                $("#customerInvoiceDetail").html("<div class='card border-0 shadow-sm rounded-4 text-center py-5'><div class='spinner-border text-primary mx-auto mb-2'></div><div>Đang tải hóa đơn...</div></div>");
+                const id = $item.data("id");
+
+                $("#customerInvoiceDetail").html(`
+                    <div class="panel placeholder-card text-center p-5">
+                        <div>
+                            <div class="spinner-border text-secondary mb-3" role="status"></div>
+                            <div class="text-muted">Đang tải hóa đơn...</div>
+                        </div>
+                    </div>
+                `);
 
                 $.ajax({
                     url: '@Url.Action("GetInvoicePartial", "CustomerOrder")',
                     type: 'GET',
                     data: { id: id },
-                    success: function(res) {
+                    success: function (res) {
                         $("#customerInvoiceDetail").html(res);
                     },
-                    error: function() {
-                        $("#customerInvoiceDetail").html("<div class='alert alert-danger rounded-4'>Không thể tải hóa đơn này.</div>");
+                    error: function () {
+                        $("#customerInvoiceDetail").html(
+                            "<div class='alert alert-danger rounded-4'>Không thể tải hóa đơn này. Vui lòng thử lại.</div>"
+                        );
                     }
                 });
+            }
+
+            $(".customer-invoice-item").on("click", function () {
+                loadInvoice($(this));
             });
+
+            // UX: tự động mở hóa đơn đầu tiên.
+            const $first = $(".customer-invoice-item").first();
+            if ($first.length) {
+                loadInvoice($first);
+            }
         });
     </script>
 }

@@ -1,11 +1,12 @@
 ﻿using CafePos.Data;
+using CafePos.Models.Settings;
 using CafePos.Services;
-using Microsoft.EntityFrameworkCore;
+using CafePos.Services.API;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CafePos.Services.API;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -29,6 +30,9 @@ builder.Services.AddDbContext<CafePosDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
+builder.Services.Configure<BankingSettings>(
+    builder.Configuration.GetSection("Banking")
+);
 // ---- THÊM ĐOẠN NÀY ĐỂ KÍCH HOẠT COOKIE AUTHENTICATION ----
 builder.Services
     .AddAuthentication(options =>
@@ -85,6 +89,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

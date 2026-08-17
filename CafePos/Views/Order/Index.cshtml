@@ -1,4 +1,4 @@
-﻿    @model IEnumerable<Order>
+﻿@model IEnumerable<Order>
 
 @{
     ViewData["Title"] = "Danh sách hóa đơn";
@@ -165,7 +165,27 @@
                         {
                             foreach (var item in Model)
                             {
-                                var initial = !string.IsNullOrEmpty(item.CustomerName) ? item.CustomerName.Substring(0, 1).ToUpper() : "?";
+                                var isAnonymous = string.IsNullOrWhiteSpace(item.CustomerName);
+                                var initial = isAnonymous
+                                    ? "Ẩ"
+                                    : item.CustomerName!.Substring(0, 1).ToUpper();
+
+                                var customerDisplayName = isAnonymous
+                                    ? "Khách ẩn danh"
+                                    : item.CustomerName;
+
+                                var customerPhoneDisplay = string.IsNullOrWhiteSpace(item.CustomerPhone)
+                                    ? "Không có SĐT"
+                                    : item.CustomerPhone;
+
+                                // Phân biệt nguồn đơn
+                                var orderSourceText =
+                                    !string.IsNullOrWhiteSpace(item.CustomerName)
+                                    || !string.IsNullOrWhiteSpace(item.CustomerPhone)
+                                        ? "Khách đặt online"
+                                        : item.TableId.HasValue
+                                            ? "Khách tại quán"
+                                            : "Khách mang đi";
                                 <tr>
                                     <td class="ps-4">
                                         <span class="fw-bold text-primary">#@item.OrderCode</span>
@@ -174,8 +194,27 @@
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-circle me-2 fs-6">@initial</div>
                                             <div>
-                                                <div class="fw-semibold text-dark">@item.CustomerName</div>
-                                                <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@item.CustomerPhone</div>
+                                                <div class="fw-semibold text-dark">@customerDisplayName</div>
+                                                <div class="text-muted small">
+                                                    <i class="bi bi-telephone me-1"></i>@customerPhoneDisplay
+                                                </div>
+
+                                                <div class="text-muted small">
+                                                    @if (orderSourceText == "Khách đặt online")
+                                                    {
+                                                        <i class="bi bi-globe2 me-1"></i>
+                                                    }
+                                                    else if (orderSourceText == "Khách tại quán")
+                                                    {
+                                                        <i class="bi bi-shop me-1"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-bag me-1"></i>
+                                                    }
+
+                                                    @orderSourceText
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -220,7 +259,7 @@
                                                 <i class="bi bi-eye-fill"></i>
                                             </button>
 
-                                            <a 
+                                            <a
                                                asp-controller="Order"
                                                asp-action="PrintInvoice"
                                                asp-route-id="@item.OrderId"
@@ -230,16 +269,31 @@
                                                title="In hóa đơn">
                                                 <i class="bi bi-printer-fill"></i>
                                             </a>
+                                            @if (item.OrderStatus != "Cancelled")
+                                            {
+                                                <a 
+                                                   asp-controller="Order"
+                                                   asp-action="Checkout"
+                                                   asp-route-id="@item.OrderId"
+                                                   class="btn btn-sm btn-light text-success rounded-2"
+                                                   data-bs-toggle="tooltip"
+                                                   title="Chỉnh sửa / Tiếp tục">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-light text-muted rounded-2"
+                                                        disabled
+                                                        data-bs-toggle="tooltip"
+                                                        title="Đơn đã hủy">
 
-                                            <a 
-                                               asp-controller="Order"
-                                               asp-action="Checkout"
-                                               asp-route-id="@item.OrderId"
-                                               class="btn btn-sm btn-light text-success rounded-2"
-                                               data-bs-toggle="tooltip"
-                                               title="Chỉnh sửa / Tiếp tục">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                                    <i class="bi bi-ban"></i>
+
+                                                </button>
+                                            }
+
                                         </div>
                                     </td>
                                 </tr>
@@ -293,11 +347,11 @@
 
                 // Layout Spinner loading
                 $("#invoiceQuickViewContent").html(`
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
-                                <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
-                            </div>
-                        `);
+                                    <div class="text-center py-5">
+                                        <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                                        <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
+                                    </div>
+                                `);
 
                 let modal = new bootstrap.Modal(document.getElementById('invoiceQuickViewModal'));
                 modal.show();
@@ -312,11 +366,11 @@
                     },
                     error: function() {
                         $("#invoiceQuickViewContent").html(`
-                                    <div class="alert alert-danger rounded-3 d-flex align-items-center" role="alert">
-                                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                                        <div>Không thể tải chi tiết hóa đơn. Vui lòng thử lại sau!</div>
-                                    </div>
-                                `);
+                                            <div class="alert alert-danger rounded-3 d-flex align-items-center" role="alert">
+                                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                                <div>Không thể tải chi tiết hóa đơn. Vui lòng thử lại sau!</div>
+                                            </div>
+                                        `);
                     }
                 });
             });

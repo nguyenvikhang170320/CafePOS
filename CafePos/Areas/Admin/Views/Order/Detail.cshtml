@@ -175,8 +175,8 @@
                             <i class="bi bi-person-circle fs-4"></i>
                         </div>
                         <div>
-                            <div class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.CustomerName) ? "Khách vãng lai" : Model.CustomerName)</div>
-                            <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@(string.IsNullOrEmpty(Model.CustomerPhone) ? "Chưa có SĐT" : Model.CustomerPhone)</div>
+                            <div class="fw-bold text-dark">@(string.IsNullOrWhiteSpace(Model.CustomerName) ? "Khách ẩn danh" : Model.CustomerName)</div>
+                            <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@(string.IsNullOrWhiteSpace(Model.CustomerPhone) ? "Không có SĐT" : Model.CustomerPhone)</div>
                         </div>
                     </div>
 
@@ -228,6 +228,70 @@
                     </div>
                 </div>
             </div>
+
+            @if (ViewBag.Payment != null)
+            {
+                var payment = ViewBag.Payment;
+                var paymentEmployee = ViewBag.PaymentEmployee;
+                var tableDisplayName = Model.Table != null ? Model.Table.TableName : "Đơn mang đi";
+                var employeeDisplayName = paymentEmployee != null
+                    ? paymentEmployee.FullName
+                    : "Không xác định";
+
+                var positionDisplayName = paymentEmployee != null && paymentEmployee.Position != null
+                    ? paymentEmployee.Position.PositionName
+                    : "";
+
+                <div class="card border-0 shadow-sm detail-card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3 text-dark">
+                            <i class="bi bi-person-check-fill me-2 text-success"></i>
+                            Thông tin nhân viên thanh toán
+                        </h6>
+
+                        <div class="alert alert-success border-0 rounded-4 mb-3">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <strong>@employeeDisplayName</strong>
+                            @if (!string.IsNullOrWhiteSpace(positionDisplayName))
+                            {
+                                <span>(@positionDisplayName)</span>
+                            }
+                            đã thanh toán <strong>@tableDisplayName</strong>.
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Nhân viên:</span>
+                            <span class="fw-semibold text-dark small">
+                                @employeeDisplayName
+                                @if (!string.IsNullOrWhiteSpace(positionDisplayName))
+                                {
+                                    <span>(@positionDisplayName)</span>
+                                }
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Bàn:</span>
+                            <span class="fw-semibold text-dark small">@tableDisplayName</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Phương thức:</span>
+                            <span class="fw-semibold text-dark small">@payment.Method</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Số tiền:</span>
+                            <span class="fw-semibold text-success small">@payment.Amount.ToString("N0") đ</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Thời gian:</span>
+                            <span class="fw-semibold text-dark small">@payment.PaidAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <!-- Thẻ Chi tiết thanh toán -->
             <div class="card border-0 shadow-sm detail-card bg-light">

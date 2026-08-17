@@ -165,7 +165,27 @@
                         {
                             foreach (var item in Model)
                             {
-                                var initial = !string.IsNullOrEmpty(item.CustomerName) ? item.CustomerName.Substring(0, 1).ToUpper() : "?";
+                                var isAnonymous = string.IsNullOrWhiteSpace(item.CustomerName);
+                                var initial = isAnonymous
+                                    ? "Ẩ"
+                                    : item.CustomerName!.Substring(0, 1).ToUpper();
+
+                                var customerDisplayName = isAnonymous
+                                    ? "Khách ẩn danh"
+                                    : item.CustomerName;
+
+                                var customerPhoneDisplay = string.IsNullOrWhiteSpace(item.CustomerPhone)
+                                    ? "Không có SĐT"
+                                    : item.CustomerPhone;
+
+                                // Phân biệt nguồn đơn
+                                var orderSourceText =
+                                    !string.IsNullOrWhiteSpace(item.CustomerName)
+                                    || !string.IsNullOrWhiteSpace(item.CustomerPhone)
+                                        ? "Khách đặt online"
+                                        : item.TableId.HasValue
+                                            ? "Khách tại quán"
+                                            : "Khách mang đi";
                                 <tr>
                                     <td class="ps-4">
                                         <span class="fw-bold text-primary">#@item.OrderCode</span>
@@ -174,8 +194,27 @@
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-circle me-2 fs-6">@initial</div>
                                             <div>
-                                                <div class="fw-semibold text-dark">@item.CustomerName</div>
-                                                <div class="text-muted small"><i class="bi bi-telephone me-1"></i>@item.CustomerPhone</div>
+                                                <div class="fw-semibold text-dark">@customerDisplayName</div>
+                                                <div class="text-muted small">
+                                                    <i class="bi bi-telephone me-1"></i>@customerPhoneDisplay
+                                                </div>
+
+                                                <div class="text-muted small">
+                                                    @if (orderSourceText == "Khách đặt online")
+                                                    {
+                                                        <i class="bi bi-globe2 me-1"></i>
+                                                    }
+                                                    else if (orderSourceText == "Khách tại quán")
+                                                    {
+                                                        <i class="bi bi-shop me-1"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-bag me-1"></i>
+                                                    }
+
+                                                    @orderSourceText
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -205,13 +244,18 @@
                                         {
                                             <span class="badge badge-soft-success px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Đã thanh toán</span>
                                         }
+                                        else if (item.PaymentStatus == "Unpaid")
+                                        {
+                                            <span class="badge badge-soft-secondary px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Chưa thanh toán</span>
+                                        }
                                         else
                                         {
-                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Chưa thanh toán</span>
+                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Hủy thanh toán</span>
                                         }
                                     </td>
                                     <td class="text-end pe-4">
                                         <div class="btn-group gap-1">
+
                                             <button type="button"
                                                     class="btn btn-sm btn-light text-primary btn-view-invoice rounded-2"
                                                     data-id="@item.OrderId"
@@ -230,16 +274,53 @@
                                                title="In hóa đơn">
                                                 <i class="bi bi-printer-fill"></i>
                                             </a>
+                                            @if (item.OrderStatus != "Cancelled")
+                                            {
+                                                <a asp-area="Admin"
+                                                   asp-controller="Order"
+                                                   asp-action="Checkout"
+                                                   asp-route-id="@item.OrderId"
+                                                   class="btn btn-sm btn-light text-success rounded-2"
+                                                   data-bs-toggle="tooltip"
+                                                   title="Chỉnh sửa / Tiếp tục">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-light text-muted rounded-2"
+                                                        disabled
+                                                        data-bs-toggle="tooltip"
+                                                        title="Đơn đã hủy">
 
-                                            <a asp-area="Admin"
-                                               asp-controller="Order"
-                                               asp-action="Checkout"
-                                               asp-route-id="@item.OrderId"
-                                               class="btn btn-sm btn-light text-success rounded-2"
-                                               data-bs-toggle="tooltip"
-                                               title="Chỉnh sửa / Tiếp tục">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                                    <i class="bi bi-ban"></i>
+
+                                                </button>
+                                            }
+
+                                            @if (
+                                                item.OrderStatus == "Pending"
+                                                &&
+                                                item.PaymentStatus == "Unpaid"
+                                            )
+                                            {
+                                                <form asp-action="CancelOrder"
+                                                      asp-route-id="@item.OrderId"
+                                                      method="post"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn #@item.OrderCode không?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Hủy đơn">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                          
                                         </div>
                                     </td>
                                 </tr>

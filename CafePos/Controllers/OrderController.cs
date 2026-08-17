@@ -4,13 +4,9 @@ using CafePos.Models.ViewModels;
 using CafePos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+using CafePos.Models.Settings;
+using Microsoft.Extensions.Options;
 namespace CafePos.Controllers
 {
     // 🔒 Phân quyền dành cho Nhân viên và Admin
@@ -19,10 +15,40 @@ namespace CafePos.Controllers
     {
         private readonly CafePosDbContext _context;
         private readonly IVnPayService _vnPayService;
-        public OrderController(CafePosDbContext context, IVnPayService vnPayService)
+        private readonly BankingSettings _bankingSettings;
+        public OrderController(CafePosDbContext context,IVnPayService vnPayService,IOptions<BankingSettings> bankingOptions)
         {
             _context = context;
-            _vnPayService = vnPayService; // 3. Gán giá trị ở đây (Trước đó bạn bị thiếu dòng này nên nó bị NULL)
+            _vnPayService = vnPayService;
+            _bankingSettings = bankingOptions.Value;
+        }
+        // =========================================================
+        // LẤY NHÂN VIÊN ĐANG ĐĂNG NHẬP
+        // =========================================================
+        private async Task<Employee?> GetCurrentEmployee()
+        {
+            var username = User.Identity?.Name?.Trim();
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return null;
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(
+                    x => x.Username == username
+                );
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            return await _context.Employees
+                .Include(x => x.Position)
+                .FirstOrDefaultAsync(
+                    x => x.UserId == user.UserId
+                );
         }
 
         // 1. Danh sách TẤT CẢ đơn hàng (Dành cho Nhân viên quản lý / Thu ngân)
@@ -48,6 +74,10 @@ namespace CafePos.Controllers
         }
 
         // 3. Chi tiết hóa đơn full page
+        // =========================================================
+        // CHI TIẾT HÓA ĐƠN
+        // Có thêm thông tin nhân viên đã thanh toán
+        // =========================================================
         public async Task<IActionResult> Detail(int id)
         {
             var order = await _context.Orders
@@ -56,7 +86,43 @@ namespace CafePos.Controllers
                     .ThenInclude(x => x.OrderItemToppings)
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
-            if (order == null) return NotFound();
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            // =====================================================
+            // Lấy giao dịch thanh toán thành công gần nhất
+            // =====================================================
+            var payment = await _context.Payments
+                .AsNoTracking()
+                .Where(x =>
+                    x.OrderId == id &&
+                    x.IsSuccess
+                )
+                .OrderByDescending(x => x.PaidAt)
+                .FirstOrDefaultAsync();
+
+            ViewBag.Payment = payment;
+
+            // =====================================================
+            // Lấy nhân viên đã thực hiện thanh toán
+            // =====================================================
+            if (payment != null)
+            {
+                var employee = await _context.Employees
+                    .AsNoTracking()
+                    .Include(x => x.Position)
+                    .FirstOrDefaultAsync(
+                        x => x.EmployeeId == payment.EmployeeId
+                    );
+
+                ViewBag.PaymentEmployee = employee;
+            }
+            else
+            {
+                ViewBag.PaymentEmployee = null;
+            }
 
             return View(order);
         }
@@ -104,7 +170,9 @@ namespace CafePos.Controllers
 
             ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
             ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
-
+            ViewBag.BankId =_bankingSettings.BankId;
+            ViewBag.BankAccountNumber =_bankingSettings.AccountNumber;
+            ViewBag.BankAccountName =_bankingSettings.AccountName;
             return View(order);
         }
 
@@ -123,7 +191,22 @@ namespace CafePos.Controllers
             ViewBag.EmployeesList = await _context.Employees.Include(e => e.Position).Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2)).ToListAsync();
             ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
             ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+            var currentEmployee = await GetCurrentEmployee();
 
+            if (!User.IsInRole("Admin"))
+            {
+                if (currentEmployee == null ||
+                    (currentEmployee.PositionId != 1 &&
+                     currentEmployee.PositionId != 2))
+                {
+                    TempData["Message"] =
+                        "Chỉ Quản lý hoặc Thu ngân mới được thực hiện thanh toán.";
+
+                    TempData["MessageType"] = "error";
+
+                    return RedirectToAction("Detail", new { id });
+                }
+            }
             var order = await _context.Orders
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
@@ -374,7 +457,18 @@ namespace CafePos.Controllers
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
             if (order == null) return NotFound();
+            // ========================================
+            // BANKING / VIETQR
+            // ========================================
 
+            ViewBag.BankId =
+                _bankingSettings.BankId;
+
+            ViewBag.BankAccountNumber =
+                _bankingSettings.AccountNumber;
+
+            ViewBag.BankAccountName =
+                _bankingSettings.AccountName;
             return PartialView("_InvoicePartial", order);
         }
 
@@ -383,7 +477,22 @@ namespace CafePos.Controllers
         public async Task<IActionResult> MarkAsPaid(int id, string paymentMethod)
         {
             var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
+            var currentEmployee = await GetCurrentEmployee();
 
+            if (!User.IsInRole("Admin"))
+            {
+                if (currentEmployee == null ||
+                    (currentEmployee.PositionId != 1 &&
+                     currentEmployee.PositionId != 2))
+                {
+                    TempData["Message"] =
+                        "Chỉ Quản lý hoặc Thu ngân mới được thực hiện thanh toán.";
+
+                    TempData["MessageType"] = "error";
+
+                    return RedirectToAction("Detail", new { id });
+                }
+            }
             if (order == null)
                 return Json(new { success = false, message = "Không tìm thấy hóa đơn" });
 

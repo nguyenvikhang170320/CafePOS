@@ -1,103 +1,591 @@
 ﻿@model Order
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-    <!-- Header Hóa đơn -->
-    <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
-        <div>
-            <h4 class="fw-bold mb-1">HÓA ĐƠN BÁN HÀNG</h4>
-            <span class="badge bg-light text-dark">Mã: @Model.OrderCode</span>
-        </div>
-        <div class="text-end small">
-            <div>Ngày tạo: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
-            <div>Trạng thái: <strong>@Model.OrderStatus</strong></div>
-        </div>
-    </div>
+@{
+    var orderStatusText = Model.OrderStatus switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Completed" => "Đã hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => Model.OrderStatus
+    };
 
-    <div class="card-body p-4">
-        <!-- Thông tin người mua -->
-        <div class="row g-3 mb-4 p-3 bg-light rounded-3">
-            <div class="col-md-6">
-                <span class="text-muted small d-block">Khách hàng:</span>
-                <strong class="text-dark">@Model.CustomerName</strong>
+    var orderStatusClass = Model.OrderStatus switch
+    {
+        "Pending" => "inv-warning",
+        "Completed" => "inv-success",
+        "Cancelled" => "inv-danger",
+        _ => "inv-neutral"
+    };
+
+    var paymentMethodText = Model.PaymentMethod switch
+    {
+        "Cash" => "Tiền mặt khi nhận hàng",
+        "Banking" => "Chuyển khoản / QR",
+        "Card" => "Thẻ ngân hàng",
+        "VNPAY" => "VNPAY",
+        _ => "Chưa xác định"
+    };
+
+    var bankId =
+        ViewBag.BankId?.ToString() ?? "";
+
+    var accountNumber =
+        ViewBag.BankAccountNumber?.ToString() ?? "";
+
+    var accountName =
+        ViewBag.BankAccountName?.ToString() ?? "";
+
+    var qrDescription =
+        $"CafePOS {Model.OrderCode}";
+
+    var vietQrUrl =
+        $"https://img.vietqr.io/image/{bankId}-{accountNumber}-compact2.png" +
+        $"?amount={Model.TotalAmount:0}" +
+        $"&addInfo={Uri.EscapeDataString(qrDescription)}" +
+        $"&accountName={Uri.EscapeDataString(accountName)}";
+}
+
+<style>
+    .customer-invoice {
+        --coffee: #6f2f06;
+        --line: #e6ddd6;
+        --muted: #786e67;
+    }
+
+        .customer-invoice .invoice-shell {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(67,41,24,.05);
+            background: #fff;
+        }
+
+        .customer-invoice .invoice-head {
+            background: linear-gradient(135deg,#25292d,#1d2124);
+            color: #fff;
+        }
+
+        .customer-invoice .status {
+            display: inline-flex;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            font-size: .74rem;
+            font-weight: 700;
+        }
+
+        .customer-invoice .inv-success {
+            background: #dff2e5;
+            color: #19763a;
+        }
+
+        .customer-invoice .inv-warning {
+            background: #fff0d8;
+            color: #b45f00;
+        }
+
+        .customer-invoice .inv-danger {
+            background: #fde3e1;
+            color: #bf3931;
+        }
+
+        .customer-invoice .inv-neutral {
+            background: #edeae7;
+            color: #685f59;
+        }
+
+        .customer-invoice .customer-box {
+            background: #faf8f6;
+            border: 1px solid #eee6df;
+            border-radius: 14px;
+        }
+
+        .customer-invoice .invoice-table thead th {
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            background: #faf8f6;
+            color: #70665f;
+            white-space: nowrap;
+        }
+
+        .customer-invoice .totals {
+            background: #fff8f1;
+            border: 1px solid #ead9ca;
+            border-radius: 14px;
+        }
+
+        .customer-invoice .banking-box {
+            background: #f8fbff;
+            border: 1px solid #d8e8f8;
+            border-radius: 18px;
+        }
+
+    @@media (max-width: 767.98px) {
+        .customer-invoice .invoice-table {
+            min-width: 680px;
+        }
+    }
+</style>
+
+<div class="customer-invoice">
+
+    <div class="invoice-shell">
+
+        <!-- HEADER -->
+        <div class="invoice-head p-4">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+
+                <div>
+                    <div class="small text-white-50 mb-1">
+                        CAFE POS
+                    </div>
+
+                    <h4 class="fw-bold mb-2">
+                        HÓA ĐƠN BÁN HÀNG
+                    </h4>
+
+                    <span class="badge bg-light text-dark">
+                        Mã: @Model.OrderCode
+                    </span>
+                </div>
+
+                <div class="text-md-end">
+
+                    <div class="small text-white-50 mb-1">
+                        Ngày tạo
+                    </div>
+
+                    <div class="fw-semibold mb-2">
+                        @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+
+                    <span class="status @orderStatusClass">
+                        @orderStatusText
+                    </span>
+
+                </div>
+
             </div>
-            <div class="col-md-6">
-                <span class="text-muted small d-block">Số điện thoại:</span>
-                <strong class="text-dark">@Model.CustomerPhone</strong>
+
+        </div>
+
+
+        <div class="p-4">
+
+            <!-- THÔNG TIN KHÁCH -->
+            <div class="customer-box p-3 mb-4">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block mb-1">
+                            Khách hàng
+                        </span>
+
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(Model.CustomerName)
+                                ? "Khách hàng"
+                                : Model.CustomerName)
+                        </strong>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block mb-1">
+                            Số điện thoại
+                        </span>
+
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(Model.CustomerPhone)
+                                ? "—"
+                                : Model.CustomerPhone)
+                        </strong>
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <span class="text-muted small d-block mb-1">
+                            Thanh toán
+                        </span>
+
+                        @if (Model.PaymentStatus == "Paid")
+                        {
+                            <span class="status inv-success">
+                                Đã thanh toán
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="status inv-neutral">
+                                Chưa thanh toán
+                            </span>
+                        }
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <span class="text-muted small d-block mb-1">
+                            Phương thức
+                        </span>
+
+                        <strong>
+                            @paymentMethodText
+                        </strong>
+
+                    </div>
+
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Note))
+                    {
+                        <div class="col-12 border-top pt-3">
+
+                            <span class="text-muted small d-block mb-1">
+                                Ghi chú / địa chỉ giao hàng
+                            </span>
+
+                            <span>
+                                @Model.Note
+                            </span>
+
+                        </div>
+                    }
+
+                </div>
+
             </div>
-            @if (!string.IsNullOrEmpty(Model.Note))
+
+
+            <!-- =============================================== -->
+            <!-- BANKING / VIETQR -->
+            <!-- =============================================== -->
+            @if (
+                            Model.PaymentMethod == "Banking"
+                            &&
+                            Model.PaymentStatus != "Paid"
+                        )
             {
-                <div class="col-12 border-top pt-2 mt-2">
-                    <span class="text-muted small d-block">Ghi chú:</span>
-                    <span class="small">@Model.Note</span>
+                <div class="banking-box p-4 mb-4">
+
+                    <div class="text-center">
+
+                        <h5 class="fw-bold mb-2">
+
+                            <i class="bi bi-qr-code-scan me-2"></i>
+
+                            Chuyển khoản ngân hàng
+
+                        </h5>
+
+                        <p class="text-muted small mb-3">
+                            Quét mã QR bên dưới để thanh toán đơn hàng.
+                        </p>
+
+
+                        @if (
+                            !string.IsNullOrWhiteSpace(bankId)
+                            &&
+                            !string.IsNullOrWhiteSpace(accountNumber)
+                        )
+                        {
+
+                            <img src="@vietQrUrl"
+                                 alt="VietQR"
+                                 class="img-fluid rounded-3 border bg-white p-2"
+                                 style="max-width:320px;" />
+
+
+                            <div class="mt-3">
+
+                                <div class="fw-bold fs-5">
+                                    @accountName
+                                </div>
+
+                                <div class="text-muted">
+                                    STK: @accountNumber
+                                </div>
+
+                                <div class="fs-3 fw-bold text-danger mt-2">
+                                    @Model.TotalAmount.ToString("N0") đ
+                                </div>
+
+                                <div class="small text-muted mt-2">
+
+                                    Nội dung:
+
+                                    <strong>
+                                        @qrDescription
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="alert alert-warning border-0 rounded-4 mt-3 mb-0 text-start">
+
+                                <i class="bi bi-info-circle-fill me-1"></i>
+
+                                Sau khi chuyển khoản, vui lòng chờ quán xác nhận
+                                tiền đã vào tài khoản.
+
+                            </div>
+
+                        }
+                        else
+                        {
+
+                            <div class="alert alert-danger mb-0">
+
+                                Hiện chưa thể tải thông tin chuyển khoản.
+                                Vui lòng liên hệ quán để được hỗ trợ.
+
+                            </div>
+
+                        }
+
+                    </div>
+
                 </div>
             }
-        </div>
 
-        <!-- Bảng chi tiết sản phẩm -->
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Món</th>
-                        <th class="text-center" style="width: 70px;">SL</th>
-                        <th class="text-end" style="width: 100px;">Size</th>
-                        <th>Topping</th>
-                        <th class="text-end" style="width: 120px;">Thành tiền</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.OrderItems)
-                    {
-                        <tr>
-                            <td>
-                                <strong class="text-dark">@item.ProductNameSnapshot</strong>
-                                <div class="small text-muted">@item.UnitPrice.ToString("N0") đ</div>
-                            </td>
-                            <td class="text-center fw-bold">@item.Quantity</td>
-                            <td class="text-end small">
-                                @(string.IsNullOrEmpty(item.SizeNameSnapshot) ? "-" : item.SizeNameSnapshot)
-                            </td>
-                            <td class="small">
-                                @if (item.OrderItemToppings != null && item.OrderItemToppings.Any())
-                                {
-                                    <ul class="mb-0 ps-3">
-                                        @foreach (var top in item.OrderItemToppings)
-                                        {
-                                            <li>@top.ToppingNameSnapshot (+@top.TotalPrice.ToString("N0") đ)</li>
-                                        }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">-</span>
-                                }
-                            </td>
-                            <td class="text-end fw-bold text-danger">@item.LineTotal.ToString("N0") đ</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
 
-        <!-- Tổng tiền -->
-        <div class="row justify-content-end">
-            <div class="col-md-6">
-                <div class="p-3 bg-light rounded-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Tạm tính:</span>
-                        <span>@Model.SubTotal.ToString("N0") đ</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Giảm giá:</span>
-                        <span class="text-success">-@Model.DiscountAmount.ToString("N0") đ</span>
-                    </div>
-                    <hr class="my-2" />
-                    <div class="d-flex justify-content-between align-items-center">
-                        <strong class="fs-6">Tổng tiền thanh toán:</strong>
-                        <strong class="fs-4 text-danger">@Model.TotalAmount.ToString("N0") đ</strong>
-                    </div>
+            @if (
+                Model.PaymentMethod == "Banking"
+                &&
+                Model.PaymentStatus == "Paid"
+            )
+            {
+                <div class="alert alert-success rounded-4 border-0 mb-4">
+
+                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                    <strong>
+                        Quán đã xác nhận thanh toán chuyển khoản thành công.
+                    </strong>
+
                 </div>
+            }
+
+
+            @if (
+                Model.PaymentMethod == "Cash"
+                &&
+                Model.PaymentStatus != "Paid"
+            )
+            {
+                <div class="alert alert-light border rounded-4 mb-4">
+
+                    <i class="bi bi-cash me-2"></i>
+
+                    Bạn sẽ thanh toán bằng
+                    <strong>tiền mặt khi nhận hàng</strong>.
+
+                </div>
+            }
+
+
+            <!-- DANH SÁCH MÓN -->
+            <div class="table-responsive mb-4">
+
+                <table class="table table-bordered align-middle mb-0 invoice-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Món</th>
+
+                            <th class="text-center"
+                                style="width:70px;">
+                                SL
+                            </th>
+
+                            <th style="width:100px;">
+                                Size
+                            </th>
+
+                            <th>
+                                Topping
+                            </th>
+
+                            <th class="text-end"
+                                style="width:125px;">
+                                Thành tiền
+                            </th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (
+                            Model.OrderItems != null
+                            &&
+                            Model.OrderItems.Any()
+                        )
+                        {
+                            foreach (var item in Model.OrderItems)
+                            {
+
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            @item.ProductNameSnapshot
+                                        </strong>
+
+                                        <div class="small text-muted">
+                                            @item.UnitPrice.ToString("N0") đ / món
+                                        </div>
+
+                                    </td>
+
+
+                                    <td class="text-center fw-bold">
+                                        @item.Quantity
+                                    </td>
+
+
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(item.SizeNameSnapshot)
+                                            ? "—"
+                                            : item.SizeNameSnapshot)
+                                    </td>
+
+
+                                    <td class="small">
+
+                                        @if (
+                                            item.OrderItemToppings != null
+                                            &&
+                                            item.OrderItemToppings.Any()
+                                        )
+                                        {
+
+                                            <div class="d-flex flex-wrap gap-1">
+
+                                                @foreach (
+                                                    var top
+                                                    in item.OrderItemToppings
+                                                )
+                                                {
+
+                                                    <span class="badge bg-light text-dark border fw-normal">
+
+                                                        @top.ToppingNameSnapshot
+
+                                                        (+@top.TotalPrice.ToString("N0") đ)
+
+                                                    </span>
+
+                                                }
+
+                                            </div>
+
+                                        }
+                                        else
+                                        {
+
+                                            <span class="text-muted">
+                                                Không
+                                            </span>
+
+                                        }
+
+                                    </td>
+
+
+                                    <td class="text-end fw-bold text-danger">
+
+                                        @item.LineTotal.ToString("N0") đ
+
+                                    </td>
+
+                                </tr>
+
+                            }
+                        }
+                        else
+                        {
+
+                            <tr>
+
+                                <td colspan="5"
+                                    class="text-center text-muted py-4">
+
+                                    Không có chi tiết món.
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
             </div>
+
+
+            <!-- TỔNG -->
+            <div class="row justify-content-end">
+
+                <div class="col-md-7 col-lg-6">
+
+                    <div class="totals p-3">
+
+                        <div class="d-flex justify-content-between mb-2">
+
+                            <span class="text-muted">
+                                Tạm tính
+                            </span>
+
+                            <span>
+                                @Model.SubTotal.ToString("N0") đ
+                            </span>
+
+                        </div>
+
+
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <span class="text-muted">
+                                Giảm giá
+                            </span>
+
+                            <span class="text-success">
+                                -@Model.DiscountAmount.ToString("N0") đ
+                            </span>
+
+                        </div>
+
+
+                        <div class="border-top pt-3 d-flex justify-content-between align-items-end">
+
+                            <strong>
+                                Tổng thanh toán
+                            </strong>
+
+                            <strong class="fs-4 text-danger">
+                                @Model.TotalAmount.ToString("N0") đ
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
