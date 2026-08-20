@@ -94,54 +94,165 @@
                             </li>
                         }
 
-                        @* EMPLOYEE: nhân viên quán *@
+                        @* =========================================================
+   EMPLOYEE - NHÂN VIÊN QUÁN
+   ========================================================= *@
                         @if (User.IsInRole("Employee"))
                         {
                             <li class="nav-item dropdown">
+
                                 <a class="nav-link dropdown-toggle @(currentController == "Order" ? "active" : "")"
-                                   href="#" id="ordersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-list-check me-1"></i>Quản lý
+                                   href="#"
+                                   id="ordersDropdown"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+
+                                    <i class="bi bi-shop me-1"></i>
+                                    Bán hàng
+
                                 </a>
-                                <ul class="dropdown-menu shadow-sm" aria-labelledby="ordersDropdown">
+
+                                <ul class="dropdown-menu shadow-sm"
+                                    aria-labelledby="ordersDropdown">
+
+                                    <!-- =============================================
+                 POS - NHÂN VIÊN TẠO ORDER TẠI QUÁN
+                 ============================================= -->
                                     <li>
+
+                                        <a class="dropdown-item @(currentController == "Order" && currentAction == "POS" ? "active" : "")"
+                                           asp-controller="Order"
+                                           asp-action="POS"
+                                           asp-area="">
+
+                                            <i class="bi bi-cart-plus me-2"></i>
+                                            POS - Tạo order tại quán
+
+                                        </a>
+
+                                    </li>
+
+
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+
+                                    <!-- =============================================
+                 DANH SÁCH ORDER
+                 ============================================= -->
+                                    <li>
+
                                         <a class="dropdown-item @(currentController == "Order" && currentAction == "Index" ? "active" : "")"
-                                           asp-controller="Order" asp-action="Index">
+                                           asp-controller="Order"
+                                           asp-action="Index"
+                                           asp-area="">
+
+                                            <i class="bi bi-list-check me-2"></i>
                                             Xử lý đơn hàng
+
                                         </a>
+
                                     </li>
+
+
+                                    <!-- =============================================
+                 HÓA ĐƠN
+                 ============================================= -->
                                     <li>
+
                                         <a class="dropdown-item @(currentController == "Order" && currentAction == "Invoice" ? "active" : "")"
-                                           asp-controller="Order" asp-action="Invoice">
+                                           asp-controller="Order"
+                                           asp-action="Invoice"
+                                           asp-area="">
+
+                                            <i class="bi bi-receipt me-2"></i>
                                             Hóa đơn
+
                                         </a>
+
                                     </li>
 
-                                    <li><hr class="dropdown-divider"></li>
+
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Employee" asp-action="Index">
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+
+                                    <!-- =============================================
+                 NHÂN VIÊN
+                 ============================================= -->
+                                    <li>
+
+                                        <a class="dropdown-item @(currentController == "Employee" ? "active" : "")"
+                                           asp-controller="Employee"
+                                           asp-action="Index"
+                                           asp-area="">
+
+                                            <i class="bi bi-people me-2"></i>
                                             Danh sách nhân viên
+
                                         </a>
+
                                     </li>
+
+
+                                    <!-- =============================================
+                 DOANH THU
+                 ============================================= -->
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Revenue" asp-action="Index">
-                                            Doanh thu
+
+                                        <a class="dropdown-item @(currentController == "Revenue" ? "active" : "")"
+                                           asp-controller="Revenue"
+                                           asp-action="Index"
+                                           asp-area="">
+
+                                            <i class="bi bi-bar-chart-line me-2"></i>
+                                            Doanh thu / Báo cáo ca
+
                                         </a>
+
                                     </li>
+
                                 </ul>
+
                             </li>
 
+
+                            <!-- =====================================================
+         SẢN PHẨM
+         ===================================================== -->
                             <li class="nav-item">
+
                                 <a class="nav-link @(currentController == "Product" ? "active" : "")"
-                                   asp-controller="Product" asp-action="Index">
-                                    <i class="bi bi-cup-hot me-1"></i>Sản phẩm
+                                   asp-controller="Product"
+                                   asp-action="Index"
+                                   asp-area="">
+
+                                    <i class="bi bi-cup-hot me-1"></i>
+                                    Sản phẩm
+
                                 </a>
+
                             </li>
 
+
+                            <!-- =====================================================
+         DANH MỤC
+         ===================================================== -->
                             <li class="nav-item">
+
                                 <a class="nav-link @(currentController == "Category" ? "active" : "")"
-                                   asp-controller="Category" asp-action="Index">
-                                    <i class="bi bi-tags me-1"></i>Danh mục
+                                   asp-controller="Category"
+                                   asp-action="Index"
+                                   asp-area="">
+
+                                    <i class="bi bi-tags me-1"></i>
+                                    Danh mục
+
                                 </a>
+
                             </li>
                         }
                     </ul>

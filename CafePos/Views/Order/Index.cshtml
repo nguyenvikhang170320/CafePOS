@@ -1,27 +1,26 @@
-﻿@model IEnumerable<Order>
+﻿@model IEnumerable<CafePos.Models.Order>
 
 @{
-    ViewData["Title"] = "Danh sách hóa đơn";
+    ViewData["Title"] = "Xử lý đơn hàng";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- Nhúng Bootstrap Icons nếu dự án chưa có -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
 <style>
-    /* Custom Styling để nâng cấp giao diện */
     .bg-gradient-primary {
         background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
     }
 
     .card-stat {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform .2s ease, box-shadow .2s ease;
     }
 
-        .card-stat:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.08) !important;
-        }
+    .card-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.08) !important;
+    }
 
     .avatar-circle {
         width: 38px;
@@ -33,12 +32,13 @@
         justify-content: center;
         font-weight: 600;
         color: #495057;
+        flex-shrink: 0;
     }
 
     .table > :not(caption) > * > * {
-        padding: 0.85rem 0.75rem;
+        padding: .85rem .75rem;
     }
-    /* Soft Badges */
+
     .badge-soft-success {
         background-color: #d1e7dd;
         color: #0f5132;
@@ -60,206 +60,609 @@
     }
 </style>
 
+
 <div class="container-fluid py-4 px-4">
-    <!-- Header Page -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
         <div>
-            <h3 class="fw-bold mb-1 text-dark">Danh sách hóa đơn</h3>
-            <p class="text-muted mb-0 small">Quản lý và xem nhanh chi tiết các giao dịch gần đây</p>
+
+            <h3 class="fw-bold mb-1 text-dark">
+                Xử lý đơn hàng
+            </h3>
+
+            <p class="text-muted mb-0 small">
+                Theo dõi đơn online và order được tạo trực tiếp tại quán.
+            </p>
+
         </div>
-        <div>
-            <a asp-controller="Order" asp-action="Invoice" class="btn btn-outline-secondary rounded-pill px-3">
-                <i class="bi bi-journal-text me-1"></i> Chi tiết tất cả
+
+
+        <div class="d-flex gap-2">
+
+            <!-- POS CHỈ DÀNH CHO NHÂN VIÊN -->
+            <a asp-area=""
+               asp-controller="Order"
+               asp-action="POS"
+               class="btn btn-primary rounded-pill px-3">
+
+                <i class="bi bi-cart-plus me-1"></i>
+                Tạo order tại quán
+
             </a>
+
+
+            <a asp-area=""
+               asp-controller="Order"
+               asp-action="Invoice"
+               class="btn btn-outline-secondary rounded-pill px-3">
+
+                <i class="bi bi-journal-text me-1"></i>
+                Hóa đơn
+
+            </a>
+
         </div>
+
     </div>
 
-    <!-- Thống kê nhanh (KPI Summary) -->
+
+    <!-- ========================================================= -->
+    <!-- KPI -->
+    <!-- ========================================================= -->
+
     <div class="row g-3 mb-4">
+
+        <!-- TỔNG -->
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card border-0 shadow-sm rounded-4 card-stat h-100">
+
                 <div class="card-body d-flex align-items-center">
+
                     <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary me-3">
                         <i class="bi bi-receipt fs-4"></i>
                     </div>
+
                     <div>
-                        <div class="text-muted small">Tổng hóa đơn</div>
-                        <h4 class="fw-bold mb-0">@(Model?.Count() ?? 0)</h4>
+
+                        <div class="text-muted small">
+                            Tổng hóa đơn
+                        </div>
+
+                        <h4 class="fw-bold mb-0">
+                            @(Model?.Count() ?? 0)
+                        </h4>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
+
+        <!-- COMPLETED -->
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card border-0 shadow-sm rounded-4 card-stat h-100">
+
                 <div class="card-body d-flex align-items-center">
+
                     <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success me-3">
                         <i class="bi bi-check-circle fs-4"></i>
                     </div>
+
                     <div>
-                        <div class="text-muted small">Đã hoàn thành</div>
-                        <h4 class="fw-bold mb-0">@(Model?.Count(x => x.OrderStatus == "Completed") ?? 0)</h4>
+
+                        <div class="text-muted small">
+                            Đã hoàn thành
+                        </div>
+
+                        <h4 class="fw-bold mb-0">
+                            @(Model?.Count(x =>
+                                x.OrderStatus == "Completed") ?? 0)
+                        </h4>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
+
+        <!-- PENDING -->
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card border-0 shadow-sm rounded-4 card-stat h-100">
+
                 <div class="card-body d-flex align-items-center">
+
                     <div class="rounded-3 p-3 bg-warning bg-opacity-10 text-warning me-3">
                         <i class="bi bi-clock-history fs-4"></i>
                     </div>
+
                     <div>
-                        <div class="text-muted small">Chờ xử lý</div>
-                        <h4 class="fw-bold mb-0">@(Model?.Count(x => x.OrderStatus == "Pending") ?? 0)</h4>
+
+                        <div class="text-muted small">
+                            Chờ xử lý
+                        </div>
+
+                        <h4 class="fw-bold mb-0">
+                            @(Model?.Count(x =>
+                                x.OrderStatus == "Pending") ?? 0)
+                        </h4>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
+
+        <!-- REVENUE -->
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card border-0 shadow-sm rounded-4 card-stat h-100">
+
                 <div class="card-body d-flex align-items-center">
+
                     <div class="rounded-3 p-3 bg-danger bg-opacity-10 text-danger me-3">
-                        <i class="bi bi-currency-dollar fs-4"></i>
+                        <i class="bi bi-cash-stack fs-4"></i>
                     </div>
+
                     <div>
-                        <div class="text-muted small">Tổng doanh thu</div>
-                        <h4 class="fw-bold mb-0">@(Model?.Sum(x => x.TotalAmount).ToString("N0") ?? "0") đ</h4>
+
+                        <div class="text-muted small">
+                            Tổng doanh thu
+                        </div>
+
+                        <h4 class="fw-bold mb-0">
+
+                            @(
+                                Model?
+                                    .Where(x =>
+                                        x.OrderStatus == "Completed"
+                                        &&
+                                        x.PaymentStatus == "Paid"
+                                    )
+                                    .Sum(x => x.TotalAmount)
+                                    .ToString("N0")
+                                ?? "0"
+                            ) đ
+
+                        </h4>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- Main Table Card -->
+
+    <!-- ========================================================= -->
+    <!-- TABLE -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <!-- Toolbar Search & Filter -->
+
         <div class="card-header bg-white py-3 border-0">
+
             <div class="row g-2 align-items-center">
-                <div class="col-md-4">
+
+                <div class="col-md-5 col-lg-4">
+
                     <div class="input-group">
+
                         <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3 text-muted">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" id="tableSearch" class="form-control bg-light border-start-0 rounded-end-pill ps-0" placeholder="Tìm mã đơn, tên khách...">
+
+                        <input type="text"
+                               id="tableSearch"
+                               class="form-control bg-light border-start-0 rounded-end-pill ps-0"
+                               placeholder="Tìm mã đơn, khách hàng, bàn..." />
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
+
         <div class="card-body p-0">
+
             <div class="table-responsive">
+
                 <table class="table table-hover align-middle mb-0">
+
                     <thead class="bg-light text-muted small text-uppercase">
+
                         <tr>
-                            <th class="ps-4">Mã đơn</th>
-                            <th>Khách hàng</th>
-                            <th>Ngày tạo</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái đơn</th>
-                            <th>Thanh toán</th>
-                            <th class="text-end pe-4">Thao tác</th>
+
+                            <th class="ps-4">
+                                Mã đơn
+                            </th>
+
+                            <th>
+                                Nguồn đơn
+                            </th>
+
+                            <th>
+                                Ngày tạo
+                            </th>
+
+                            <th>
+                                Tổng tiền
+                            </th>
+
+                            <th>
+                                Trạng thái đơn
+                            </th>
+
+                            <th>
+                                Thanh toán
+                            </th>
+
+                            <th class="text-end pe-4">
+                                Thao tác
+                            </th>
+
                         </tr>
+
                     </thead>
+
+
                     <tbody id="invoiceTableBody">
+
                         @if (Model != null && Model.Any())
                         {
                             foreach (var item in Model)
                             {
-                                var isAnonymous = string.IsNullOrWhiteSpace(item.CustomerName);
-                                var initial = isAnonymous
-                                    ? "Ẩ"
-                                    : item.CustomerName!.Substring(0, 1).ToUpper();
+                                // =================================================
+                                // PHÂN BIỆT POS / ONLINE
+                                // =================================================
 
-                                var customerDisplayName = isAnonymous
-                                    ? "Khách ẩn danh"
-                                    : item.CustomerName;
+                                var isPosOrder =
+                                    !string.IsNullOrWhiteSpace(item.OrderCode)
+                                    &&
+                                    (
+                                        item.OrderCode.StartsWith(
+                                            "POS",
+                                            StringComparison.OrdinalIgnoreCase
+                                        )
+                                        ||
+                                        item.OrderCode.StartsWith(
+                                            "CPOS",
+                                            StringComparison.OrdinalIgnoreCase
+                                        )
+                                    );
 
-                                var customerPhoneDisplay = string.IsNullOrWhiteSpace(item.CustomerPhone)
-                                    ? "Không có SĐT"
-                                    : item.CustomerPhone;
 
-                                // Phân biệt nguồn đơn
-                                var orderSourceText =
+                                var isOnlineOrder =
+                                    !isPosOrder
+                                    &&
+                                    (
+                                        !string.IsNullOrWhiteSpace(item.CustomerName)
+                                        ||
+                                        !string.IsNullOrWhiteSpace(item.CustomerPhone)
+                                    );
+
+
+                                string sourceText;
+
+                                string sourceIcon;
+
+                                string sourceClass;
+
+
+                                if (isOnlineOrder)
+                                {
+                                    sourceText =
+                                        "Khách đặt Online";
+
+                                    sourceIcon =
+                                        "bi-globe2";
+
+                                    sourceClass =
+                                        "text-primary";
+                                }
+                                else if (item.TableId.HasValue)
+                                {
+                                    sourceText =
+                                        "Khách tại quán";
+
+                                    sourceIcon =
+                                        "bi-shop";
+
+                                    sourceClass =
+                                        "text-success";
+                                }
+                                else
+                                {
+                                    sourceText =
+                                        "Khách mang đi";
+
+                                    sourceIcon =
+                                        "bi-bag";
+
+                                    sourceClass =
+                                        "text-warning";
+                                }
+
+
+                                var initial =
+                                    isOnlineOrder &&
                                     !string.IsNullOrWhiteSpace(item.CustomerName)
-                                    || !string.IsNullOrWhiteSpace(item.CustomerPhone)
-                                        ? "Khách đặt online"
-                                        : item.TableId.HasValue
-                                            ? "Khách tại quán"
-                                            : "Khách mang đi";
+
+                                        ? item.CustomerName!
+                                            .Substring(0, 1)
+                                            .ToUpper()
+
+                                        : isPosOrder
+                                            ? "Q"
+                                            : "K";
+
+
                                 <tr>
+
+                                    <!-- ========================================= -->
+                                    <!-- MÃ ĐƠN -->
+                                    <!-- ========================================= -->
+
                                     <td class="ps-4">
-                                        <span class="fw-bold text-primary">#@item.OrderCode</span>
+
+                                        <span class="fw-bold text-primary">
+                                            #@item.OrderCode
+                                        </span>
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- NGUỒN ĐƠN / KHÁCH -->
+                                    <!-- ========================================= -->
+
                                     <td>
+
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2 fs-6">@initial</div>
-                                            <div>
-                                                <div class="fw-semibold text-dark">@customerDisplayName</div>
-                                                <div class="text-muted small">
-                                                    <i class="bi bi-telephone me-1"></i>@customerPhoneDisplay
-                                                </div>
 
-                                                <div class="text-muted small">
-                                                    @if (orderSourceText == "Khách đặt online")
-                                                    {
-                                                        <i class="bi bi-globe2 me-1"></i>
-                                                    }
-                                                    else if (orderSourceText == "Khách tại quán")
-                                                    {
-                                                        <i class="bi bi-shop me-1"></i>
-                                                    }
-                                                    else
-                                                    {
-                                                        <i class="bi bi-bag me-1"></i>
-                                                    }
-
-                                                    @orderSourceText
-                                                </div>
+                                            <div class="avatar-circle me-2 fs-6">
+                                                @initial
                                             </div>
+
+
+                                            <div>
+
+                                                @if (isOnlineOrder)
+                                                {
+                                                    <div class="fw-semibold text-dark">
+
+                                                        @(
+                                                            string.IsNullOrWhiteSpace(item.CustomerName)
+                                                                ? "Khách hàng"
+                                                                : item.CustomerName
+                                                        )
+
+                                                    </div>
+
+
+                                                    @if (!string.IsNullOrWhiteSpace(item.CustomerPhone))
+                                                    {
+                                                        <div class="text-muted small">
+
+                                                            <i class="bi bi-telephone me-1"></i>
+
+                                                            @item.CustomerPhone
+
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="fw-semibold text-dark">
+                                                        @sourceText
+                                                    </div>
+                                                }
+
+
+                                                <div class="small @sourceClass">
+
+                                                    <i class="bi @sourceIcon me-1"></i>
+
+                                                    @sourceText
+
+                                                </div>
+
+
+                                                @if (!isOnlineOrder && item.Table != null)
+                                                {
+                                                    <div class="small text-muted">
+
+                                                        <i class="bi bi-table me-1"></i>
+
+                                                        @item.Table.TableName
+
+                                                    </div>
+                                                }
+
+                                            </div>
+
                                         </div>
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- DATE -->
+                                    <!-- ========================================= -->
+
                                     <td>
-                                        <div class="text-dark">@item.CreatedDate.ToString("dd/MM/yyyy")</div>
-                                        <div class="text-muted small">@item.CreatedDate.ToString("HH:mm")</div>
+
+                                        <div class="text-dark">
+
+                                            @item.CreatedDate.ToString(
+                                                "dd/MM/yyyy"
+                                            )
+
+                                        </div>
+
+                                        <div class="text-muted small">
+
+                                            @item.CreatedDate.ToString(
+                                                "HH:mm"
+                                            )
+
+                                        </div>
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- TOTAL -->
+                                    <!-- ========================================= -->
+
                                     <td>
-                                        <span class="fw-bold text-dark">@item.TotalAmount.ToString("N0") đ</span>
+
+                                        <span class="fw-bold text-dark">
+
+                                            @item.TotalAmount.ToString("N0") đ
+
+                                        </span>
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- ORDER STATUS -->
+                                    <!-- ========================================= -->
+
                                     <td>
+
                                         @if (item.OrderStatus == "Completed")
                                         {
-                                            <span class="badge badge-soft-success px-2 py-1 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Hoàn thành</span>
+                                            <span class="badge badge-soft-success px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-check-circle-fill me-1"></i>
+                                                Hoàn thành
+
+                                            </span>
                                         }
                                         else if (item.OrderStatus == "Pending")
                                         {
-                                            <span class="badge badge-soft-warning px-2 py-1 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Chờ xử lý</span>
+                                            <span class="badge badge-soft-warning px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-hourglass-split me-1"></i>
+                                                Chờ xử lý
+
+                                            </span>
+                                        }
+                                        else if (item.OrderStatus == "Cancelled")
+                                        {
+                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Đã hủy
+
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-soft-secondary px-2 py-1 rounded-pill">@(item.OrderStatus == "Cancelled" ? "Đã hủy" : item.OrderStatus)</span>
+                                            <span class="badge badge-soft-secondary px-2 py-1 rounded-pill">
+
+                                                @item.OrderStatus
+
+                                            </span>
                                         }
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- PAYMENT STATUS -->
+                                    <!-- ========================================= -->
+
                                     <td>
+
                                         @if (item.PaymentStatus == "Paid")
                                         {
-                                            <span class="badge badge-soft-success px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Đã thanh toán</span>
+                                            <span class="badge badge-soft-success px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Đã thanh toán
+
+                                            </span>
+                                        }
+                                        else if (item.PaymentStatus == "Unpaid")
+                                        {
+                                            <span class="badge badge-soft-secondary px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-clock me-1"></i>
+                                                Chưa thanh toán
+
+                                            </span>
+                                        }
+                                        else if (item.PaymentStatus == "Cancelled")
+                                        {
+                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill">
+
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Đã hủy
+
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-soft-danger px-2 py-1 rounded-pill"><i class="bi bi-dot"></i>Chưa thanh toán</span>
+                                            <span class="badge badge-soft-secondary">
+
+                                                @item.PaymentStatus
+
+                                            </span>
                                         }
+
                                     </td>
+
+
+                                    <!-- ========================================= -->
+                                    <!-- ACTION -->
+                                    <!-- ========================================= -->
+
                                     <td class="text-end pe-4">
+
                                         <div class="btn-group gap-1">
+
+
+                                            <!-- QUICK VIEW -->
+
                                             <button type="button"
                                                     class="btn btn-sm btn-light text-primary btn-view-invoice rounded-2"
                                                     data-id="@item.OrderId"
                                                     data-bs-toggle="tooltip"
                                                     title="Xem nhanh">
+
                                                 <i class="bi bi-eye-fill"></i>
+
                                             </button>
 
-                                            <a
+
+                                            <!-- PRINT -->
+
+                                            <a asp-area=""
                                                asp-controller="Order"
                                                asp-action="PrintInvoice"
                                                asp-route-id="@item.OrderId"
@@ -267,121 +670,283 @@
                                                class="btn btn-sm btn-light text-secondary rounded-2"
                                                data-bs-toggle="tooltip"
                                                title="In hóa đơn">
+
                                                 <i class="bi bi-printer-fill"></i>
+
                                             </a>
-                                            @if (item.OrderStatus != "Cancelled")
+
+
+                                            <!-- CHECKOUT -->
+
+                                            @if (
+                                                item.OrderStatus == "Pending"
+                                                &&
+                                                item.PaymentStatus == "Unpaid"
+                                            )
                                             {
-                                                <a 
+                                                <a asp-area=""
                                                    asp-controller="Order"
                                                    asp-action="Checkout"
                                                    asp-route-id="@item.OrderId"
                                                    class="btn btn-sm btn-light text-success rounded-2"
                                                    data-bs-toggle="tooltip"
-                                                   title="Chỉnh sửa / Tiếp tục">
+                                                   title="Tiếp tục / Thanh toán">
+
                                                     <i class="bi bi-pencil-square"></i>
+
                                                 </a>
                                             }
-                                            else
+
+
+                                            <!-- CANCEL -->
+
+                                            @if (
+                                                item.OrderStatus == "Pending"
+                                                &&
+                                                item.PaymentStatus == "Unpaid"
+                                            )
                                             {
-                                                <button type="button"
-                                                        class="btn btn-sm btn-light text-muted rounded-2"
-                                                        disabled
-                                                        data-bs-toggle="tooltip"
-                                                        title="Đơn đã hủy">
+                                                <form asp-area=""
+                                                      asp-controller="Order"
+                                                      asp-action="CancelOrder"
+                                                      asp-route-id="@item.OrderId"
+                                                      method="post"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn #@item.OrderCode không?');">
 
-                                                    <i class="bi bi-ban"></i>
+                                                    @Html.AntiForgeryToken()
 
-                                                </button>
+
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-danger rounded-2"
+                                                            title="Hủy đơn">
+
+                                                        <i class="bi bi-x-circle"></i>
+
+                                                    </button>
+
+                                                </form>
                                             }
 
                                         </div>
+
                                     </td>
+
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="7" class="text-center py-5 text-muted">
+
+                                <td colspan="7"
+                                    class="text-center py-5 text-muted">
+
                                     <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                    Chưa có hóa đơn nào được khởi tạo.
+
+                                    Chưa có đơn hàng nào.
+
                                 </td>
+
                             </tr>
                         }
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<!-- Modal Quick View (AJAX) -->
-<div class="modal fade" id="invoiceQuickViewModal" tabindex="-1" aria-hidden="true">
+
+<!-- ============================================================= -->
+<!-- QUICK VIEW MODAL -->
+<!-- ============================================================= -->
+
+<div class="modal fade"
+     id="invoiceQuickViewModal"
+     tabindex="-1"
+     aria-hidden="true">
+
     <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
             <div class="modal-header bg-light border-0 py-3">
+
                 <h5 class="modal-title fw-bold text-dark fs-5">
-                    <i class="bi bi-file-earmark-text text-primary me-2"></i>Xem nhanh hóa đơn
+
+                    <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                    Xem nhanh hóa đơn
+
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
             </div>
-            <div class="modal-body p-4" id="invoiceQuickViewContent">
-                <!-- Content sẽ được render qua AJAX -->
+
+
+            <div class="modal-body p-4"
+                 id="invoiceQuickViewContent">
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
 
 @section Scripts {
-    <script>
-        $(document).ready(function() {
-            // Khởi tạo Tooltips của Bootstrap
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
+
+<script>
+
+    $(document).ready(function () {
+
+        // ========================================================
+        // TOOLTIP
+        // ========================================================
+
+        document
+            .querySelectorAll(
+                '[data-bs-toggle="tooltip"]'
+            )
+            .forEach(function (element) {
+
+                new bootstrap.Tooltip(
+                    element
+                );
             });
 
-            // Xử lý sự kiện Modal AJAX Xem nhanh
-            $(".btn-view-invoice").click(function() {
-                let id = $(this).data("id");
 
-                // Layout Spinner loading
+        // ========================================================
+        // QUICK VIEW
+        //
+        // Đây là View nhân viên nên KHÔNG gọi Area Admin.
+        // ========================================================
+
+        $(".btn-view-invoice").click(
+            function () {
+
+                const id =
+                    $(this).data("id");
+
+
                 $("#invoiceQuickViewContent").html(`
-                                    <div class="text-center py-5">
-                                        <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
-                                        <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
-                                    </div>
-                                `);
 
-                let modal = new bootstrap.Modal(document.getElementById('invoiceQuickViewModal'));
+                    <div class="text-center py-5">
+
+                        <div class="spinner-border text-primary mb-3"
+                             role="status">
+                        </div>
+
+                        <p class="text-muted mb-0">
+                            Đang tải chi tiết hóa đơn...
+                        </p>
+
+                    </div>
+
+                `);
+
+
+                const modal =
+                    new bootstrap.Modal(
+                        document.getElementById(
+                            "invoiceQuickViewModal"
+                        )
+                    );
+
+
                 modal.show();
 
-                $.ajax({
-                    // Cấu hình URL có truyền tham số area: 'Admin'
-                    url: '@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })',
-                    type: 'GET',
-                    data: { id: id },
-                    success: function(res) {
-                        $("#invoiceQuickViewContent").html(res);
-                    },
-                    error: function() {
-                        $("#invoiceQuickViewContent").html(`
-                                            <div class="alert alert-danger rounded-3 d-flex align-items-center" role="alert">
-                                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                                                <div>Không thể tải chi tiết hóa đơn. Vui lòng thử lại sau!</div>
-                                            </div>
-                                        `);
-                    }
-                });
-            });
 
-            // Tìm kiếm nhanh ngay trên Client (Search Filter)
-            $("#tableSearch").on("keyup", function() {
-                var value = $(this).val().toLowerCase();
-                $("#invoiceTableBody tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                $.ajax({
+
+                    url:
+                        '@Url.Action(
+                            "GetInvoicePartial",
+                            "Order",
+                            new { area = "" }
+                        )',
+
+                    type:
+                        "GET",
+
+                    data:
+                    {
+                        id: id
+                    },
+
+                    success:
+                        function (res) {
+
+                            $("#invoiceQuickViewContent")
+                                .html(res);
+                        },
+
+                    error:
+                        function () {
+
+                            $("#invoiceQuickViewContent")
+                                .html(`
+
+                                    <div class="alert alert-danger">
+
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                                        Không thể tải chi tiết hóa đơn.
+
+                                    </div>
+
+                                `);
+                        }
                 });
-            });
-        });
-    </script>
+            }
+        );
+
+
+        // ========================================================
+        // SEARCH
+        // ========================================================
+
+        $("#tableSearch").on(
+            "keyup",
+            function () {
+
+                const value =
+                    $(this)
+                        .val()
+                        .toLowerCase();
+
+
+                $("#invoiceTableBody tr")
+                    .filter(
+                        function () {
+
+                            $(this)
+                                .toggle(
+                                    $(this)
+                                        .text()
+                                        .toLowerCase()
+                                        .indexOf(value)
+                                    > -1
+                                );
+                        }
+                    );
+            }
+        );
+
+    });
+
+</script>
+
 }

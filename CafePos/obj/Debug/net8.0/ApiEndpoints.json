@@ -157,6 +157,16 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "CafePos.Controllers.API.RevenueController",
+    "Method": "GetTodayRevenue",
+    "RelativePath": "api/revenue/today",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "CafePos.Controllers.API.TablesController",
     "Method": "GetTables",
     "RelativePath": "api/tables",

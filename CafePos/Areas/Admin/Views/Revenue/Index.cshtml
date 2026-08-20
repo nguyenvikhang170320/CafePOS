@@ -3,222 +3,941 @@
 @{
     ViewData["Title"] = "Báo cáo doanh thu";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    decimal officialRevenue =
+        ViewBag.OfficialRevenue != null
+            ? Convert.ToDecimal(ViewBag.OfficialRevenue)
+            : Model.TotalRevenueThisYear;
+
+    decimal recordedPaymentRevenue =
+        ViewBag.RecordedPaymentRevenue != null
+            ? Convert.ToDecimal(ViewBag.RecordedPaymentRevenue)
+            : 0;
+
+    decimal reconciliationDifference =
+        ViewBag.ReconciliationDifference != null
+            ? Convert.ToDecimal(ViewBag.ReconciliationDifference)
+            : 0;
+
+    decimal cashRevenue =
+        ViewBag.CashRevenue != null
+            ? Convert.ToDecimal(ViewBag.CashRevenue)
+            : 0;
+
+    decimal bankingRevenue =
+        ViewBag.BankingRevenue != null
+            ? Convert.ToDecimal(ViewBag.BankingRevenue)
+            : 0;
+
+    decimal cardRevenue =
+        ViewBag.CardRevenue != null
+            ? Convert.ToDecimal(ViewBag.CardRevenue)
+            : 0;
+
+    decimal vnPayRevenue =
+        ViewBag.VnPayRevenue != null
+            ? Convert.ToDecimal(ViewBag.VnPayRevenue)
+            : 0;
+
+    int paymentTransactionCount =
+        ViewBag.PaymentTransactionCount != null
+            ? Convert.ToInt32(ViewBag.PaymentTransactionCount)
+            : 0;
 }
 
-<div class="container py-4">
-    <!-- Header & Year Selector -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid py-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
         <div>
-            <h2 class="fw-bold mb-1">Báo cáo doanh thu</h2>
-            <p class="text-muted mb-0">Thống kê doanh thu theo tháng, năm và món bán chạy.</p>
+            <h2 class="fw-bold mb-1">
+                Báo cáo doanh thu
+            </h2>
+
+            <p class="text-muted mb-0">
+                Theo dõi doanh thu toàn quán,
+                giao dịch thanh toán và doanh thu nhân viên.
+            </p>
         </div>
 
-        <form method="get" asp-action="Index" class="d-flex gap-2">
-            <input type="number" name="year" value="@Model.SelectedYear" class="form-control" style="width: 140px;" />
-            <button type="submit" class="btn btn-primary">Xem</button>
+        <form method="get"
+              asp-action="Index"
+              class="d-flex gap-2">
+
+            <input type="number"
+                   name="year"
+                   value="@Model.SelectedYear"
+                   min="2000"
+                   max="2100"
+                   class="form-control"
+                   style="width:140px;" />
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                <i class="bi bi-search me-1"></i>
+                Xem
+
+            </button>
+
         </form>
+
     </div>
 
-    <!-- Cards Summary -->
+
+    <!-- ========================================================= -->
+    <!-- KPI CHÍNH -->
+    <!-- ========================================================= -->
+
     <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
                 <div class="card-body">
-                    <h6 class="text-muted">Tổng doanh thu năm @Model.SelectedYear</h6>
-                    <h3 class="fw-bold text-success">@Model.TotalRevenueThisYear.ToString("N0") đ</h3>
+
+                    <div class="text-muted small mb-1">
+                        Doanh thu chính thức
+                    </div>
+
+                    <h3 class="fw-bold text-success mb-1">
+                        @officialRevenue.ToString("N0") đ
+                    </h3>
+
+                    <div class="small text-muted">
+                        Orders Paid + Completed
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
 
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
                 <div class="card-body">
-                    <h6 class="text-muted">Tổng số đơn năm @Model.SelectedYear</h6>
-                    <h3 class="fw-bold text-primary">@Model.TotalOrdersThisYear</h3>
+
+                    <div class="text-muted small mb-1">
+                        Tổng số đơn năm @Model.SelectedYear
+                    </div>
+
+                    <h3 class="fw-bold text-primary mb-1">
+                        @Model.TotalOrdersThisYear
+                    </h3>
+
+                    <div class="small text-muted">
+                        Hóa đơn hợp lệ
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
+
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Giao dịch đã ghi nhận
+                    </div>
+
+                    <h3 class="fw-bold text-info mb-1">
+                        @recordedPaymentRevenue.ToString("N0") đ
+                    </h3>
+
+                    <div class="small text-muted">
+                        @paymentTransactionCount giao dịch Payments
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <div class="text-muted small mb-1">
+                        Chênh lệch đối soát
+                    </div>
+
+                    <h3 class="fw-bold @(reconciliationDifference == 0 ? "text-success" : "text-danger") mb-1">
+
+                        @reconciliationDifference.ToString("N0") đ
+
+                    </h3>
+
+                    <div class="small text-muted">
+                        Orders - Payments
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <!-- Biểu đồ doanh thu 7 ngày gần nhất -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-            <h5 class="fw-bold mb-3">
-                <i class="bi bi-graph-up-arrow text-primary me-2"></i>Biểu đồ doanh thu 7 ngày gần nhất
-            </h5>
-            <div style="height: 300px; position: relative;">
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-    </div>
 
-    <!-- Doanh thu theo tháng -->
+    <!-- ========================================================= -->
+    <!-- PHƯƠNG THỨC THANH TOÁN -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm rounded-4 mb-4">
+
         <div class="card-body">
-            <h5 class="fw-bold mb-3">Doanh thu theo tháng</h5>
+
+            <h5 class="fw-bold mb-3">
+
+                <i class="bi bi-wallet2 text-primary me-2"></i>
+                Giao dịch theo phương thức thanh toán
+
+            </h5>
+
+            <div class="row g-3">
+
+                <div class="col-md-6 col-xl-3">
+
+                    <div class="p-3 bg-light rounded-4 h-100">
+
+                        <div class="text-muted small">
+                            Tiền mặt
+                        </div>
+
+                        <div class="fw-bold fs-4 text-success">
+                            @cashRevenue.ToString("N0") đ
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 col-xl-3">
+
+                    <div class="p-3 bg-light rounded-4 h-100">
+
+                        <div class="text-muted small">
+                            Chuyển khoản / QR
+                        </div>
+
+                        <div class="fw-bold fs-4 text-primary">
+                            @bankingRevenue.ToString("N0") đ
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 col-xl-3">
+
+                    <div class="p-3 bg-light rounded-4 h-100">
+
+                        <div class="text-muted small">
+                            Thẻ
+                        </div>
+
+                        <div class="fw-bold fs-4 text-warning">
+                            @cardRevenue.ToString("N0") đ
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6 col-xl-3">
+
+                    <div class="p-3 bg-light rounded-4 h-100">
+
+                        <div class="text-muted small">
+                            VNPAY
+                        </div>
+
+                        <div class="fw-bold fs-4 text-danger">
+                            @vnPayRevenue.ToString("N0") đ
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- DOANH THU THEO NHÂN VIÊN -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+
+                        <i class="bi bi-people-fill text-primary me-2"></i>
+                        Doanh thu theo nhân viên
+
+                    </h5>
+
+                    <div class="small text-muted">
+
+                        Số tiền mỗi nhân viên trực tiếp thực hiện thu
+                        trong năm @Model.SelectedYear.
+
+                    </div>
+
+                </div>
+
+
+                <span class="badge bg-primary rounded-pill px-3 py-2">
+
+                    @(Model.EmployeeRevenues?.Count ?? 0)
+                    nhân viên
+
+                </span>
+
+            </div>
+
+
             <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-0">
+
+                <table class="table table-hover align-middle mb-0">
+
                     <thead class="table-light">
+
+                        <tr>
+
+                            <th>Nhân viên</th>
+
+                            <th>Chức vụ</th>
+
+                            <th class="text-center">
+                                Giao dịch
+                            </th>
+
+                            <th class="text-center">
+                                Số đơn
+                            </th>
+
+                            <th class="text-end">
+                                Tiền mặt
+                            </th>
+
+                            <th class="text-end">
+                                Chuyển khoản
+                            </th>
+
+                            <th class="text-end">
+                                Thẻ
+                            </th>
+
+                            <th class="text-end">
+                                VNPAY
+                            </th>
+
+                            <th class="text-end">
+                                Tổng đã thu
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (
+                            Model.EmployeeRevenues != null &&
+                            Model.EmployeeRevenues.Any()
+                        )
+                        {
+                            foreach (var employee in Model.EmployeeRevenues)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <div class="fw-semibold">
+                                            @employee.EmployeeName
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            ID: @employee.EmployeeId
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="badge bg-secondary">
+
+                                            @employee.PositionName
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        @employee.TotalTransactions
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        @employee.TotalOrders
+
+                                    </td>
+
+
+                                    <td class="text-end text-success">
+
+                                        @employee.CashRevenue.ToString("N0") đ
+
+                                    </td>
+
+
+                                    <td class="text-end text-primary">
+
+                                        @employee.BankingRevenue.ToString("N0") đ
+
+                                    </td>
+
+
+                                    <td class="text-end text-warning">
+
+                                        @employee.CardRevenue.ToString("N0") đ
+
+                                    </td>
+
+
+                                    <td class="text-end text-danger">
+
+                                        @employee.VnPayRevenue.ToString("N0") đ
+
+                                    </td>
+
+
+                                    <td class="text-end">
+
+                                        <strong class="text-dark fs-6">
+
+                                            @employee.TotalRevenue.ToString("N0") đ
+
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+
+                                @if (employee.OtherRevenue != 0)
+                                {
+                                    <tr class="table-light">
+
+                                        <td colspan="8"
+                                            class="text-end small text-muted">
+
+                                            Phương thức khác:
+
+                                        </td>
+
+                                        <td class="text-end small fw-semibold">
+
+                                            @employee.OtherRevenue.ToString("N0") đ
+
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="9"
+                                    class="text-center text-muted py-5">
+
+                                    <i class="bi bi-person-x fs-2 d-block mb-2"></i>
+
+                                    Chưa có giao dịch của nhân viên
+                                    trong năm @Model.SelectedYear.
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- BIỂU ĐỒ 7 NGÀY -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold mb-3">
+
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+                Doanh thu 7 ngày gần nhất
+
+            </h5>
+
+            <div style="height:300px; position:relative;">
+
+                <canvas id="revenueChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- DOANH THU THEO THÁNG -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <h5 class="fw-bold mb-3">
+                Doanh thu theo tháng
+            </h5>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle mb-0">
+
+                    <thead class="table-light">
+
                         <tr>
                             <th>Tháng</th>
                             <th>Số đơn</th>
-                            <th>Doanh thu</th>
+                            <th class="text-end">Doanh thu</th>
                         </tr>
+
                     </thead>
+
                     <tbody>
-                        @if (Model.MonthlyRevenues != null && Model.MonthlyRevenues.Any())
+
+                        @if (
+                            Model.MonthlyRevenues != null &&
+                            Model.MonthlyRevenues.Any()
+                        )
                         {
                             foreach (var item in Model.MonthlyRevenues)
                             {
                                 <tr>
-                                    <td>Tháng @item.Month/@item.Year</td>
-                                    <td>@item.TotalOrders</td>
-                                    <td class="fw-bold text-danger">@item.TotalRevenue.ToString("N0") đ</td>
+
+                                    <td>
+                                        Tháng @item.Month/@item.Year
+                                    </td>
+
+                                    <td>
+                                        @item.TotalOrders
+                                    </td>
+
+                                    <td class="text-end fw-bold text-danger">
+
+                                        @item.TotalRevenue.ToString("N0") đ
+
+                                    </td>
+
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu doanh thu theo tháng.</td>
+
+                                <td colspan="3"
+                                    class="text-center text-muted py-4">
+
+                                    Chưa có dữ liệu doanh thu theo tháng.
+
+                                </td>
+
                             </tr>
                         }
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- Doanh thu theo năm -->
+
+    <!-- ========================================================= -->
+    <!-- DOANH THU THEO NĂM -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm rounded-4 mb-4">
+
         <div class="card-body">
-            <h5 class="fw-bold mb-3">Doanh thu theo năm</h5>
+
+            <h5 class="fw-bold mb-3">
+                Doanh thu theo năm
+            </h5>
+
             <div class="table-responsive">
+
                 <table class="table table-bordered align-middle mb-0">
+
                     <thead class="table-light">
+
                         <tr>
                             <th>Năm</th>
                             <th>Số đơn</th>
-                            <th>Doanh thu</th>
+                            <th class="text-end">Doanh thu</th>
                         </tr>
+
                     </thead>
+
                     <tbody>
-                        @if (Model.YearlyRevenues != null && Model.YearlyRevenues.Any())
+
+                        @if (
+                            Model.YearlyRevenues != null &&
+                            Model.YearlyRevenues.Any()
+                        )
                         {
                             foreach (var item in Model.YearlyRevenues)
                             {
                                 <tr>
-                                    <td>@item.Year</td>
-                                    <td>@item.TotalOrders</td>
-                                    <td class="fw-bold text-success">@item.TotalRevenue.ToString("N0") đ</td>
+
+                                    <td>
+                                        @item.Year
+                                    </td>
+
+                                    <td>
+                                        @item.TotalOrders
+                                    </td>
+
+                                    <td class="text-end fw-bold text-success">
+
+                                        @item.TotalRevenue.ToString("N0") đ
+
+                                    </td>
+
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu doanh thu theo năm.</td>
+
+                                <td colspan="3"
+                                    class="text-center text-muted py-4">
+
+                                    Chưa có dữ liệu doanh thu theo năm.
+
+                                </td>
+
                             </tr>
                         }
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- Top món bán chạy -->
+
+    <!-- ========================================================= -->
+    <!-- TOP MÓN -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm rounded-4">
+
         <div class="card-body">
-            <h5 class="fw-bold mb-3">Top món bán chạy</h5>
+
+            <h5 class="fw-bold mb-3">
+
+                <i class="bi bi-trophy text-warning me-2"></i>
+                Top món bán chạy
+
+            </h5>
+
             <div class="table-responsive">
+
                 <table class="table table-bordered align-middle mb-0">
+
                     <thead class="table-light">
+
                         <tr>
                             <th>Tên món</th>
                             <th>Số lượng bán</th>
-                            <th>Doanh thu</th>
+                            <th class="text-end">Doanh thu</th>
                         </tr>
+
                     </thead>
+
                     <tbody>
-                        @if (Model.BestSellingProducts != null && Model.BestSellingProducts.Any())
+
+                        @if (
+                            Model.BestSellingProducts != null &&
+                            Model.BestSellingProducts.Any()
+                        )
                         {
                             foreach (var item in Model.BestSellingProducts)
                             {
                                 <tr>
-                                    <td>@item.ProductName</td>
-                                    <td>@item.TotalQuantitySold</td>
-                                    <td class="fw-bold text-primary">@item.TotalRevenue.ToString("N0") đ</td>
+
+                                    <td class="fw-semibold">
+                                        @item.ProductName
+                                    </td>
+
+                                    <td>
+                                        @item.TotalQuantitySold
+                                    </td>
+
+                                    <td class="text-end fw-bold text-primary">
+
+                                        @item.TotalRevenue.ToString("N0") đ
+
+                                    </td>
+
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có dữ liệu món bán chạy.</td>
+
+                                <td colspan="3"
+                                    class="text-center text-muted py-4">
+
+                                    Chưa có dữ liệu món bán chạy.
+
+                                </td>
+
                             </tr>
                         }
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
+
 @section Scripts {
-    <!-- Thư viện Chart.js -->
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Lấy dữ liệu 7 ngày từ ViewModel (Giả định ViewModel có danh sách Last7DaysRevenues)
-            const rawData = @Html.Raw(Json.Serialize(Model.Last7DaysRevenues ?? new List<CafePos.Models.ViewModels.DailyRevenueViewModel>()));
 
-            const labels = rawData.map(item => item.DateFormatted || item.Date);
-            const dataValues = rawData.map(item => item.TotalRevenue);
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Doanh thu (VNĐ)',
-                        data: dataValues,
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#0d6efd'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let value = context.raw || 0;
-                                    return 'Doanh thu: ' + value.toLocaleString('vi-VN') + ' đ';
+                const rawData =
+                    @Html.Raw(
+                        Json.Serialize(
+                            Model.Last7DaysRevenues
+                            ?? new List<CafePos.Models.ViewModels.DailyRevenueViewModel>()
+                        )
+                    );
+
+                const labels =
+                    rawData.map(
+                        item =>
+                            item.dateFormatted
+                            || item.DateFormatted
+                            || item.date
+                            || item.Date
+                    );
+
+                const dataValues =
+                    rawData.map(
+                        item =>
+                            item.totalRevenue
+                            ?? item.TotalRevenue
+                            ?? 0
+                    );
+
+                const canvas =
+                    document.getElementById(
+                        "revenueChart"
+                    );
+
+                if (!canvas) {
+                    return;
+                }
+
+                const ctx =
+                    canvas.getContext("2d");
+
+                new Chart(
+                    ctx,
+                    {
+                        type: "line",
+
+                        data: {
+
+                            labels: labels,
+
+                            datasets: [
+                                {
+                                    label:
+                                        "Doanh thu (VNĐ)",
+
+                                    data:
+                                        dataValues,
+
+                                    borderColor:
+                                        "#0d6efd",
+
+                                    backgroundColor:
+                                        "rgba(13,110,253,0.10)",
+
+                                    borderWidth:
+                                        2,
+
+                                    fill:
+                                        true,
+
+                                    tension:
+                                        0.3,
+
+                                    pointRadius:
+                                        4,
+
+                                    pointBackgroundColor:
+                                        "#0d6efd"
                                 }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('vi-VN') + ' đ';
+                            ]
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+                                    display:
+                                        false
+                                },
+
+                                tooltip: {
+
+                                    callbacks: {
+
+                                        label:
+                                            function (context) {
+
+                                                const value =
+                                                    context.raw || 0;
+
+                                                return (
+                                                    "Doanh thu: "
+                                                    +
+                                                    Number(value)
+                                                        .toLocaleString(
+                                                            "vi-VN"
+                                                        )
+                                                    +
+                                                    " đ"
+                                                );
+                                            }
+                                    }
+                                }
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        true,
+
+                                    ticks: {
+
+                                        callback:
+                                            function (value) {
+
+                                                return (
+                                                    Number(value)
+                                                        .toLocaleString(
+                                                            "vi-VN"
+                                                        )
+                                                    +
+                                                    " đ"
+                                                );
+                                            }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-        });
+                );
+            }
+        );
+
     </script>
 }

@@ -123,7 +123,17 @@
                     </div>
                     <div>
                         <div class="text-muted small">Tổng doanh thu</div>
-                        <h4 class="fw-bold mb-0">@(Model?.Sum(x => x.TotalAmount).ToString("N0") ?? "0") đ</h4>
+                        <h4 class="fw-bold mb-0">
+                            @(
+                                Model?
+                                    .Where(x =>
+                                        x.OrderStatus == "Completed" &&
+                                        x.PaymentStatus == "Paid")
+                                    .Sum(x => x.TotalAmount)
+                                    .ToString("N0")
+                                ?? "0"
+                            ) đ
+                        </h4>
                     </div>
                 </div>
             </div>
@@ -264,7 +274,7 @@
                                                 <i class="bi bi-eye-fill"></i>
                                             </button>
 
-                                            <a asp-area="Admin"
+                                            <a 
                                                asp-controller="Order"
                                                asp-action="PrintInvoice"
                                                asp-route-id="@item.OrderId"
@@ -274,9 +284,13 @@
                                                title="In hóa đơn">
                                                 <i class="bi bi-printer-fill"></i>
                                             </a>
-                                            @if (item.OrderStatus != "Cancelled")
+                                            @if (
+                                                item.OrderStatus == "Pending"
+                                                &&
+                                                item.PaymentStatus == "Unpaid"
+                                            )
                                             {
-                                                <a asp-area="Admin"
+                                                <a 
                                                    asp-controller="Order"
                                                    asp-action="Checkout"
                                                    asp-route-id="@item.OrderId"
@@ -285,18 +299,6 @@
                                                    title="Chỉnh sửa / Tiếp tục">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>
-                                            }
-                                            else
-                                            {
-                                                <button type="button"
-                                                        class="btn btn-sm btn-light text-muted rounded-2"
-                                                        disabled
-                                                        data-bs-toggle="tooltip"
-                                                        title="Đơn đã hủy">
-
-                                                    <i class="bi bi-ban"></i>
-
-                                                </button>
                                             }
 
                                             @if (
@@ -320,7 +322,7 @@
                                                     </button>
                                                 </form>
                                             }
-                                          
+
                                         </div>
                                     </td>
                                 </tr>
@@ -374,18 +376,18 @@
 
                 // Layout Spinner loading
                 $("#invoiceQuickViewContent").html(`
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
-                                <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
-                            </div>
-                        `);
+                                    <div class="text-center py-5">
+                                        <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                                        <p class="text-muted mb-0">Đang tải chi tiết hóa đơn...</p>
+                                    </div>
+                                `);
 
                 let modal = new bootstrap.Modal(document.getElementById('invoiceQuickViewModal'));
                 modal.show();
 
                 $.ajax({
                     // Cấu hình URL có truyền tham số area: 'Admin'
-                    url: '@Url.Action("GetInvoicePartial", "Order", new { area = "Admin" })',
+                    url: '@Url.Action("GetInvoicePartial", "Order")',
                     type: 'GET',
                     data: { id: id },
                     success: function(res) {
@@ -393,11 +395,11 @@
                     },
                     error: function() {
                         $("#invoiceQuickViewContent").html(`
-                                    <div class="alert alert-danger rounded-3 d-flex align-items-center" role="alert">
-                                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
-                                        <div>Không thể tải chi tiết hóa đơn. Vui lòng thử lại sau!</div>
-                                    </div>
-                                `);
+                                            <div class="alert alert-danger rounded-3 d-flex align-items-center" role="alert">
+                                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                                <div>Không thể tải chi tiết hóa đơn. Vui lòng thử lại sau!</div>
+                                            </div>
+                                        `);
                     }
                 });
             });

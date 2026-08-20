@@ -759,8 +759,8 @@ E:\Source Code Tự làm\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.R
 E:\Source Code Tự làm\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.CodeAnalysis.Razor.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\appsettings.Development.json
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\appsettings.json
-E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.staticwebassets.endpoints.json
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.staticwebassets.runtime.json
+E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.staticwebassets.endpoints.json
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.exe
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.deps.json
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CafePos.runtimeconfig.json
@@ -1072,6 +1072,7 @@ E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Azure.Identity.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\BCrypt.Net-Next.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\CloudinaryDotNet.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Humanizer.dll
+E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.dll
 E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Razor.Language.dll
@@ -1216,4 +1217,3 @@ E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\refint\CafePos.dll
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\CafePos.pdb
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\CafePos.genruntimeconfig.cache
 E:\Projects\CafePOS\CafePos\obj\Debug\net8.0\ref\CafePos.dll
-E:\Projects\CafePOS\CafePos\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

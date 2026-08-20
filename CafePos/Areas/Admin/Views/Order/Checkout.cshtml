@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Checkout";
-    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 
     var toppings = ViewBag.Toppings as List<Topping>;
     var tablesList = ViewBag.TablesList as List<Table>;
@@ -30,7 +30,7 @@
         </h3>
 
         <p class="text-muted mb-0">
-            Xác nhận thanh toán, chọn nhân viên thu ngân,
+            Xác nhận thanh toán, chọn nhân viên thực hiện,
             chọn bàn ăn và hoàn tất đơn.
         </p>
     </div>
@@ -110,7 +110,9 @@
                                 @if (
                                     Model.PaymentStatus == "Paid" ||
                                     Model.PaymentStatus == "Đã thanh toán" ||
-                                    Model.OrderStatus == "Completed"
+                                    Model.OrderStatus == "Completed" ||
+                                    Model.OrderStatus == "Cancelled" ||
+                                    Model.PaymentStatus == "Cancelled"
                                 )
                                 {
 
@@ -198,7 +200,15 @@
 
 
                                 <select name="tableId"
-                                        class="form-select rounded-3">
+                                        class="form-select rounded-3"
+                                    @(
+                                        Model.PaymentStatus == "Paid" ||
+                                        Model.OrderStatus == "Completed" ||
+                                        Model.OrderStatus == "Cancelled" ||
+                                        Model.PaymentStatus == "Cancelled"
+                                            ? "disabled"
+                                            : ""
+                                    )>
 
                                     <option value="">
                                         -- Mua mang về (Không bàn) --
@@ -262,7 +272,14 @@
                                 <select id="paymentMethodSelect"
                                         name="paymentMethod"
                                         class="form-select"
-                                    @(Model.PaymentStatus == "Paid" ? "disabled" : "")>
+                                    @(
+                                        Model.PaymentStatus == "Paid" ||
+                                        Model.OrderStatus == "Completed" ||
+                                        Model.OrderStatus == "Cancelled" ||
+                                        Model.PaymentStatus == "Cancelled"
+                                            ? "disabled"
+                                            : ""
+                                    )>
 
                                     <option value="Cash"
                                             selected="@(Model.PaymentMethod == "Cash" || Model.PaymentMethod == "Tiền mặt")">
@@ -320,7 +337,15 @@
                                        name="discountAmount"
                                        id="discountAmount"
                                        class="form-control rounded-3 fw-bold text-danger"
-                                       value="@Model.DiscountAmount.ToString("F0")" />
+                                       value="@Model.DiscountAmount.ToString("F0")"
+                                @(
+                                    Model.PaymentStatus == "Paid" ||
+                                    Model.OrderStatus == "Completed" ||
+                                    Model.OrderStatus == "Cancelled" ||
+                                    Model.PaymentStatus == "Cancelled"
+                                        ? "disabled"
+                                        : ""
+                                ) />
 
                             </div>
 
@@ -428,54 +453,55 @@
 
 
                             @if (
+                                Model.OrderStatus == "Cancelled" ||
+                                Model.PaymentStatus == "Cancelled"
+                            )
+                            {
+                                <button type="button"
+                                        class="btn btn-danger rounded-pill px-4"
+                                        disabled>
+
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Đơn đã hủy
+
+                                </button>
+                            }
+                            else if (
                                 Model.PaymentStatus == "Paid" ||
                                 Model.OrderStatus == "Completed"
                             )
                             {
-
                                 <button type="button"
                                         class="btn btn-secondary rounded-pill px-4"
                                         disabled>
 
                                     <i class="bi bi-check-all me-1"></i>
-
                                     Đơn đã thanh toán
 
                                 </button>
-
                             }
                             else
                             {
-
                                 <!-- CASH / BANKING / CARD -->
-
                                 <button type="submit"
                                         id="btnNormalPay"
                                         class="btn btn-success rounded-pill px-4 fw-bold">
 
                                     <i class="bi bi-cash-register me-1"></i>
-
                                     Xác nhận thanh toán
 
                                 </button>
 
-
                                 <!-- VNPAY -->
-
                                 <button type="submit"
                                         id="btnVnPay"
                                         class="btn btn-primary rounded-pill px-4 fw-bold d-none"
-                                        style="
-                                    background-color:#005baa;
-                                    border:none;
-                                    ">
+                                        style="background-color:#005baa;border:none;">
 
                                     <i class="bi bi-qr-code-scan me-1"></i>
-
                                     Thanh toán qua VNPAY
 
                                 </button>
-
                             }
 
                         </div>

@@ -53,6 +53,65 @@ namespace CafePos.Areas.Admin.Controllers
                 );
         }
 
+        // =========================================================
+        // KIỂM TRA QUYỀN THANH TOÁN
+        // Admin        => Có quyền
+        // Quản lý (2)  => Có quyền
+        // Thu ngân (3) => Có quyền
+        // Phục vụ (5)  => Có quyền
+        // Pha chế (4)  => Không có quyền
+        // =========================================================
+        private bool CanProcessPayment(Employee? employee)
+        {
+            if (User.IsInRole("Admin"))
+            {
+                return true;
+            }
+
+            if (employee == null)
+            {
+                return false;
+            }
+
+            return employee.PositionId == 2 ||
+                   employee.PositionId == 3 ||
+                   employee.PositionId == 5;
+        }
+
+        // =========================================================
+        // DANH SÁCH NHÂN VIÊN ĐƯỢC PHÉP GHI NHẬN THANH TOÁN
+        // Admin (PositionId = 1) chỉ xuất hiện khi tài khoản hiện tại là Admin.
+        // Employee hợp lệ: Quản lý (2), Thu ngân (3), Phục vụ (5).
+        // =========================================================
+        private async Task<List<Employee>> GetPaymentEmployeesAsync()
+        {
+            bool isAdmin = User.IsInRole("Admin");
+
+            return await _context.Employees
+                .Include(e => e.Position)
+                .Where(e =>
+                    e.IsActive &&
+                    (
+                        e.PositionId == 2 ||
+                        e.PositionId == 3 ||
+                        e.PositionId == 5 ||
+                        (isAdmin && e.PositionId == 1)
+                    ))
+                .ToListAsync();
+        }
+
+        private bool CanBeSelectedForPayment(Employee employee)
+        {
+            if (employee.PositionId == 2 ||
+                employee.PositionId == 3 ||
+                employee.PositionId == 5)
+            {
+                return true;
+            }
+
+            return User.IsInRole("Admin") && employee.PositionId == 1;
+        }
+
         // 1. Danh sách TẤT CẢ đơn hàng (Dành cho Nhân viên quản lý / Thu ngân)
         public async Task<IActionResult> Index()
         {
@@ -136,45 +195,70 @@ namespace CafePos.Areas.Admin.Controllers
                 .Include(x => x.Table)
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
-                .Include(x => x.Payments) // Lấy danh sách payment đã thanh toán nếu có
+                .Include(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
-            if (order == null) return NotFound();
-
-            // 1. Lấy danh sách nhân viên có PositionId là 1 (Quản lý) hoặc 2 (Thu ngân)
-            var employeesList = await _context.Employees
-                .Include(e => e.Position)
-                .Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2))
-                .ToListAsync();
-
-            ViewBag.EmployeesList = employeesList;
-
-            // 2. Lấy Username tài khoản đang đăng nhập (VD: "nhanvien" hoặc "tuanminh")
-            string currentUsername = User.Identity?.Name?.Trim() ?? "";
-
-            // 3. Tìm User tương ứng trong bảng Users để lấy UserId
-            var currentUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == currentUsername);
-
-            // 4. Tìm Employee tương ứng theo UserId lấy được
-            int? currentEmployeeId = null;
-            if (currentUser != null)
+            if (order == null)
             {
-                var currentEmployee = employeesList.FirstOrDefault(e => e.UserId == currentUser.UserId);
-                currentEmployeeId = currentEmployee?.EmployeeId;
+                return NotFound();
             }
 
-            // 5. Nếu đơn ĐÃ thanh toán -> lấy EmployeeId từ bảng Payments. 
-            //    Nếu CHƯA thanh toán -> tự chọn EmployeeId của nhân viên đang đăng nhập!
-            int? savedEmployeeId = order.Payments?.FirstOrDefault(p => p.IsSuccess)?.EmployeeId;
+            var currentEmployee = await GetCurrentEmployee();
+
+            if (!CanProcessPayment(currentEmployee))
+            {
+                TempData["Message"] =
+                    "Bạn không có quyền thực hiện thanh toán.";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            if (order.OrderStatus == "Cancelled" ||
+                order.PaymentStatus == "Cancelled")
+            {
+                TempData["Message"] =
+                    "Đơn hàng đã bị hủy, không thể thanh toán.";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            if (order.OrderStatus == "Completed" ||
+                order.PaymentStatus == "Paid")
+            {
+                TempData["Message"] =
+                    "Đơn hàng này đã được thanh toán rồi.";
+                TempData["MessageType"] = "warning";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            var employeesList = await GetPaymentEmployeesAsync();
+            ViewBag.EmployeesList = employeesList;
+
+            int? currentEmployeeId = null;
+            if (currentEmployee != null &&
+                employeesList.Any(e => e.EmployeeId == currentEmployee.EmployeeId))
+            {
+                currentEmployeeId = currentEmployee.EmployeeId;
+            }
+
+            int? savedEmployeeId = order.Payments?
+                .Where(p => p.IsSuccess)
+                .OrderByDescending(p => p.PaidAt)
+                .Select(p => (int?)p.EmployeeId)
+                .FirstOrDefault();
 
             ViewBag.SelectedEmployeeId = savedEmployeeId ?? currentEmployeeId;
-
-            ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
-            ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+            ViewBag.TablesList = await _context.Tables
+                .Where(t => t.IsActive)
+                .ToListAsync();
+            ViewBag.Toppings = await _context.Toppings
+                .Where(x => x.IsActive)
+                .ToListAsync();
             ViewBag.BankId = _bankingSettings.BankId;
             ViewBag.BankAccountNumber = _bankingSettings.AccountNumber;
             ViewBag.BankAccountName = _bankingSettings.AccountName;
+            ViewBag.CanPay = true;
+
             return View(order);
         }
 
@@ -189,41 +273,55 @@ namespace CafePos.Areas.Admin.Controllers
             int? tableId,
             int? employeeId)
         {
-            // Reload lại ViewBag nếu có lỗi validation
-            ViewBag.EmployeesList = await _context.Employees.Include(e => e.Position).Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2)).ToListAsync();
-            ViewBag.TablesList = await _context.Tables.Where(t => t.IsActive).ToListAsync();
-            ViewBag.Toppings = await _context.Toppings.Where(x => x.IsActive).ToListAsync();
+            ViewBag.EmployeesList = await GetPaymentEmployeesAsync();
+            ViewBag.TablesList = await _context.Tables
+                .Where(t => t.IsActive)
+                .ToListAsync();
+            ViewBag.Toppings = await _context.Toppings
+                .Where(x => x.IsActive)
+                .ToListAsync();
+            ViewBag.BankId = _bankingSettings.BankId;
+            ViewBag.BankAccountNumber = _bankingSettings.AccountNumber;
+            ViewBag.BankAccountName = _bankingSettings.AccountName;
+
             var currentEmployee = await GetCurrentEmployee();
 
-            if (!User.IsInRole("Admin"))
+            if (!CanProcessPayment(currentEmployee))
             {
-                if (currentEmployee == null ||
-                    (currentEmployee.PositionId != 1 &&
-                     currentEmployee.PositionId != 2))
-                {
-                    TempData["Message"] =
-                        "Chỉ Quản lý hoặc Thu ngân mới được thực hiện thanh toán.";
-
-                    TempData["MessageType"] = "error";
-
-                    return RedirectToAction("Detail", new { id });
-                }
+                TempData["Message"] =
+                    "Chỉ Admin, Quản lý, Thu ngân hoặc Phục vụ mới được thực hiện thanh toán.";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", new { id });
             }
+
             var order = await _context.Orders
                 .Include(x => x.OrderItems)
                     .ThenInclude(x => x.OrderItemToppings)
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
-            if (order == null) return NotFound();
-
-            if (order.PaymentStatus == "Paid" || order.OrderStatus == "Completed")
+            if (order == null)
             {
-                TempData["Message"] = "Đơn hàng này đã được thanh toán rồi";
+                return NotFound();
+            }
+
+            if (order.OrderStatus == "Cancelled" ||
+                order.PaymentStatus == "Cancelled")
+            {
+                TempData["Message"] =
+                    "Đơn hàng đã bị hủy, không thể thanh toán.";
+                TempData["MessageType"] = "error";
+                return RedirectToAction("Detail", new { id = order.OrderId });
+            }
+
+            if (order.PaymentStatus == "Paid" ||
+                order.OrderStatus == "Completed")
+            {
+                TempData["Message"] =
+                    "Đơn hàng này đã được thanh toán rồi.";
                 TempData["MessageType"] = "warning";
                 return RedirectToAction("Detail", new { id = order.OrderId });
             }
 
-            // Validations
             if (string.IsNullOrWhiteSpace(paymentMethod))
             {
                 TempData["Message"] = "Vui lòng chọn phương thức thanh toán!";
@@ -231,17 +329,29 @@ namespace CafePos.Areas.Admin.Controllers
                 return View(order);
             }
 
-            if (!employeeId.HasValue || employeeId == 0)
+            var allowedMethods = new[] { "Cash", "Banking", "Card", "VNPAY" };
+            var normalizedMethod = allowedMethods.FirstOrDefault(x =>
+                x.Equals(paymentMethod.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (normalizedMethod == null)
+            {
+                TempData["Message"] = "Phương thức thanh toán không hợp lệ!";
+                TempData["MessageType"] = "error";
+                return View(order);
+            }
+
+            paymentMethod = normalizedMethod;
+
+            if (!employeeId.HasValue || employeeId.Value <= 0)
             {
                 TempData["Message"] = "Vui lòng chọn nhân viên đứng ca thực hiện!";
                 TempData["MessageType"] = "error";
                 return View(order);
             }
 
-            // Lấy Nhân viên kèm Chức vụ (Position)
             var employee = await _context.Employees
                 .Include(e => e.Position)
-                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId.Value && e.IsActive);
 
             if (employee == null)
             {
@@ -250,20 +360,20 @@ namespace CafePos.Areas.Admin.Controllers
                 return View(order);
             }
 
-            // Kiểm tra quyền: Chỉ cho phép Quản lý (1) hoặc Thu ngân (2)
-            if (employee.PositionId != 1 && employee.PositionId != 2)
+            if (!CanBeSelectedForPayment(employee))
             {
-                TempData["Message"] = $"Nhân viên {employee.FullName} ({employee.Position?.PositionName}) không có quyền thực hiện thanh toán!";
+                TempData["Message"] =
+                    $"Nhân viên {employee.FullName} ({employee.Position?.PositionName}) không có quyền thực hiện thanh toán!";
                 TempData["MessageType"] = "error";
                 return View(order);
             }
 
-            // Bổ sung Topping chọn thêm tại quầy
             var firstItem = order.OrderItems?.FirstOrDefault();
-            if (firstItem != null && selectedToppingIds != null && selectedToppingIds.Any())
+            if (firstItem != null &&
+                selectedToppingIds != null &&
+                selectedToppingIds.Any())
             {
-                if (firstItem.OrderItemToppings == null)
-                    firstItem.OrderItemToppings = new List<OrderItemTopping>();
+                firstItem.OrderItemToppings ??= new List<OrderItemTopping>();
 
                 var toppings = await _context.Toppings
                     .Where(x => selectedToppingIds.Contains(x.ToppingId) && x.IsActive)
@@ -271,7 +381,9 @@ namespace CafePos.Areas.Admin.Controllers
 
                 foreach (var topping in toppings)
                 {
-                    bool existed = firstItem.OrderItemToppings.Any(x => x.ToppingId == topping.ToppingId);
+                    bool existed = firstItem.OrderItemToppings
+                        .Any(x => x.ToppingId == topping.ToppingId);
+
                     if (!existed)
                     {
                         firstItem.OrderItemToppings.Add(new OrderItemTopping
@@ -286,13 +398,14 @@ namespace CafePos.Areas.Admin.Controllers
                 }
             }
 
-            // Tính lại tổng tiền
             decimal subTotal = 0;
             if (order.OrderItems != null)
             {
                 foreach (var item in order.OrderItems)
                 {
-                    decimal toppingTotal = item.OrderItemToppings?.Sum(x => x.TotalPrice) ?? 0;
+                    decimal toppingTotal = item.OrderItemToppings?
+                        .Sum(x => x.TotalPrice) ?? 0;
+
                     item.LineTotal = (item.UnitPrice * item.Quantity) + toppingTotal;
                     subTotal += item.LineTotal;
                 }
@@ -302,62 +415,66 @@ namespace CafePos.Areas.Admin.Controllers
             order.SubTotal = subTotal;
             order.DiscountAmount = discountAmount < 0 ? 0 : discountAmount;
             order.TotalAmount = order.SubTotal - order.DiscountAmount;
-            if (order.TotalAmount < 0) order.TotalAmount = 0;
+            if (order.TotalAmount < 0)
+            {
+                order.TotalAmount = 0;
+            }
 
             order.TableId = tableId;
             order.PaymentMethod = paymentMethod;
 
-            // PHÂN LUỒNG VNPAY HOẶC TIỀN MẶT / BANKING
-            if (paymentMethod.ToUpper() == "VNPAY")
+            if (paymentMethod.Equals("VNPAY", StringComparison.OrdinalIgnoreCase))
             {
                 await _context.SaveChangesAsync();
 
-                // Lưu tạm employeeId vào Session để đọc lại trong Callback
-                HttpContext.Session.SetInt32("VnPay_EmployeeId", employee.EmployeeId);
+                HttpContext.Session.SetInt32(
+                    "VnPay_EmployeeId",
+                    employee.EmployeeId);
 
                 var vnPayRequest = new VnPayPaymentRequest
                 {
                     OrderId = order.OrderId,
                     Amount = order.TotalAmount,
-                    OrderInfo = $"Thanh toan don hàng #{order.OrderCode} tai CafePos"
+                    OrderInfo = $"Thanh toan don hang #{order.OrderCode} tai CafePOS"
                 };
 
-                string paymentUrl = _vnPayService.CreatePaymentUrl(vnPayRequest, HttpContext);
+                string paymentUrl = _vnPayService
+                    .CreatePaymentUrl(vnPayRequest, HttpContext);
+
                 return Redirect(paymentUrl);
             }
-            else
+
+            order.PaymentStatus = "Paid";
+            order.OrderStatus = "Completed";
+
+            _context.Payments.Add(new Payment
             {
-                // Thanh toán trực tiếp tại quầy
-                order.PaymentStatus = "Paid";
-                order.OrderStatus = "Completed";
+                OrderId = order.OrderId,
+                EmployeeId = employee.EmployeeId,
+                Method = paymentMethod,
+                Amount = order.TotalAmount,
+                PaidAt = DateTime.Now,
+                IsSuccess = true,
+                OrderInfo =
+                    $"Thanh toán bởi: {employee.FullName} ({employee.Position?.PositionName})"
+            });
 
-                _context.Payments.Add(new Payment
-                {
-                    OrderId = order.OrderId,
-                    EmployeeId = employee.EmployeeId,
-                    Method = paymentMethod,
-                    Amount = order.TotalAmount,
-                    PaidAt = DateTime.Now,
-                    IsSuccess = true,
-                    OrderInfo = $"Thanh toán bởi: {employee.FullName} ({employee.Position?.PositionName})"
-                });
+            _context.OrderStatusLogs.Add(new OrderStatusLog
+            {
+                OrderId = order.OrderId,
+                OldStatus = oldStatus,
+                NewStatus = "Completed",
+                ChangedAt = DateTime.Now,
+                ChangedBy =
+                    $"{employee.FullName} ({employee.Position?.PositionName})"
+            });
 
-                _context.OrderStatusLogs.Add(new OrderStatusLog
-                {
-                    OrderId = order.OrderId,
-                    OldStatus = oldStatus,
-                    NewStatus = "Completed",
-                    ChangedAt = DateTime.Now,
-                    ChangedBy = $"{employee.FullName} ({employee.Position?.PositionName})"
-                });
+            await _context.SaveChangesAsync();
 
-                await _context.SaveChangesAsync();
+            TempData["Message"] = "Checkout thành công!";
+            TempData["MessageType"] = "success";
 
-                TempData["Message"] = "Checkout thành công!";
-                TempData["MessageType"] = "success";
-
-                return RedirectToAction("Detail", new { id = order.OrderId });
-            }
+            return RedirectToAction("Detail", new { id = order.OrderId });
         }
 
         // GET: Order/PaymentCallback (Nhận phản hồi từ VNPay)
@@ -458,73 +575,19 @@ namespace CafePos.Areas.Admin.Controllers
                     .ThenInclude(x => x.OrderItemToppings)
                 .FirstOrDefaultAsync(x => x.OrderId == id);
 
-            if (order == null) return NotFound();
-            // ========================================
-            // BANKING / VIETQR
-            // ========================================
+            if (order == null)
+            {
+                return NotFound();
+            }
 
-            ViewBag.BankId =
-                _bankingSettings.BankId;
+            ViewBag.BankId = _bankingSettings.BankId;
+            ViewBag.BankAccountNumber = _bankingSettings.AccountNumber;
+            ViewBag.BankAccountName = _bankingSettings.AccountName;
 
-            ViewBag.BankAccountNumber =
-                _bankingSettings.AccountNumber;
-
-            ViewBag.BankAccountName =
-                _bankingSettings.AccountName;
-
-            // =========================================
-            // QUYỀN THANH TOÁN
-            // Admin / Quản lý / Thu ngân
-            // =========================================
-            var currentEmployee =
-                await GetCurrentEmployee();
-
-            ViewBag.CanPay =
-                User.IsInRole("Admin")
-                ||
-                (
-                    currentEmployee != null
-                    &&
-                    (
-                        currentEmployee.PositionId == 1 ||
-                        currentEmployee.PositionId == 2
-                    )
-                );
+            var currentEmployee = await GetCurrentEmployee();
+            ViewBag.CanPay = CanProcessPayment(currentEmployee);
 
             return PartialView("_InvoicePartial", order);
-        }
-
-        // 7. AJAX: Đánh dấu đã thanh toán (Admin / Thu ngân)
-        [HttpPost]
-        public async Task<IActionResult> MarkAsPaid(int id, string paymentMethod)
-        {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == id);
-            var currentEmployee = await GetCurrentEmployee();
-
-            if (!User.IsInRole("Admin"))
-            {
-                if (currentEmployee == null ||
-                    (currentEmployee.PositionId != 1 &&
-                     currentEmployee.PositionId != 2))
-                {
-                    TempData["Message"] =
-                        "Chỉ Quản lý hoặc Thu ngân mới được thực hiện thanh toán.";
-
-                    TempData["MessageType"] = "error";
-
-                    return RedirectToAction("Detail", new { id });
-                }
-            }
-            if (order == null)
-                return Json(new { success = false, message = "Không tìm thấy hóa đơn" });
-
-            order.PaymentStatus = "Paid";
-            order.PaymentMethod = paymentMethod;
-            order.OrderStatus = "Completed";
-
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Thanh toán thành công" });
         }
 
         // 8. In hóa đơn
@@ -544,47 +607,137 @@ namespace CafePos.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetActiveCashiers()
         {
-            var cashiers = await _context.Employees
-                .Include(e => e.Position)
-                .Where(e => e.IsActive && (e.PositionId == 1 || e.PositionId == 2))
+            var currentEmployee = await GetCurrentEmployee();
+
+            if (!CanProcessPayment(currentEmployee))
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = "Bạn không có quyền lấy danh sách nhân viên thanh toán."
+                });
+            }
+
+            var employees = await GetPaymentEmployeesAsync();
+
+            var result = employees
                 .Select(e => new
                 {
                     employeeId = e.EmployeeId,
                     fullName = e.FullName,
-                    positionName = e.Position != null ? e.Position.PositionName : "N/A"
+                    positionName = e.Position != null
+                        ? e.Position.PositionName
+                        : "N/A"
                 })
-                .ToListAsync();
+                .ToList();
 
-            return Json(cashiers);
+            return Json(result);
         }
 
         // POST: Admin/Order/MarkAsPaid
         [HttpPost]
-        public async Task<IActionResult> MarkAsPaid(int id, string paymentMethod, int employeeId)
+        public async Task<IActionResult> MarkAsPaid(
+            int id,
+            string paymentMethod,
+            int employeeId)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
-            if (order == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng!" });
+            var currentEmployee = await GetCurrentEmployee();
 
-            var employee = await _context.Employees.Include(e => e.Position).FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
-            if (employee == null || (employee.PositionId != 1 && employee.PositionId != 2))
+            if (!CanProcessPayment(currentEmployee))
             {
-                return Json(new { success = false, message = "Nhân viên không có quyền thực hiện thanh toán!" });
+                return Json(new
+                {
+                    success = false,
+                    message = "Bạn không có quyền thực hiện thanh toán."
+                });
+            }
+
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+
+            if (order == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Không tìm thấy đơn hàng!"
+                });
+            }
+
+            if (order.OrderStatus == "Cancelled" ||
+                order.PaymentStatus == "Cancelled")
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Đơn hàng đã bị hủy, không thể thanh toán."
+                });
+            }
+
+            if (order.PaymentStatus == "Paid" ||
+                order.OrderStatus == "Completed")
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Đơn hàng này đã được thanh toán rồi."
+                });
+            }
+
+            var allowedMethods = new[] { "Cash", "Banking", "Card", "VNPAY" };
+            var normalizedMethod = allowedMethods.FirstOrDefault(x =>
+                x.Equals(paymentMethod?.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (normalizedMethod == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Phương thức thanh toán không hợp lệ."
+                });
+            }
+
+            var employee = await _context.Employees
+                .Include(e => e.Position)
+                .FirstOrDefaultAsync(e =>
+                    e.EmployeeId == employeeId &&
+                    e.IsActive);
+
+            if (employee == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Không tìm thấy thông tin nhân viên!"
+                });
+            }
+
+            if (!CanBeSelectedForPayment(employee))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message =
+                        $"Nhân viên {employee.FullName} ({employee.Position?.PositionName}) không có quyền thực hiện thanh toán!"
+                });
             }
 
             string oldStatus = order.OrderStatus;
+
             order.PaymentStatus = "Paid";
             order.OrderStatus = "Completed";
-            order.PaymentMethod = string.IsNullOrEmpty(paymentMethod) ? "Cash" : paymentMethod;
+            order.PaymentMethod = normalizedMethod;
 
             _context.Payments.Add(new Payment
             {
                 OrderId = order.OrderId,
                 EmployeeId = employee.EmployeeId,
-                Method = order.PaymentMethod,
+                Method = normalizedMethod,
                 Amount = order.TotalAmount,
                 PaidAt = DateTime.Now,
                 IsSuccess = true,
-                OrderInfo = $"Thanh toán nhanh bởi: {employee.FullName} ({employee.Position?.PositionName})"
+                OrderInfo =
+                    $"Thanh toán nhanh bởi: {employee.FullName} ({employee.Position?.PositionName})"
             });
 
             _context.OrderStatusLogs.Add(new OrderStatusLog
@@ -593,68 +746,182 @@ namespace CafePos.Areas.Admin.Controllers
                 OldStatus = oldStatus,
                 NewStatus = "Completed",
                 ChangedAt = DateTime.Now,
-                ChangedBy = $"{employee.FullName} ({employee.Position?.PositionName})"
+                ChangedBy =
+                    $"{employee.FullName} ({employee.Position?.PositionName})"
             });
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true });
+
+            return Json(new
+            {
+                success = true,
+                message = "Thanh toán thành công."
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int id)
         {
+            // ============================================================
+            // 1. KIỂM TRA NGƯỜI THỰC HIỆN
+            // ============================================================
+            var currentEmployee = await GetCurrentEmployee();
+
+            if (!CanProcessPayment(currentEmployee))
+            {
+                TempData["Message"] =
+                    "Bạn không có quyền hủy đơn hàng.";
+
+                TempData["MessageType"] =
+                    "error";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+
+            // ============================================================
+            // 2. TÌM ORDER
+            // ============================================================
             var order = await _context.Orders
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null)
             {
-                return NotFound();
+                TempData["Message"] =
+                    "Không tìm thấy đơn hàng.";
+
+                TempData["MessageType"] =
+                    "error";
+
+                return RedirectToAction(nameof(Index));
             }
 
-            if (order.OrderStatus == "Cancelled")
-            {
-                TempData["Message"] = "Đơn hàng này đã được hủy trước đó.";
-                TempData["MessageType"] = "warning";
 
-                return RedirectToAction("Index");
+            // ============================================================
+            // 3. ĐƠN ĐÃ HỦY
+            // ============================================================
+            if (order.OrderStatus == "Cancelled" ||
+                order.PaymentStatus == "Cancelled")
+            {
+                TempData["Message"] =
+                    "Đơn hàng này đã được hủy trước đó.";
+
+                TempData["MessageType"] =
+                    "warning";
+
+                return RedirectToAction(nameof(Index));
             }
 
-            if (order.OrderStatus == "Completed")
-            {
-                TempData["Message"] = "Đơn hàng đã hoàn thành, không thể hủy.";
-                TempData["MessageType"] = "error";
 
-                return RedirectToAction("Index");
+            // ============================================================
+            // 4. ĐƠN ĐÃ HOÀN THÀNH / ĐÃ THANH TOÁN
+            //
+            // Không được Cancel trực tiếp.
+            // Sau này nếu cần sẽ làm chức năng Refund riêng.
+            // ============================================================
+            if (order.OrderStatus == "Completed" ||
+                order.PaymentStatus == "Paid")
+            {
+                TempData["Message"] =
+                    "Đơn hàng đã thanh toán hoặc hoàn thành, " +
+                    "không thể hủy trực tiếp.";
+
+                TempData["MessageType"] =
+                    "error";
+
+                return RedirectToAction(
+                    nameof(Detail),
+                    new { id = order.OrderId }
+                );
             }
 
-            if (order.PaymentStatus == "Paid")
-            {
-                TempData["Message"] = "Đơn hàng đã thanh toán, không thể hủy trực tiếp.";
-                TempData["MessageType"] = "error";
 
-                return RedirectToAction("Index");
+            // ============================================================
+            // 5. CHỈ PENDING + UNPAID MỚI ĐƯỢC HỦY
+            // ============================================================
+            if (order.OrderStatus != "Pending" ||
+                order.PaymentStatus != "Unpaid")
+            {
+                TempData["Message"] =
+                    "Trạng thái hiện tại của đơn hàng không cho phép hủy.";
+
+                TempData["MessageType"] =
+                    "error";
+
+                return RedirectToAction(
+                    nameof(Detail),
+                    new { id = order.OrderId }
+                );
             }
 
-            order.OrderStatus = "Cancelled";
 
-            // Nếu bạn muốn đơn hủy thì trạng thái thanh toán cũng đổi thành Cancelled
-            order.PaymentStatus = "Cancelled";
+            // ============================================================
+            // 6. LƯU TRẠNG THÁI CŨ
+            // ============================================================
+            string oldStatus =
+                order.OrderStatus;
 
-            _context.OrderStatusLogs.Add(new OrderStatusLog
-            {
-                OrderId = order.OrderId,
-                NewStatus = "Cancelled",
-                ChangedAt = DateTime.Now,
-                ChangedBy = User.Identity?.Name ?? "System"
-            });
 
+            // ============================================================
+            // 7. HỦY ORDER
+            // ============================================================
+            order.OrderStatus =
+                "Cancelled";
+
+            order.PaymentStatus =
+                "Cancelled";
+
+
+            // ============================================================
+            // 8. NGƯỜI THỰC HIỆN
+            // ============================================================
+            string changedBy =
+                currentEmployee != null
+                    ? $"{currentEmployee.FullName} ({currentEmployee.Position?.PositionName})"
+                    : User.Identity?.Name ?? "System";
+
+
+            // ============================================================
+            // 9. LOG
+            // ============================================================
+            _context.OrderStatusLogs.Add(
+                new OrderStatusLog
+                {
+                    OrderId =
+                        order.OrderId,
+
+                    OldStatus =
+                        oldStatus,
+
+                    NewStatus =
+                        "Cancelled",
+
+                    ChangedAt =
+                        DateTime.Now,
+
+                    ChangedBy =
+                        changedBy
+                }
+            );
+
+
+            // ============================================================
+            // 10. SAVE
+            // ============================================================
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = $"Đã hủy đơn hàng #{order.OrderCode}.";
-            TempData["MessageType"] = "success";
 
-            return RedirectToAction("Index");
+            TempData["Message"] =
+                $"Đã hủy đơn hàng #{order.OrderCode}.";
+
+            TempData["MessageType"] =
+                "success";
+
+
+            return RedirectToAction(
+                nameof(Index)
+            );
         }
     }
 

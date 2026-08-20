@@ -17,64 +17,249 @@ namespace CafePos.Controllers
             _context = context;
         }
 
-        // Action xem Báo cáo ca làm việc trong ngày của nhân viên
+        // =========================================================
+        // BÁO CÁO CA LÀM VIỆC CỦA NHÂN VIÊN
+        //
+        // Payments:
+        // - Ai thu tiền
+        // - Thu bao nhiêu
+        // - Phương thức gì
+        // - Thời điểm nào
+        //
+        // Orders:
+        // - Xác nhận đơn Paid + Completed
+        // - Lấy thông tin đơn hàng
+        // =========================================================
         public async Task<IActionResult> Index()
         {
             var today = DateTime.Today;
-            var endOfDay = today.AddDays(1).AddTicks(-1);
+            var tomorrow = today.AddDays(1);
 
-            // 1. Lấy danh sách đơn hàng hoàn thành / đã thanh toán TRONG HÔM NAY
-            var todayOrdersQuery = _context.Orders
-                .Where(x => x.CreatedDate >= today && x.CreatedDate <= endOfDay
-                         && (x.PaymentStatus == "Paid" || x.PaymentStatus == "Đã thanh toán"
-                             || x.OrderStatus == "Completed" || x.OrderStatus == "Hoàn thành"));
+            // =====================================================
+            // 1. USER ĐANG ĐĂNG NHẬP
+            // =====================================================
+            var userIdText = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
 
-            // 💡 LƯU Ý OPTIONAL: Nếu Model Order của bạn có cột UserId / EmployeeId, 
-            // bỏ comment đoạn dưới để chỉ lấy đúng đơn do chính nhân viên đang đăng nhập tạo:
-            /*
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(currentUserId))
+            if (!int.TryParse(userIdText, out int currentUserId))
             {
-                todayOrdersQuery = todayOrdersQuery.Where(x => x.UserId == currentUserId);
+                return Forbid();
             }
-            */
 
-            var todayOrdersList = await todayOrdersQuery
+            // =====================================================
+            // 2. EMPLOYEE ĐANG ĐĂNG NHẬP
+            // =====================================================
+            var employee = await _context.Employees
+                .AsNoTracking()
+                .Include(x => x.Position)
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == currentUserId &&
+                    x.IsActive
+                );
+
+            if (employee == null)
+            {
+                return NotFound(
+                    "Không tìm thấy thông tin nhân viên."
+                );
+            }
+
+            // =====================================================
+            // 3. LẤY GIAO DỊCH CỦA NHÂN VIÊN
+            //
+            // JOIN Payments + Orders
+            //
+            // Chỉ tính:
+            // - Payment thành công
+            // - đúng EmployeeId
+            // - PaidAt trong hôm nay
+            // - Order Paid + Completed
+            // =====================================================
+            var transactions = await (
+                from payment in _context.Payments.AsNoTracking()
+
+                join order in _context.Orders.AsNoTracking()
+                    on payment.OrderId equals order.OrderId
+
+                where
+                    payment.IsSuccess
+                    &&
+                    payment.EmployeeId == employee.EmployeeId
+                    &&
+                    payment.PaidAt >= today
+                    &&
+                    payment.PaidAt < tomorrow
+                    &&
+                    order.PaymentStatus == "Paid"
+                    &&
+                    order.OrderStatus == "Completed"
+
+                orderby payment.PaidAt descending
+
+                select new
+                {
+                    PaymentId = payment.PaymentId,
+
+                    payment.OrderId,
+
+                    payment.Method,
+
+                    payment.Amount,
+
+                    payment.PaidAt,
+
+                    payment.EmployeeId,
+
+                    payment.TransactionNo,
+
+                    order.OrderCode,
+
+                    order.CreatedDate,
+
+                    order.TotalAmount,
+
+                    order.PaymentStatus,
+
+                    order.OrderStatus,
+
+                    order.PaymentMethod
+                }
+            ).ToListAsync();
+
+            // =====================================================
+            // 4. TỔNG TIỀN NHÂN VIÊN THỰC TẾ ĐÃ THU
+            // =====================================================
+            decimal totalRevenue = transactions
+                .Sum(x => x.Amount);
+
+            // =====================================================
+            // 5. TỔNG SỐ ĐƠN ĐÃ THU
+            //
+            // Distinct để tránh 1 đơn có nhiều Payment.
+            // =====================================================
+            int totalOrders = transactions
+                .Select(x => x.OrderId)
+                .Distinct()
+                .Count();
+
+            // =====================================================
+            // 6. TIỀN MẶT
+            // =====================================================
+            decimal cashRevenue = transactions
+                .Where(x =>
+                    x.Method != null &&
+                    x.Method.ToLower() == "cash"
+                )
+                .Sum(x => x.Amount);
+
+            // =====================================================
+            // 7. KHÔNG TIỀN MẶT
+            //
+            // Banking / Card / VNPAY / ...
+            // =====================================================
+            decimal bankTransferRevenue = transactions
+                .Where(x =>
+                    x.Method == null ||
+                    x.Method.ToLower() != "cash"
+                )
+                .Sum(x => x.Amount);
+
+            // =====================================================
+            // 8. DANH SÁCH ORDER NHÂN VIÊN ĐÃ THU TIỀN
+            //
+            // Mỗi Order chỉ hiện 1 dòng.
+            // =====================================================
+            var todayOrders = transactions
+                .GroupBy(x => x.OrderId)
+                .Select(group =>
+                {
+                    var latest = group
+                        .OrderByDescending(x => x.PaidAt)
+                        .First();
+
+                    var methods = group
+                        .Where(x =>
+                            !string.IsNullOrWhiteSpace(x.Method)
+                        )
+                        .Select(x => x.Method!)
+                        .Distinct()
+                        .ToList();
+
+                    return new OrderSummaryItem
+                    {
+                        OrderId =
+                            latest.OrderId,
+
+                        // Với báo cáo ca:
+                        // dùng thời điểm nhận tiền gần nhất.
+                        CreatedDate =
+                            latest.PaidAt,
+
+                        // Đây là số tiền NHÂN VIÊN NÀY đã thu
+                        // cho đơn đó trong ngày.
+                        TotalAmount =
+                            group.Sum(x => x.Amount),
+
+                        PaymentMethod =
+                            methods.Count > 0
+                                ? string.Join(", ", methods)
+                                : "Chưa xác định",
+
+                        OrderStatus =
+                            latest.OrderStatus
+                    };
+                })
                 .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
+                .ToList();
 
-            // 2. Tính toán tổng quan ca làm việc
-            decimal totalRevenue = todayOrdersList.Sum(x => x.TotalAmount);
-            int totalOrders = todayOrdersList.Count;
+            // =====================================================
+            // 9. TÊN NHÂN VIÊN
+            // =====================================================
+            var employeeName =
+                employee.Position != null
+                    ? $"{employee.FullName} ({employee.Position.PositionName})"
+                    : employee.FullName;
 
-            // Phân loại doanh thu theo phương thức thanh toán (Tiền mặt / Chuyển khoản)
-            // LƯU Ý: Tên chuỗi "Cash", "Bank", "Tiền mặt" cần khớp với DB của bạn
-            decimal cashRevenue = todayOrdersList
-                .Where(x => x.PaymentMethod == "Cash" || x.PaymentMethod == "Tiền mặt")
-                .Sum(x => x.TotalAmount);
-
-            decimal bankTransferRevenue = todayOrdersList
-                .Where(x => x.PaymentMethod == "Bank" || x.PaymentMethod == "Chuyển khoản" || x.PaymentMethod == "Transfer" || x.PaymentMethod == "Momo" || x.PaymentMethod == "VNPay")
-                .Sum(x => x.TotalAmount);
-
-            // 3. Đưa dữ liệu vào ViewModel
+            // =====================================================
+            // 10. VIEW MODEL
+            // =====================================================
             var model = new ShiftReportViewModel
             {
-                ReportDate = today,
-                EmployeeName = User.Identity?.Name ?? "Nhân viên quầy",
-                TotalRevenue = totalRevenue,
-                TotalOrders = totalOrders,
-                CashRevenue = cashRevenue,
-                BankTransferRevenue = bankTransferRevenue,
-                TodayOrders = todayOrdersList.Select(x => new OrderSummaryItem
-                {
-                    OrderId = x.OrderId, // Nếu thuộc tính ID trong Model Order của bạn tên là OrderId thì sửa x.Id thành x.OrderId
-                    CreatedDate = x.CreatedDate,
-                    TotalAmount = x.TotalAmount,
-                    PaymentMethod = x.PaymentMethod ?? "Tiền mặt",
-                    OrderStatus = x.OrderStatus
-                }).ToList()
+                ReportDate =
+                    today,
+
+                EmployeeName =
+                    employeeName,
+
+                TotalRevenue =
+                    totalRevenue,
+
+                TotalOrders =
+                    totalOrders,
+
+                CashRevenue =
+                    cashRevenue,
+
+                BankTransferRevenue =
+                    bankTransferRevenue,
+
+                TodayOrders =
+                    todayOrders
             };
+
+            // =====================================================
+            // THÔNG TIN ĐỐI SOÁT BỔ SUNG
+            // Không bắt buộc View phải sử dụng.
+            // =====================================================
+            ViewBag.EmployeeId =
+                employee.EmployeeId;
+
+            ViewBag.PositionName =
+                employee.Position?.PositionName;
+
+            ViewBag.TransactionCount =
+                transactions.Count;
 
             return View(model);
         }
